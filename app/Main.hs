@@ -10,10 +10,8 @@ import Lib ( initialise
             , remove)
 
 main :: IO ()
-main = getArgs >>= operation >>= putStr . tac
+main = getArgs >>= operation >>= putStr
  
-tac  = unlines . reverse . lines
-
 operation ["-h"] = usage   >> exit
 operation ["-v"] = version >> exit
 operation ["-i", filename] = initialise filename >> exit

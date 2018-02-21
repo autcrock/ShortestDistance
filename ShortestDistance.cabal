@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: a80580bf2b8daf942a3aa2760550c02d472ca1554c121b2974287c16e3edc881
+-- hash: 802f542706e9bcaab230e8f0eb51743b9a037f6cfa9953edaf88ca0a7135be46
 
 name:           ShortestDistance
 version:        0.1.0.0
@@ -29,9 +29,14 @@ library
   hs-source-dirs:
       src
   build-depends:
-      base >=4.7 && <5
+      aeson
+    , base >=4.7 && <5
+    , bytestring
+    , directory
   exposed-modules:
       Lib
+      MapDefinitions
+      Shortest
   other-modules:
       Paths_ShortestDistance
   default-language: Haskell2010
@@ -43,7 +48,10 @@ executable sd
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       ShortestDistance
+    , aeson
     , base >=4.7 && <5
+    , bytestring
+    , directory
   other-modules:
       Paths_ShortestDistance
   default-language: Haskell2010
@@ -56,7 +64,10 @@ test-suite sd-test
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       ShortestDistance
+    , aeson
     , base >=4.7 && <5
+    , bytestring
+    , directory
   other-modules:
       Paths_ShortestDistance
   default-language: Haskell2010
