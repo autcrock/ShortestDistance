@@ -3,10 +3,8 @@
 module MapDefinitions (
       Map
     , Destination
-    , ToPlaceName
-    , FromPlaceName
-    , Distance
     , getMapFromFile
+    , getPlacesFromFile
     , addNodeToMap
     , deleteNodeFromMap
     , saveMap
@@ -15,41 +13,63 @@ module MapDefinitions (
 
 where
 
-    import GHC.Generics
-    import Data.Aeson
-    import qualified Data.ByteString.Lazy as DBSL
-    import Prelude hiding (catch)
-    import System.IO.Error hiding (catch)
-    import System.Directory
     import Control.Exception
+    import Data.Aeson
+    import Data.Text
+    import qualified Data.ByteString.Lazy as DBSL
+    import qualified Data.ByteString.Lazy.Char8 as DBSLC8
+    import GHC.Generics
+    import Prelude hiding (catch)
+    import System.Directory
+    import System.IO.Error hiding (catch)
+
             
     -- The map defined for storage purposes
     -- This is meant to be saved, edited, read etc and/or passed to the Shortest module for searching
 
-    newtype FromPlaceName = FromPlaceName String deriving (Generic, Show)
-    instance ToJSON FromPlaceName
-    instance FromJSON FromPlaceName
-
-    newtype ToPlaceName = ToPlaceName String deriving (Generic, Show)
-    instance ToJSON ToPlaceName
-    instance FromJSON ToPlaceName
-
-    newtype Distance = Distance Double deriving (Generic, Show)
-    instance ToJSON Distance
-    instance FromJSON Distance
-    
-    data Destination = Destination ToPlaceName Distance deriving (Generic, Show)
+    data Destination = Destination {
+        to :: !Text,
+        distance :: Double
+    } deriving (Generic, Show)
     instance ToJSON Destination
     instance FromJSON Destination
 
-    data Place = Place FromPlaceName [Destination] deriving (Generic, Show)
+    data Place = Place {
+        place :: !Text,
+        destinations :: [Destination]
+     } deriving (Generic, Show)
     instance ToJSON Place
     instance FromJSON Place
 
-    data Map = Map [Place] deriving (Generic, Show)
+    -- data Map = Map {
+    --     map :: [Object]
+    -- } deriving (Generic, Show)
+
+    -- newtype From = From String deriving (Generic, Show)
+    -- instance ToJSON From
+    -- instance FromJSON From
+
+    -- newtype To = To String deriving (Generic, Show)
+    -- instance ToJSON To
+    -- instance FromJSON To
+
+    -- newtype Dest = Dest Double deriving (Generic, Show)
+    -- instance ToJSON Dest
+    -- instance FromJSON Dest
+
+    
+    -- data Map = Map {
+    --     map :: [(From, [(To, Dest)])]
+    -- }  deriving (Generic, Show)
+    -- instance ToJSON Map
+    -- instance FromJSON Map
+
+    data Map = Map {
+        map :: [Place]
+    } deriving (Generic, Show)
     instance ToJSON Map
     instance FromJSON Map
-        
+    
     systemMapFile :: String
     systemMapFile = "./SD_CumulativeSystemMapfile.json"
 
@@ -57,9 +77,28 @@ where
     getMapFromFile inputFile =
         do
             inputMapAsJSON <- DBSL.readFile inputFile
+            DBSLC8.putStrLn inputMapAsJSON
             let inputMap = eitherDecode inputMapAsJSON :: (Either String Map)
             return inputMap
 
+    getPlacesFromFile :: String -> IO [Place]
+    getPlacesFromFile inputFile =
+        do
+            inputMapAST <- getMapFromFile inputFile
+            getPlacesAST inputMapAST
+                    
+    getPlacesAST :: Either String Map -> IO [Place]
+    getPlacesAST (Left s) =
+        do
+            putStrLn $ "sd: getPlacesAST: Error decoding JSON map: " ++ s
+            return []
+
+    getPlacesAST (Right m) =
+        do
+            putStrLn "sd: getPlacesAST: Extracting places AST: "
+            let placesAST = MapDefinitions.map m
+            return placesAST
+                
     saveMap :: Map -> IO ()
     saveMap theMap =
         do

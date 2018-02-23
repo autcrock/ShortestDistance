@@ -24,6 +24,7 @@ dependencies:
 - aeson
 - bytestring
 - directory
+- text
 
 library:
   source-dirs: src
