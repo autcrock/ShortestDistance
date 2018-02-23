@@ -41,29 +41,6 @@ where
     instance ToJSON Place
     instance FromJSON Place
 
-    -- data Map = Map {
-    --     map :: [Object]
-    -- } deriving (Generic, Show)
-
-    -- newtype From = From String deriving (Generic, Show)
-    -- instance ToJSON From
-    -- instance FromJSON From
-
-    -- newtype To = To String deriving (Generic, Show)
-    -- instance ToJSON To
-    -- instance FromJSON To
-
-    -- newtype Dest = Dest Double deriving (Generic, Show)
-    -- instance ToJSON Dest
-    -- instance FromJSON Dest
-
-    
-    -- data Map = Map {
-    --     map :: [(From, [(To, Dest)])]
-    -- }  deriving (Generic, Show)
-    -- instance ToJSON Map
-    -- instance FromJSON Map
-
     data Map = Map {
         map :: [Place]
     } deriving (Generic, Show)

@@ -28,7 +28,10 @@ delete :: String -> IO ()
 delete couldBeJSON = putStrLn $ "sd: deleting a location using putative JSON [" ++ couldBeJSON ++ "]."
 
 remove :: IO ()
-remove = putStrLn "sd: Removing the system file."
+remove = 
+    do
+        putStrLn "sd: Removing the system file."
+        removeMap
 
 maybeSaveMap :: Either String Map -> IO()
 maybeSaveMap (Left e) =
