@@ -24,6 +24,7 @@ dependencies:
 - aeson
 - bytestring
 - directory
+- either-unwrap
 - text
 
 library:

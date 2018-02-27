@@ -12,25 +12,32 @@ import Lib ( initialise
 main :: IO ()
 main = getArgs >>= operation >>= putStr
  
-operation ["-h"] = usage   >> exit
+operation ["-h"] = usage >> exit
+operation ["--help"] = usage >> exit
 operation ["-v"] = version >> exit
+operation ["--version"] = version >> exit
 operation ["-i", filename] = initialise filename >> exit
+operation ["--initialise", filename] = initialise filename >> exit
 operation ["-a", aString] = add aString >> exit
+operation ["--add", aString] = add aString >> exit
 operation ["-d", aString] = delete aString >> exit
+operation ["--delete", aString] = delete aString >> exit
 operation ["-s", aString] = shortest aString >> exit
+operation ["--shortest", aString] = shortest aString >> exit
 operation ["-r"] = remove >> exit
+operation ["--remove"] = remove >> exit
+operation _ = usage >> exit
 
-operation fs     = concat `fmap` mapM readFile fs
 
 usage   = do
             putStrLn "Usage: sd [-shida] [file]"
             putStrLn "  sd -s p1 p2 - Find shortest path from p1 to p2 (v1, v2 are place names as strings) in a road network file."
-            putStrLn "  sd -h - This message.  A road network is storeed as JSON in a system file, for operations by the accompanying command line arguments."
+            putStrLn "  sd -h - This message.  A road network is stored as JSON in a system file, for operations by the accompanying command line arguments."
             putStrLn "  sd -i filename - Initialise from a map definition in filename as JSON.  Remove system file first."
             putStrLn "  sd -d place - Delete this place as JSON from the system file."
             putStrLn "  sd -a place - Add this place as JSON to the system file."
             putStrLn "  sd -r - Remove the system file."
             
 version = putStrLn "sd Alpha 0"
-exit    = exitWith ExitSuccess
+exit    = exitSuccess
 die     = exitWith (ExitFailure 1)

@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 1c3638c46dafc59a3a816df8bc9bd3ce1ccda42cafcaab3670b0eb249e7da05e
+-- hash: 85c5806311c7ae08f698e6ab69598711f69dca0b29484075bc0b1137a56410e5
 
 name:           ShortestDistance
 version:        0.1.0.0
@@ -33,10 +33,12 @@ library
     , base >=4.7 && <5
     , bytestring
     , directory
+    , either-unwrap
     , text
   exposed-modules:
       Lib
       MapDefinitions
+      PairingHeap
       Shortest
   other-modules:
       Paths_ShortestDistance
@@ -53,6 +55,7 @@ executable sd
     , base >=4.7 && <5
     , bytestring
     , directory
+    , either-unwrap
     , text
   other-modules:
       Paths_ShortestDistance
@@ -70,6 +73,7 @@ test-suite sd-test
     , base >=4.7 && <5
     , bytestring
     , directory
+    , either-unwrap
     , text
   other-modules:
       Paths_ShortestDistance

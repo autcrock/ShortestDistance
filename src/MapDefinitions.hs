@@ -1,25 +1,32 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE FlexibleInstances, OverloadedStrings #-}
 
 module MapDefinitions (
       Map
+    , Place
     , Destination
-    , getMapFromFile
-    , getPlacesFromFile
     , addNodeToMap
     , deleteNodeFromMap
-    , saveMap
+    , getMapFromFile
+    , getPlacesFromFile
+    , readMap
     , removeMap
+    , saveMap
 )
 
 where
 
     import Control.Exception
+    import Control.Monad (when)
     import Data.Aeson
-    import Data.Text
+    import Data.Aeson.Types
+    import Data.Either.Unwrap (isLeft, isRight, fromLeft, fromRight)
+        -- import Data.HashMap.Strict
+    import Data.Text (Text)
     import qualified Data.ByteString.Lazy as DBSL
     import qualified Data.ByteString.Lazy.Char8 as DBSLC8
     import GHC.Generics
-    import Prelude hiding (catch)
+    import Prelude hiding (catch, map)
     import System.Directory
     import System.IO.Error hiding (catch)
 
@@ -34,6 +41,11 @@ where
     instance ToJSON Destination
     instance FromJSON Destination
 
+    -- data Connection = Connection {
+    --     destination :: !Text,
+    --     distance :: Double
+    -- }
+
     data Place = Place {
         place :: !Text,
         destinations :: [Destination]
@@ -41,11 +53,42 @@ where
     instance ToJSON Place
     instance FromJSON Place
 
+    -- instance FromJSON [Place] where
+    --     parseJSON x =
+    --       parseJSON x >>= mapM parsePlace . toList
+      
+    -- parsePlace :: (String, Value) -> Parser Entry
+    -- parsePlace (p, v) =
+    --     withObject "entry body" (\ o ->
+    --         Place p <$> o .: "connections")
+    --         v
+      
+        
     data Map = Map {
         map :: [Place]
     } deriving (Generic, Show)
     instance ToJSON Map
     instance FromJSON Map
+    
+    -- data Entry = Entry
+    -- { id :: String
+    -- , name :: String
+    -- , location :: String
+    -- }
+    -- deriving Show
+  
+    -- data Place = Place {
+    --     place :: !Text,
+    --     destinations :: [Destination]
+    --  } deriving (Generic, Show)
+    -- instance ToJSON Place
+    -- instance FromJSON Place
+
+    -- data Map = Map {
+    --     map :: [Place]
+    -- } deriving (Generic, Show)
+    -- instance ToJSON Map
+    -- instance FromJSON Map
     
     systemMapFile :: String
     systemMapFile = "./SD_CumulativeSystemMapfile.json"
@@ -88,6 +131,17 @@ where
         where anyErrors e
                 | isDoesNotExistError e = return ()
                 | otherwise = throwIO e
+    
+    readMap :: IO Map
+    readMap =
+        do
+        eitherMap <- getMapFromFile systemMapFile
+        if isLeft eitherMap 
+        then 
+            (do
+            putStrLn $ "sd: readMap: " ++ fromLeft eitherMap
+            return Map { map = [] })
+        else return (fromRight eitherMap)
 
     -- unimplemented spacefillers below
     addNodeToMap :: Map -> String -> Map
@@ -95,3 +149,4 @@ where
 
     deleteNodeFromMap :: Map -> String -> Map
     deleteNodeFromMap map node = map
+
