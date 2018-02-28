@@ -5,13 +5,15 @@ module Shortest (
 ) where
 
     import Data.Aeson
-    import Data.List (sortBy, nub)
-    import Data.Text (Text)
+    import Data.List (sortBy, nub, find, delete, deleteBy)
+    import Data.Maybe (fromMaybe)
     import Data.Ord (comparing)
+    import Data.Text (Text, pack)
     import GHC.Generics hiding (from, to)
     import MapDefinitions (
         Map, Place, Destination, place, destinations, distance, map, readMap, to
         )
+    import Numeric.Natural (Natural)
 
     data Connection = Connection { from :: Text, to :: Text, distance :: Double } deriving (Show)
     
@@ -19,13 +21,25 @@ module Shortest (
     instance ToJSON Child
     instance FromJSON Child
 
-    data ExpandedGraphNode = ExpandedGraphNode {nodeName :: Text, children :: [Child]} deriving (Show, Generic)
+    data ExpandedGraphNode = EGEmpty | ExpandedGraphNode {
+            egNodeName :: Text, egChildren :: [Child]
+        } deriving (Show, Generic)
     instance ToJSON ExpandedGraphNode
     instance FromJSON ExpandedGraphNode
 
-    data ExpandedGraph = ExpandedGraph {nodes :: [ExpandedGraphNode]} deriving (Show, Generic)
+    data ExpandedGraph = ExpandedGraph {egNodes :: [ExpandedGraphNode]} deriving (Show, Generic)
     instance ToJSON ExpandedGraph
     instance FromJSON ExpandedGraph
+
+    data ParametrisedGraphNode = PEmpty | ParametrisedGraphNode {
+            pNodeName :: Text, parameter :: Double, pChildren :: [Child]
+        } deriving (Show, Generic)
+    instance ToJSON ParametrisedGraphNode
+    instance FromJSON ParametrisedGraphNode
+
+    data ParametrisedGraph = ParametrisedGraph {pNodes :: [ParametrisedGraphNode]} deriving (Show, Generic)
+    instance ToJSON ParametrisedGraph
+    instance FromJSON ParametrisedGraph
 
     sortByDistance :: [Child] -> [Child]
     sortByDistance = sortBy (comparing childDistance)
@@ -42,7 +56,7 @@ module Shortest (
                  , Shortest.childDistance = Shortest.distance x
                  }) rawNodes
         in
-            ExpandedGraphNode { nodeName = nodeName, children = sortByDistance children }
+            ExpandedGraphNode { egNodeName = nodeName, egChildren = sortByDistance children }
 
     allNodes :: [Connection] -> ExpandedGraph
     allNodes cs =
@@ -50,7 +64,7 @@ module Shortest (
             nodeNames = getNodeNames cs
             nodes = [ pullNode x cs | x <- nodeNames]
         in
-            ExpandedGraph {nodes = nodes}
+            ExpandedGraph {egNodes = nodes}
     
     insertPlaceWD :: Place -> [Connection] -> [Connection]
     insertPlaceWD place connections =
@@ -106,71 +120,68 @@ module Shortest (
         in
             allNodes wd
 
+    -- expandedGraphGetNodeIndex :: ExpandedGraph -> Text -> Maybe Int
+    -- expandedGraphGetNodeIndex eg node =
+    --     find (\x -> egNodeName x == node) eg
+    
+    expandedGraphGetNode :: ExpandedGraph -> Text -> ExpandedGraphNode
+    expandedGraphGetNode eg node =
+        let 
+            n = find (\x -> egNodeName x == node) (egNodes eg)
+        in
+            fromMaybe EGEmpty n
+    
+    parametrisedGraphGetParameter :: ParametrisedGraph -> Text -> Double
+    parametrisedGraphGetParameter pg node =
+        let 
+            n = find (\x -> pNodeName x == node) (pNodes pg)
+        in
+            maybe (-1) parameter n
+    
+    expandedGraphDeleteNode :: ExpandedGraph -> Text -> ExpandedGraph
+    expandedGraphDeleteNode eg node =
+        let 
+            ns = deleteBy (\x y -> egNodeName x == node) EGEmpty (egNodes eg)
+        in 
+            ExpandedGraph { egNodes = ns }
+            
+
+    parametrisedGraphInsert  :: ParametrisedGraph -> ParametrisedGraphNode -> ParametrisedGraph
+    parametrisedGraphInsert pg node =
+        ParametrisedGraph { pNodes = node : pNodes pg}
+
+    transferRedToYellow :: ExpandedGraph -> Text -> Double -> ParametrisedGraph -> (ExpandedGraph, ParametrisedGraph)
+    transferRedToYellow reds node parameter yellows =
+        let
+            exNode = expandedGraphGetNode reds node
+            parNode = ParametrisedGraphNode {
+                pNodeName = egNodeName exNode
+                , parameter = parameter
+                , pChildren = egChildren exNode
+            }
+            newYellows = parametrisedGraphInsert yellows parNode
+            newReds = expandedGraphDeleteNode reds node
+        in
+            (newReds, newYellows) 
+
     shortest :: String -> String -> IO ()
     shortest from to =
         do 
             m <- readMap
-            print (shortest' m from to)
-            print (mapToExpandedGraph m)
+            let workingData = mapToWorkingData m
+            print workingData
+            let eg = mapToExpandedGraph m
+            let (reds, yellows) = transferRedToYellow eg (pack from) 0.0 ParametrisedGraph{pNodes = []}             
+            print reds
+            print yellows
+            shortest' reds yellows ParametrisedGraph{pNodes = []} (pack from) (pack to)
 
-    shortest' :: Map -> String -> String -> [Connection]
-    shortest' map from to = 
+    shortest' :: ExpandedGraph -> ParametrisedGraph -> ParametrisedGraph -> Text -> Text -> IO()
+    shortest' reds yellows greens from to = 
         let
-            workingData = mapToWorkingData map
+            yns = pNodes yellows
+            p   = parameter (head yns)
         in
-            workingData
+            print p
 
-    -- t1 =
-    --     {"map":[{"destinations":[{"distance":100,"to":"B"},{"distance":30,"to":"C"}],"place":"A"},{"destinations":[{"distance":300,"to":"F"}],"place":"B"},{"destinations":[{"distance":200,"to":"D"}],"place":"C"},{"destinations":[{"distance":90,"to":"H"},{"distance":80,"to":"E"}],"place":"D"},{"destinations":[{"distance":30,"to":"H"},{"distance":150,"to":"G"},{"distance":50,"to":"F"}],"place":"E"},{"destinations":[{"distance":70,"to":"G"}],"place":"F"},{"destinations":[{"distance":50,"to":"H"}],"place":"G"}]}
-
-    -- t2 =
-    --     [Connection {from = "A", to = "B", distance = 100.0}
-    --     ,Connection {from = "B", to = "A", distance = 100.0}
-    --     ,Connection {from = "A", to = "C", distance = 30.0}
-    --     ,Connection {from = "C", to = "A", distance = 30.0}
-    --     ,Connection {from = "B", to = "F", distance = 300.0}
-    --     ,Connection {from = "F", to = "B", distance = 300.0}
-    --     ,Connection {from = "C", to = "D", distance = 200.0}
-    --     ,Connection {from = "D", to = "C", distance = 200.0}
-    --     ,Connection {from = "D", to = "H", distance = 90.0}
-
-    --     ,Connection {from = "H", to = "D", distance = 90.0}
-    --     ,Connection {from = "D", to = "E", distance = 80.0}
-    --     ,Connection {from = "E", to = "D", distance = 80.0}
-    --     ,Connection {from = "E", to = "H", distance = 30.0}
-    --     ,Connection {from = "H", to = "E", distance = 30.0}
-    --     ,Connection {from = "E", to = "G", distance = 150.0}
-    --     ,Connection {from = "G", to = "E", distance = 150.0}
-    --     ,Connection {from = "E", to = "F", distance = 50.0}
-    --     ,Connection {from = "F", to = "E", distance = 50.0}
-    --     ,Connection {from = "F", to = "G", distance = 70.0}
-    --     ,Connection {from = "G", to = "F", distance = 70.0}
-    --     ,Connection {from = "G", to = "H", distance = 50.0}
-    --     ,Connection {from = "H", to = "G", distance = 50.0}]
-
-    -- test = 
-    --     ExpandedGraph {nodes = [
-    --         ExpandedGraphNode {nodeName = "A", children = [Child {childNodeName = "C", childDistance = 30.0},Child {childNodeName = "B", childDistance = 100.0}]}
-    --         ,ExpandedGraphNode {nodeName = "B", children = [Child {childNodeName = "A", childDistance = 100.0},Child {childNodeName = "F", childDistance = 300.0}]}
-    --         ,ExpandedGraphNode {nodeName = "A", children = [Child {childNodeName = "C", childDistance = 30.0},Child {childNodeName = "B", childDistance = 100.0}]},
-    --         ExpandedGraphNode {nodeName = "C", children = [Child {childNodeName = "A", childDistance = 30.0},Child {childNodeName = "D", childDistance = 200.0}]},
-    --         ExpandedGraphNode {nodeName = "B", children = [Child {childNodeName = "A", childDistance = 100.0},Child {childNodeName = "F", childDistance = 300.0}]},
-    --         ExpandedGraphNode {nodeName = "F", children = [Child {childNodeName = "E", childDistance = 50.0},Child {childNodeName = "G", childDistance = 70.0},Child {childNodeName = "B", childDistance = 300.0}]},
-    --         ExpandedGraphNode {nodeName = "C", children = [Child {childNodeName = "A", childDistance = 30.0},Child {childNodeName = "D", childDistance = 200.0}]},
-    --         ExpandedGraphNode {nodeName = "D", children = [Child {childNodeName = "E", childDistance = 80.0},Child {childNodeName = "H", childDistance = 90.0},Child {childNodeName = "C", childDistance = 200.0}]},
-    --         ExpandedGraphNode {nodeName = "D", children = [Child {childNodeName = "E", childDistance = 80.0},Child {childNodeName = "H", childDistance = 90.0},Child {childNodeName = "C", childDistance = 200.0}]},
-
-    --         ExpandedGraphNode {nodeName = "H", children = [Child {childNodeName = "E", childDistance = 30.0},Child {childNodeName = "G", childDistance = 50.0},Child {childNodeName = "D", childDistance = 90.0}]},
-    --         ExpandedGraphNode {nodeName = "D", children = [Child {childNodeName = "E", childDistance = 80.0},Child {childNodeName = "H", childDistance = 90.0},Child {childNodeName = "C", childDistance = 200.0}]},
-    --         ExpandedGraphNode {nodeName = "E", children = [Child {childNodeName = "H", childDistance = 30.0},Child {childNodeName = "F", childDistance = 50.0},Child {childNodeName = "D", childDistance = 80.0},Child {childNodeName = "G", childDistance = 150.0}]},
-    --         ExpandedGraphNode {nodeName = "E", children = [Child {childNodeName = "H", childDistance = 30.0},Child {childNodeName = "F", childDistance = 50.0},Child {childNodeName = "D", childDistance = 80.0},Child {childNodeName = "G", childDistance = 150.0}]},
-    --         ExpandedGraphNode {nodeName = "H", children = [Child {childNodeName = "E", childDistance = 30.0},Child {childNodeName = "G", childDistance = 50.0},Child {childNodeName = "D", childDistance = 90.0}]},
-    --         ExpandedGraphNode {nodeName = "E", children = [Child {childNodeName = "H", childDistance = 30.0},Child {childNodeName = "F", childDistance = 50.0},Child {childNodeName = "D", childDistance = 80.0},Child {childNodeName = "G", childDistance = 150.0}]},
-    --         ExpandedGraphNode {nodeName = "G", children = [Child {childNodeName = "H", childDistance = 50.0},Child {childNodeName = "F", childDistance = 70.0},Child {childNodeName = "E", childDistance = 150.0}]}
-    --         ,ExpandedGraphNode {nodeName = "E", children = [Child {childNodeName = "H", childDistance = 30.0},Child {childNodeName = "F", childDistance = 50.0},Child {childNodeName = "D", childDistance = 80.0},Child {childNodeName = "G", childDistance = 150.0}]}
-    --         ,ExpandedGraphNode {nodeName = "F", children = [Child {childNodeName = "E", childDistance = 50.0},Child {childNodeName = "G", childDistance = 70.0},Child {childNodeName = "B", childDistance = 300.0}]},
-    --         ExpandedGraphNode {nodeName = "F", children = [Child {childNodeName = "E", childDistance = 50.0},Child {childNodeName = "G", childDistance = 70.0},Child {childNodeName = "B", childDistance = 300.0}]}
-    --         ,ExpandedGraphNode {nodeName = "G", children = [Child {childNodeName = "H", childDistance = 50.0},Child {childNodeName = "F", childDistance = 70.0},Child {childNodeName = "E", childDistance = 150.0}]}
-    --         ,ExpandedGraphNode {nodeName = "G", children = [Child {childNodeName = "H", childDistance = 50.0},Child {childNodeName = "F", childDistance = 70.0},Child {childNodeName = "E", childDistance = 150.0}]}
-    --         ,ExpandedGraphNode {nodeName = "H", children = [Child {childNodeName = "E", childDistance = 30.0},Child {childNodeName = "G", childDistance = 50.0},Child {childNodeName = "D", childDistance = 90.0}]}]}
-        
+ 
