@@ -6,7 +6,7 @@ module Shortest (
 
     import Data.Aeson
     import Data.List (sortBy, nub, find, delete, deleteBy)
-    import Data.Maybe (fromMaybe)
+    import Data.Maybe (fromMaybe, isNothing)
     import Data.Ord (comparing)
     import Data.Text (Text, pack)
     import GHC.Generics hiding (from, to)
@@ -21,7 +21,7 @@ module Shortest (
     instance ToJSON Child
     instance FromJSON Child
 
-    data ExpandedGraphNode = EGEmpty | ExpandedGraphNode {
+    data ExpandedGraphNode = ExpandedGraphNode {
             egNodeName :: Text, egChildren :: [Child]
         } deriving (Show, Generic)
     instance ToJSON ExpandedGraphNode
@@ -31,7 +31,7 @@ module Shortest (
     instance ToJSON ExpandedGraph
     instance FromJSON ExpandedGraph
 
-    data ParametrisedGraphNode = PEmpty | ParametrisedGraphNode {
+    data ParametrisedGraphNode = ParametrisedGraphNode {
             pNodeName :: Text, parameter :: Double, pChildren :: [Child]
         } deriving (Show, Generic)
     instance ToJSON ParametrisedGraphNode
@@ -120,16 +120,69 @@ module Shortest (
         in
             allNodes wd
 
-    -- expandedGraphGetNodeIndex :: ExpandedGraph -> Text -> Maybe Int
-    -- expandedGraphGetNodeIndex eg node =
-    --     find (\x -> egNodeName x == node) eg
-    
     expandedGraphGetNode :: ExpandedGraph -> Text -> ExpandedGraphNode
     expandedGraphGetNode eg node =
         let 
             n = find (\x -> egNodeName x == node) (egNodes eg)
         in
-            fromMaybe EGEmpty n
+            fromMaybe ExpandedGraphNode {
+                    egNodeName = pack "Empty", egChildren = []
+                }
+                n
+    
+    expandedGraphGetNodeChildren :: ExpandedGraph -> Text -> Maybe [Child]
+    expandedGraphGetNodeChildren eg node =
+        let
+            n = expandedGraphGetNode eg node
+        in
+            if egNodeName n == pack "Empty"
+            then
+                Nothing
+            else
+                Just (egChildren n)
+    
+    expandedGraphGetClosestToNode :: ExpandedGraph -> Text -> Maybe Child
+    expandedGraphGetClosestToNode eg node =
+        let
+            n = expandedGraphGetNode eg node
+        in
+            if egNodeName n == pack "Empty"
+            then
+                Nothing
+            else
+                head (egChildren n)
+    
+    parametrisedGraphGetNodeChildren :: ParametrisedGraph -> Text -> Maybe [Child]
+    parametrisedGraphGetNodeChildren pg node =
+        let
+            n = parametrisedGraphGetNode pg node
+        in
+            if pNodeName n == pack "Empty"
+            then
+                Nothing
+            else
+                Just (pChildren n)
+    
+    parametrisedGraphGetClosestToNode :: ParametrisedGraph -> Text -> Maybe Child
+    parametrisedGraphGetClosestToNode pg node =
+        let
+            n = parametrisedGraphGetNode pg node
+        in
+            if pNodeName n == pack "Empty"
+            then
+                Nothing
+            else
+                head (pChildren n)
+    
+    parametrisedGraphGetNode :: ParametrisedGraph -> Text -> ParametrisedGraphNode
+    parametrisedGraphGetNode pg node =
+        let 
+            n = find (\x -> pNodeName x == node) (pNodes pg)
+        in
+            fromMaybe ParametrisedGraphNode {
+                    pNodeName = pack "Empty", parameter = -1, pChildren = []
+                }
+                n
     
     parametrisedGraphGetParameter :: ParametrisedGraph -> Text -> Double
     parametrisedGraphGetParameter pg node =
@@ -141,11 +194,25 @@ module Shortest (
     expandedGraphDeleteNode :: ExpandedGraph -> Text -> ExpandedGraph
     expandedGraphDeleteNode eg node =
         let 
-            ns = deleteBy (\x y -> egNodeName x == node) EGEmpty (egNodes eg)
+            ns = deleteBy (\x y -> egNodeName x == node)
+                     ExpandedGraphNode {
+                         egNodeName = pack "Empty", egChildren = []
+                    }
+                    (egNodes eg)
         in 
             ExpandedGraph { egNodes = ns }
             
-
+    parametrisedGraphDeleteNode :: ParametrisedGraph -> Text -> ParametrisedGraph
+    parametrisedGraphDeleteNode pg node =
+        let 
+            ns = deleteBy (\x y -> pNodeName x == node)
+                    ParametrisedGraphNode {
+                         pNodeName = pack "Empty", parameter = -1, pChildren = []
+                    }
+                    (pNodes pg)
+        in 
+            ParametrisedGraph { pNodes = ns }
+            
     parametrisedGraphInsert  :: ParametrisedGraph -> ParametrisedGraphNode -> ParametrisedGraph
     parametrisedGraphInsert pg node =
         ParametrisedGraph { pNodes = node : pNodes pg}
@@ -154,34 +221,67 @@ module Shortest (
     transferRedToYellow reds node parameter yellows =
         let
             exNode = expandedGraphGetNode reds node
-            parNode = ParametrisedGraphNode {
-                pNodeName = egNodeName exNode
-                , parameter = parameter
-                , pChildren = egChildren exNode
-            }
-            newYellows = parametrisedGraphInsert yellows parNode
-            newReds = expandedGraphDeleteNode reds node
         in
-            (newReds, newYellows) 
+            if egNodeName exNode == pack "Empty"
+            then (reds, yellows)
+            else
+                let 
+                    parNode = ParametrisedGraphNode {
+                        pNodeName = egNodeName exNode
+                        , parameter = parameter
+                        , pChildren = egChildren exNode
+                    }
+                    newYellows = parametrisedGraphInsert yellows parNode
+                    newReds = expandedGraphDeleteNode reds node
+                in
+                    (newReds, newYellows) 
+
+    transferYellowToGreen :: ParametrisedGraph -> Text -> Double -> ParametrisedGraph -> (ParametrisedGraph, ParametrisedGraph)
+    transferYellowToGreen yellows node parameter greens =
+        let
+            exNode = parametrisedGraphGetNode yellows node
+        in
+            if pNodeName exNode == pack "Empty"
+            then (yellows, greens)
+            else
+                let 
+                    parNode = ParametrisedGraphNode {
+                        pNodeName = pNodeName exNode
+                        , parameter = parameter
+                        , pChildren = pChildren exNode
+                    }
+                    newGreens = parametrisedGraphInsert greens parNode
+                    newYellows = parametrisedGraphDeleteNode yellows node
+                in
+                    (newYellows, newGreens) 
 
     shortest :: String -> String -> IO ()
     shortest from to =
         do 
             m <- readMap
-            let workingData = mapToWorkingData m
-            print workingData
             let eg = mapToExpandedGraph m
             let (reds, yellows) = transferRedToYellow eg (pack from) 0.0 ParametrisedGraph{pNodes = []}             
-            print reds
-            print yellows
             shortest' reds yellows ParametrisedGraph{pNodes = []} (pack from) (pack to)
 
     shortest' :: ExpandedGraph -> ParametrisedGraph -> ParametrisedGraph -> Text -> Text -> IO()
     shortest' reds yellows greens from to = 
         let
-            yns = pNodes yellows
-            p   = parameter (head yns)
+            v = head (pNodes yellows)
+            children = pChildren v
+            closest = head children
+            storedDistance = parameter closest 
         in
-            print p
+            if children == []
+            then
+                error "shortest': Unexpectedly could not find children."
+            else
+                let
+                    content = fromMaybe null children
+                    closest = head content
+                    remainder = tail content
+                    (ys,gs) = transferYellowToGreen yellows from storedDistance greens
+                    (rs, ys) = transferRedToYellow reds (egNodeName closest) 
+                in
+
 
  
