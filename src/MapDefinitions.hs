@@ -7,8 +7,13 @@ module MapDefinitions (
     , Destination
     , addNodeToMap
     , deleteNodeFromMap
+    , destinations
+    , distance
     , getMapFromFile
     , getPlacesFromFile
+    , map
+    , place
+    , to
     , readMap
     , removeMap
     , saveMap
@@ -21,11 +26,10 @@ where
     import Data.Aeson
     import Data.Aeson.Types
     import Data.Either.Unwrap (isLeft, isRight, fromLeft, fromRight)
-        -- import Data.HashMap.Strict
     import Data.Text (Text)
     import qualified Data.ByteString.Lazy as DBSL
     import qualified Data.ByteString.Lazy.Char8 as DBSLC8
-    import GHC.Generics
+    import GHC.Generics hiding (to)
     import Prelude hiding (catch, map)
     import System.Directory
     import System.IO.Error hiding (catch)
@@ -41,11 +45,6 @@ where
     instance ToJSON Destination
     instance FromJSON Destination
 
-    -- data Connection = Connection {
-    --     destination :: !Text,
-    --     distance :: Double
-    -- }
-
     data Place = Place {
         place :: !Text,
         destinations :: [Destination]
@@ -53,42 +52,11 @@ where
     instance ToJSON Place
     instance FromJSON Place
 
-    -- instance FromJSON [Place] where
-    --     parseJSON x =
-    --       parseJSON x >>= mapM parsePlace . toList
-      
-    -- parsePlace :: (String, Value) -> Parser Entry
-    -- parsePlace (p, v) =
-    --     withObject "entry body" (\ o ->
-    --         Place p <$> o .: "connections")
-    --         v
-      
-        
     data Map = Map {
         map :: [Place]
     } deriving (Generic, Show)
     instance ToJSON Map
     instance FromJSON Map
-    
-    -- data Entry = Entry
-    -- { id :: String
-    -- , name :: String
-    -- , location :: String
-    -- }
-    -- deriving Show
-  
-    -- data Place = Place {
-    --     place :: !Text,
-    --     destinations :: [Destination]
-    --  } deriving (Generic, Show)
-    -- instance ToJSON Place
-    -- instance FromJSON Place
-
-    -- data Map = Map {
-    --     map :: [Place]
-    -- } deriving (Generic, Show)
-    -- instance ToJSON Map
-    -- instance FromJSON Map
     
     systemMapFile :: String
     systemMapFile = "./SD_CumulativeSystemMapfile.json"
@@ -116,7 +84,7 @@ where
     getPlacesAST (Right m) =
         do
             putStrLn "sd: getPlacesAST: Extracting places AST: "
-            let placesAST = MapDefinitions.map m
+            let placesAST = map m
             return placesAST
                 
     saveMap :: Map -> IO ()
