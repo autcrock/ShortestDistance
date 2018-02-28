@@ -150,7 +150,7 @@ module Shortest (
             then
                 Nothing
             else
-                head (egChildren n)
+                Just (head (egChildren n))
     
     parametrisedGraphGetNodeChildren :: ParametrisedGraph -> Text -> Maybe [Child]
     parametrisedGraphGetNodeChildren pg node =
@@ -172,7 +172,7 @@ module Shortest (
             then
                 Nothing
             else
-                head (pChildren n)
+                Just (head (pChildren n))
     
     parametrisedGraphGetNode :: ParametrisedGraph -> Text -> ParametrisedGraphNode
     parametrisedGraphGetNode pg node =
@@ -269,19 +269,21 @@ module Shortest (
             v = head (pNodes yellows)
             children = pChildren v
             closest = head children
-            storedDistance = parameter closest 
+            storedDistance = childDistance closest 
         in
-            if children == []
+            if null children
             then
                 error "shortest': Unexpectedly could not find children."
             else
                 let
-                    content = fromMaybe null children
-                    closest = head content
-                    remainder = tail content
+                    -- content = fromMaybe null children
+                    -- closest = head content
+                    -- remainder = tail content
                     (ys,gs) = transferYellowToGreen yellows from storedDistance greens
-                    (rs, ys) = transferRedToYellow reds (egNodeName closest) 
+--                    (rs, ys) = transferRedToYellow reds (egNodeName closest) 
                 in
-
-
- 
+                    do  print "==================="
+                        print ("ys = " ++ show ys)
+                        print "==================="
+                        print ("gs = " ++ show gs)
+                        print "==================="
