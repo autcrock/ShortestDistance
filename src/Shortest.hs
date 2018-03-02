@@ -17,12 +17,12 @@ module Shortest (
 
     data Connection = Connection { from :: Text, to :: Text, distance :: Double } deriving (Show)
     
-    data Child = Child { childName :: Text, childDistance :: Double} deriving (Show, Generic)
-    instance ToJSON Child
-    instance FromJSON Child
+    data Neighbour = Neighbour { neighbour :: Text, howFar :: Double} deriving (Show, Generic)
+    instance ToJSON Neighbour
+    instance FromJSON Neighbour
 
     data Vertex = Vertex {
-            vertexName :: Text, value :: Double, neighbours :: [Child]
+            vertex :: Text, accumulatedDistance :: Double, neighbours :: [Neighbour]
         } deriving (Show, Generic)
     instance ToJSON Vertex
     instance FromJSON Vertex
@@ -31,41 +31,40 @@ module Shortest (
     instance ToJSON Graph
     instance FromJSON Graph
 
-    sortByDistance :: [Child] -> [Child]
-    sortByDistance = sortBy (comparing childDistance)
+    sortByDistance :: [Neighbour] -> [Neighbour]
+    sortByDistance = sortBy (comparing howFar)
 
     getVertexNames :: [Connection] -> [Text]
     getVertexNames = nub . Prelude.map from
 
     pullVertex :: Text -> [Connection] -> Double -> Vertex
-    pullVertex vertexName cs value =
+    pullVertex vertex cs accumulatedDistance =
         let
-            rawVertices = filter (\x -> from x == vertexName) cs
-            neighbours = Prelude.map (\x -> Child {
-                 childName = Shortest.to x
-                 , Shortest.childDistance = Shortest.distance x
+            rawVertices = filter (\x -> from x == vertex) cs
+            neighbours = Prelude.map (\x -> Neighbour {
+                 neighbour = Shortest.to x
+                 , Shortest.howFar = Shortest.distance x
                  }) rawVertices
         in
             Vertex {
-                vertexName = vertexName
-                , value = value
+                vertex = vertex
+                , accumulatedDistance = accumulatedDistance
                 , neighbours = sortByDistance neighbours
                 }
 
     makeInfinity :: Double
     makeInfinity = read "Infinity" ::Double
 
-    allVertices :: [Connection] -> Graph
-    allVertices cs =
+    connectionsToGraph :: [Connection] -> Graph
+    connectionsToGraph cs =
         let
             infinity = makeInfinity
-            vertexNames = getVertexNames cs
-            vertices = [ pullVertex x cs infinity | x <- vertexNames]
+            vertices = getVertexNames cs
         in
-            Graph {vertices = vertices}
+            Graph {vertices = [ pullVertex x cs infinity | x <- vertices ]}
     
-    insertPlaceWD :: Place -> [Connection] -> [Connection]
-    insertPlaceWD place connections =
+    insertPlaceInConnections :: Place -> [Connection] -> [Connection]
+    insertPlaceInConnections place connections =
         connections ++ expandPlace place
         
     expandPlace :: Place -> [Connection]
@@ -107,19 +106,19 @@ module Shortest (
     
     mapToConnections' :: [Place] -> [Connection] -> [Connection]
     mapToConnections' [] done = done
-    mapToConnections' [place] done  = insertPlaceWD place done
+    mapToConnections' [place] done  = insertPlaceInConnections place done
     mapToConnections' (place : places) done =
         mapToConnections' [place] done ++ mapToConnections' places done
 
     mapToGraph :: Map -> Graph
     mapToGraph m =
         let
-            wd = mapToConnections m
+            connections = mapToConnections m
         in
-            allVertices wd
+            connectionsToGraph connections
 
-    graphGetVertexChildren :: Graph -> Text -> Maybe [Child]
-    graphGetVertexChildren pg vertex = 
+    graphGetVertexNeighbours :: Graph -> Text -> Maybe [Neighbour]
+    graphGetVertexNeighbours pg vertex = 
         let
             n = graphGetVertex pg vertex
         in
@@ -129,7 +128,7 @@ module Shortest (
             else
                 Just (neighbours $ fromJust n)
     
-    graphGetClosestToVertex :: Graph -> Text -> Maybe Child
+    graphGetClosestToVertex :: Graph -> Text -> Maybe Neighbour
     graphGetClosestToVertex pg vertex =
         let
             n = graphGetVertex pg vertex
@@ -141,10 +140,10 @@ module Shortest (
                 Just (head (neighbours $ fromJust n))
     
     graphGetVertex :: Graph -> Text -> Maybe Vertex
-    graphGetVertex pg vertex = find (\x -> vertexName x == vertex) (vertices pg)
+    graphGetVertex pg v = find (\x -> vertex x == v) (vertices pg)
     
-    graphGetParameter :: Graph -> Text -> Maybe Double
-    graphGetParameter pg vertex =
+    graphGetAccumulatedDistance :: Graph -> Text -> Maybe Double
+    graphGetAccumulatedDistance pg vertex =
         let
             n = graphGetVertex pg vertex
         in
@@ -152,12 +151,12 @@ module Shortest (
             then
                 Nothing
             else
-                Just (value $ fromJust n)
+                Just (accumulatedDistance $ fromJust n)
     
     graphDeleteVertex :: Graph -> Vertex -> Graph
-    graphDeleteVertex pg vertex =
+    graphDeleteVertex pg v =
         let 
-            vs = deleteBy (\x y -> vertexName x == vertexName vertex) vertex (vertices pg)
+            vs = deleteBy (\x _ -> vertex x == vertex v) v (vertices pg)
         in 
             Graph { vertices = vs }
             
@@ -165,8 +164,8 @@ module Shortest (
     graphInsert pg vertex =
         Graph { vertices = vertex : vertices pg}
 
-    transferVertexUpdatingParameter :: Graph -> Text -> Double -> Graph -> (Graph, Graph)
-    transferVertexUpdatingParameter graph1 vName value_in graph2 =
+    transferVertexUpdatingAccumulatedDistance :: Graph -> Text -> Double -> Graph -> (Graph, Graph)
+    transferVertexUpdatingAccumulatedDistance graph1 vName accumulatedDistance_in graph2 =
         let
             txVertex = graphGetVertex graph1 vName
         in
@@ -177,8 +176,8 @@ module Shortest (
                     txV = fromJust txVertex
 
                     parVertex = Vertex {
-                        vertexName = vertexName txV
-                        , value = value_in
+                        vertex = vertex txV
+                        , accumulatedDistance = accumulatedDistance_in
                         , neighbours = neighbours txV
                     }
                     newGraph2 = graphInsert graph2 parVertex
@@ -207,7 +206,7 @@ module Shortest (
             m <- readMap
             let pg = mapToGraph m
             let (reds, yellows) =
-                    transferVertexUpdatingParameter pg (pack from) 0.0 Graph{vertices = []}
+                    transferVertexUpdatingAccumulatedDistance pg (pack from) 0.0 Graph{vertices = []}
             let greens = Graph{vertices = []}
             shortest' reds yellows greens (pack from) (pack to)
 
@@ -227,11 +226,11 @@ module Shortest (
                     -- remainder = tail content
 --                    closest = head ns
                     closest = graphGetClosestToVertex yellows from
-                    storedDistance = childDistance $ fromJust closest 
+                    storedDistance = howFar $ fromJust closest 
 --                    when isNothing closest $ error ("shortest': Unexpectedly found no closest vertex")
-                    closestVertexName = childName $ fromJust closest
-                    (ys1, gs1) = transferVertexUpdatingParameter yellows from storedDistance greens
-                    (rs2, ys2) = transferVertexUpdatingParameter reds closestVertexName 0 yellows
+                    closestVertexName = neighbour $ fromJust closest
+                    (ys1, gs1) = transferVertexUpdatingAccumulatedDistance yellows from storedDistance greens
+                    (rs2, ys2) = transferVertexUpdatingAccumulatedDistance reds closestVertexName 0 yellows
                 in
                     do
                         print "==================="
