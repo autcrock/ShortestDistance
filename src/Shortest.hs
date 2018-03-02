@@ -96,25 +96,25 @@ module Shortest (
             Shortest.distance = MapDefinitions.distance d }]
         ++ expandPlace' placeName destinations connections
 
-    mapToWorkingData :: Map -> [Connection]
-    mapToWorkingData map =
+    mapToConnections :: Map -> [Connection]
+    mapToConnections map =
         let
             places = MapDefinitions.map map
         in
             if null places
                 then []
-                else mapToWorkingData' places []
+                else mapToConnections' places []
     
-    mapToWorkingData' :: [Place] -> [Connection] -> [Connection]
-    mapToWorkingData' [] done = done
-    mapToWorkingData' [place] done  = insertPlaceWD place done
-    mapToWorkingData' (place : places) done =
-        mapToWorkingData' [place] done ++ mapToWorkingData' places done
+    mapToConnections' :: [Place] -> [Connection] -> [Connection]
+    mapToConnections' [] done = done
+    mapToConnections' [place] done  = insertPlaceWD place done
+    mapToConnections' (place : places) done =
+        mapToConnections' [place] done ++ mapToConnections' places done
 
     mapToGraph :: Map -> Graph
     mapToGraph m =
         let
-            wd = mapToWorkingData m
+            wd = mapToConnections m
         in
             allVertices wd
 
