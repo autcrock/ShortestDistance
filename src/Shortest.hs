@@ -17,52 +17,52 @@ module Shortest (
 
     data Connection = Connection { from :: Text, to :: Text, distance :: Double } deriving (Show)
     
-    data Child = Child { childNodeName :: Text, childDistance :: Double} deriving (Show, Generic)
+    data Child = Child { childName :: Text, childDistance :: Double} deriving (Show, Generic)
     instance ToJSON Child
     instance FromJSON Child
 
-    data ParametrisedGraphNode = ParametrisedGraphNode {
-            pNodeName :: Text, parameter :: Double, pChildren :: [Child]
+    data Vertex = Vertex {
+            vertexName :: Text, value :: Double, neighbours :: [Child]
         } deriving (Show, Generic)
-    instance ToJSON ParametrisedGraphNode
-    instance FromJSON ParametrisedGraphNode
+    instance ToJSON Vertex
+    instance FromJSON Vertex
 
-    data ParametrisedGraph = ParametrisedGraph {pNodes :: [ParametrisedGraphNode]} deriving (Show, Generic)
-    instance ToJSON ParametrisedGraph
-    instance FromJSON ParametrisedGraph
+    data Graph = Graph {vertices :: [Vertex]} deriving (Show, Generic)
+    instance ToJSON Graph
+    instance FromJSON Graph
 
     sortByDistance :: [Child] -> [Child]
     sortByDistance = sortBy (comparing childDistance)
 
-    getNodeNames :: [Connection] -> [Text]
-    getNodeNames = nub . Prelude.map from
+    getVertexNames :: [Connection] -> [Text]
+    getVertexNames = nub . Prelude.map from
 
-    pullNode :: Text -> [Connection] -> Double -> ParametrisedGraphNode
-    pullNode nodeName cs parameterValue =
+    pullVertex :: Text -> [Connection] -> Double -> Vertex
+    pullVertex vertexName cs value =
         let
-            rawNodes = filter (\x -> from x == nodeName) cs
-            children = Prelude.map (\x -> Child {
-                 childNodeName = Shortest.to x
+            rawVertices = filter (\x -> from x == vertexName) cs
+            neighbours = Prelude.map (\x -> Child {
+                 childName = Shortest.to x
                  , Shortest.childDistance = Shortest.distance x
-                 }) rawNodes
+                 }) rawVertices
         in
-            ParametrisedGraphNode {
-                pNodeName = nodeName
-                , parameter = parameterValue
-                , pChildren = sortByDistance children
+            Vertex {
+                vertexName = vertexName
+                , value = value
+                , neighbours = sortByDistance neighbours
                 }
 
     makeInfinity :: Double
     makeInfinity = read "Infinity" ::Double
 
-    allNodes :: [Connection] -> ParametrisedGraph
-    allNodes cs =
+    allVertices :: [Connection] -> Graph
+    allVertices cs =
         let
             infinity = makeInfinity
-            nodeNames = getNodeNames cs
-            nodes = [ pullNode x cs infinity | x <- nodeNames]
+            vertexNames = getVertexNames cs
+            vertices = [ pullVertex x cs infinity | x <- vertexNames]
         in
-            ParametrisedGraph {pNodes = nodes}
+            Graph {vertices = vertices}
     
     insertPlaceWD :: Place -> [Connection] -> [Connection]
     insertPlaceWD place connections =
@@ -111,93 +111,93 @@ module Shortest (
     mapToWorkingData' (place : places) done =
         mapToWorkingData' [place] done ++ mapToWorkingData' places done
 
-    mapToParametrisedGraph :: Map -> ParametrisedGraph
-    mapToParametrisedGraph m =
+    mapToGraph :: Map -> Graph
+    mapToGraph m =
         let
             wd = mapToWorkingData m
         in
-            allNodes wd
+            allVertices wd
 
-    parametrisedGraphGetNodeChildren :: ParametrisedGraph -> Text -> Maybe [Child]
-    parametrisedGraphGetNodeChildren pg node = 
+    graphGetVertexChildren :: Graph -> Text -> Maybe [Child]
+    graphGetVertexChildren pg vertex = 
         let
-            n = parametrisedGraphGetNode pg node
+            n = graphGetVertex pg vertex
         in
             if isNothing n
             then
                 Nothing
             else
-                Just (pChildren $ fromJust n)
+                Just (neighbours $ fromJust n)
     
-    parametrisedGraphGetClosestToNode :: ParametrisedGraph -> Text -> Maybe Child
-    parametrisedGraphGetClosestToNode pg node =
+    graphGetClosestToVertex :: Graph -> Text -> Maybe Child
+    graphGetClosestToVertex pg vertex =
         let
-            n = parametrisedGraphGetNode pg node
+            n = graphGetVertex pg vertex
         in
             if isNothing n
             then
                 Nothing
             else
-                Just (head (pChildren $ fromJust n))
+                Just (head (neighbours $ fromJust n))
     
-    parametrisedGraphGetNode :: ParametrisedGraph -> Text -> Maybe ParametrisedGraphNode
-    parametrisedGraphGetNode pg node = find (\x -> pNodeName x == node) (pNodes pg)
+    graphGetVertex :: Graph -> Text -> Maybe Vertex
+    graphGetVertex pg vertex = find (\x -> vertexName x == vertex) (vertices pg)
     
-    parametrisedGraphGetParameter :: ParametrisedGraph -> Text -> Maybe Double
-    parametrisedGraphGetParameter pg node =
+    graphGetParameter :: Graph -> Text -> Maybe Double
+    graphGetParameter pg vertex =
         let
-            n = parametrisedGraphGetNode pg node
+            n = graphGetVertex pg vertex
         in
             if isNothing n
             then
                 Nothing
             else
-                Just (parameter $ fromJust n)
+                Just (value $ fromJust n)
     
-    parametrisedGraphDeleteNode :: ParametrisedGraph -> ParametrisedGraphNode -> ParametrisedGraph
-    parametrisedGraphDeleteNode pg node =
+    graphDeleteVertex :: Graph -> Vertex -> Graph
+    graphDeleteVertex pg vertex =
         let 
-            ns = deleteBy (\x y -> pNodeName x == pNodeName node) node (pNodes pg)
+            vs = deleteBy (\x y -> vertexName x == vertexName vertex) vertex (vertices pg)
         in 
-            ParametrisedGraph { pNodes = ns }
+            Graph { vertices = vs }
             
-    parametrisedGraphInsert  :: ParametrisedGraph -> ParametrisedGraphNode -> ParametrisedGraph
-    parametrisedGraphInsert pg node =
-        ParametrisedGraph { pNodes = node : pNodes pg}
+    graphInsert  :: Graph -> Vertex -> Graph
+    graphInsert pg vertex =
+        Graph { vertices = vertex : vertices pg}
 
-    transferNodeUpdatingParameter :: ParametrisedGraph -> Text -> Double -> ParametrisedGraph -> (ParametrisedGraph, ParametrisedGraph)
-    transferNodeUpdatingParameter graph1 nodeName parameter_in graph2 =
+    transferVertexUpdatingParameter :: Graph -> Text -> Double -> Graph -> (Graph, Graph)
+    transferVertexUpdatingParameter graph1 vName value_in graph2 =
         let
-            txNode = parametrisedGraphGetNode graph1 nodeName
+            txVertex = graphGetVertex graph1 vName
         in
-            if isNothing txNode
+            if isNothing txVertex
             then (graph1, graph2)
             else
                 let 
-                    txN = fromJust txNode
+                    txV = fromJust txVertex
 
-                    parNode = ParametrisedGraphNode {
-                        pNodeName = pNodeName txN
-                        , parameter = parameter_in
-                        , pChildren = pChildren txN
+                    parVertex = Vertex {
+                        vertexName = vertexName txV
+                        , value = value_in
+                        , neighbours = neighbours txV
                     }
-                    newGraph2 = parametrisedGraphInsert graph2 parNode
-                    newGraph1 = parametrisedGraphDeleteNode graph1 txN
+                    newGraph2 = graphInsert graph2 parVertex
+                    newGraph1 = graphDeleteVertex graph1 txV
                 in
                     (newGraph1, newGraph2) 
 
-    transferNode :: ParametrisedGraph -> Text -> ParametrisedGraph -> (ParametrisedGraph, ParametrisedGraph)
-    transferNode graph1 nodeName graph2 =
+    transferVertex :: Graph -> Text -> Graph -> (Graph, Graph)
+    transferVertex graph1 vName graph2 =
         let
-            txNode = parametrisedGraphGetNode graph1 nodeName
+            txVertex = graphGetVertex graph1 vName
         in
-            if isNothing txNode
+            if isNothing txVertex
             then (graph1, graph2)
             else
                 let 
-                    txN = fromJust txNode
-                    newGraph2 = parametrisedGraphInsert graph2 txN
-                    newGraph1 = parametrisedGraphDeleteNode graph1 txN
+                    txN = fromJust txVertex
+                    newGraph2 = graphInsert graph2 txN
+                    newGraph1 = graphDeleteVertex graph1 txN
                 in
                     (newGraph1, newGraph2) 
 
@@ -205,33 +205,33 @@ module Shortest (
     shortest from to =
         do 
             m <- readMap
-            let pg = mapToParametrisedGraph m
+            let pg = mapToGraph m
             let (reds, yellows) =
-                    transferNodeUpdatingParameter pg (pack from) 0.0 ParametrisedGraph{pNodes = []}
-            let greens = ParametrisedGraph{pNodes = []}
+                    transferVertexUpdatingParameter pg (pack from) 0.0 Graph{vertices = []}
+            let greens = Graph{vertices = []}
             shortest' reds yellows greens (pack from) (pack to)
 
-    shortest' :: ParametrisedGraph -> ParametrisedGraph -> ParametrisedGraph -> Text -> Text -> IO()
+    shortest' :: Graph -> Graph -> Graph -> Text -> Text -> IO()
     shortest' reds yellows greens from to = 
         let
-            v = head (pNodes yellows)
-            children = pChildren v
-            closest = head children
-            storedDistance = childDistance closest 
+            v = head (vertices yellows)
+            vs = neighbours v
         in
-            if null children
+            if null vs
             then
-                error "shortest': Unexpectedly could not find children."
+                error "shortest': Unexpectedly could not find neighbours."
             else
                 let
-                    -- content = fromMaybe null children
+                    -- content = fromMaybe null neighbours
                     -- closest = head content
                     -- remainder = tail content
-                    closest1 = parametrisedGraphGetClosestToNode yellows from
---                    when isNothing closest $ error ("shortest': Unexpectedly found no closest node")
-                    closestNodeName = childNodeName $ fromJust closest1
-                    (ys1, gs1) = transferNodeUpdatingParameter yellows from storedDistance greens
-                    (rs2, ys2) = transferNodeUpdatingParameter reds closestNodeName 0 yellows
+--                    closest = head ns
+                    closest = graphGetClosestToVertex yellows from
+                    storedDistance = childDistance $ fromJust closest 
+--                    when isNothing closest $ error ("shortest': Unexpectedly found no closest vertex")
+                    closestVertexName = childName $ fromJust closest
+                    (ys1, gs1) = transferVertexUpdatingParameter yellows from storedDistance greens
+                    (rs2, ys2) = transferVertexUpdatingParameter reds closestVertexName 0 yellows
                 in
                     do
                         print "==================="
@@ -240,6 +240,8 @@ module Shortest (
                         print ("yellows = " ++ show yellows)
                         print "==================="
                         print ("greens = " ++ show greens)
+                        print "==================="
+                        print ("closest vertex = " ++ show closestVertexName)
                         print "==================="
                         print ("ys1 = " ++ show ys1)
                         print "==================="
