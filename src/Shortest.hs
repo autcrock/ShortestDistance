@@ -119,24 +119,23 @@ module Shortest (
 
     graphGetVertexNeighbours :: Graph -> Text -> Maybe [Neighbour]
     graphGetVertexNeighbours pg vertex = 
-        do
-            v <- graphGetVertex pg vertex
-            return $ neighbours v
+        fmap neighbours (graphGetVertex pg vertex)
+        -- graphGetVertex pg vertex >>= return . neighbours
+
+        -- do
+        --     v <- graphGetVertex pg vertex
+        --     return $ neighbours v
     
     graphGetClosestToVertex :: Graph -> Text -> Maybe Neighbour
     graphGetClosestToVertex pg vertex =
-        do
-            vs <- graphGetVertexNeighbours pg vertex
-            return $ head vs 
+        fmap head (graphGetVertexNeighbours pg vertex)
     
     graphGetVertex :: Graph -> Text -> Maybe Vertex
     graphGetVertex pg v = find (\x -> vertex x == v) (vertices pg)
     
     graphGetAccumulatedDistance :: Graph -> Text -> Maybe Double
     graphGetAccumulatedDistance pg vertex =
-        do 
-            v <- graphGetVertex pg vertex
-            return $ accumulatedDistance v
+        fmap accumulatedDistance (graphGetVertex pg vertex)
 
     graphDeleteVertex :: Graph -> Vertex -> Graph
     graphDeleteVertex pg v =
