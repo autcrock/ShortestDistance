@@ -43,7 +43,7 @@ module Shortest (
             rawVertices = filter (\x -> from x == vertex) cs
             neighbours = Prelude.map (\x -> Neighbour {
                  neighbour = Shortest.to x
-                 , Shortest.howFar = Shortest.distance x
+                 , howFar = Shortest.distance x
                  }) rawVertices
         in
             Vertex {
@@ -119,40 +119,25 @@ module Shortest (
 
     graphGetVertexNeighbours :: Graph -> Text -> Maybe [Neighbour]
     graphGetVertexNeighbours pg vertex = 
-        let
-            n = graphGetVertex pg vertex
-        in
-            if isNothing n
-            then
-                Nothing
-            else
-                Just (neighbours $ fromJust n)
+        do
+            v <- graphGetVertex pg vertex
+            return $ neighbours v
     
     graphGetClosestToVertex :: Graph -> Text -> Maybe Neighbour
     graphGetClosestToVertex pg vertex =
-        let
-            n = graphGetVertex pg vertex
-        in
-            if isNothing n
-            then
-                Nothing
-            else
-                Just (head (neighbours $ fromJust n))
+        do
+            vs <- graphGetVertexNeighbours pg vertex
+            return $ head vs 
     
     graphGetVertex :: Graph -> Text -> Maybe Vertex
     graphGetVertex pg v = find (\x -> vertex x == v) (vertices pg)
     
     graphGetAccumulatedDistance :: Graph -> Text -> Maybe Double
     graphGetAccumulatedDistance pg vertex =
-        let
-            n = graphGetVertex pg vertex
-        in
-            if isNothing n
-            then
-                Nothing
-            else
-                Just (accumulatedDistance $ fromJust n)
-    
+        do 
+            v <- graphGetVertex pg vertex
+            return $ accumulatedDistance v
+
     graphDeleteVertex :: Graph -> Vertex -> Graph
     graphDeleteVertex pg v =
         let 
