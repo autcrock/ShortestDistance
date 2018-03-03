@@ -129,27 +129,46 @@ module Shortest (
     graphGetClosestToVertex :: Graph -> Text -> Maybe Neighbour
     graphGetClosestToVertex pg vertex =
         fmap head (graphGetVertexNeighbours pg vertex)
-    
+
+    getVertex :: [Vertex] -> Text -> Maybe Vertex
+    getVertex vs vName =
+        find (\x -> vertex x == vName) vs
+
     graphGetVertex :: Graph -> Text -> Maybe Vertex
-    graphGetVertex pg v = find (\x -> vertex x == v) (vertices pg)
+    graphGetVertex pg = getVertex (vertices pg)
     
     graphGetAccumulatedDistance :: Graph -> Text -> Maybe Double
     graphGetAccumulatedDistance pg vertex =
         fmap accumulatedDistance (graphGetVertex pg vertex)
 
+    deleteVertex :: [Vertex] -> Vertex -> [Vertex]
+    deleteVertex vs v =
+        deleteBy (\x _ -> vertex x == vertex v) v vs
+
     graphDeleteVertex :: Graph -> Vertex -> Graph
     graphDeleteVertex pg v =
         let 
-            vs = deleteBy (\x _ -> vertex x == vertex v) v (vertices pg)
+            vs = deleteVertex (vertices pg) v
         in 
             Graph { vertices = vs }
-            
-    graphInsert  :: Graph -> Vertex -> Graph
-    graphInsert pg vertex =
-        Graph { vertices = vertex : vertices pg}
+    
+    insertVertex :: [Vertex] -> Vertex -> [Vertex]
+    insertVertex vs v = v:vs
 
-    transferVertexUpdatingAccumulatedDistance :: Graph -> Text -> Double -> Graph -> (Graph, Graph)
-    transferVertexUpdatingAccumulatedDistance graph1 vName accumulatedDistance_in graph2 =
+    graphInsertVertex  :: Graph -> Vertex -> Graph
+    graphInsertVertex pg vertex =
+        Graph { vertices = insertVertex (vertices pg) vertex }
+
+    transferVerticesUpdatingAccumulatedDistance :: (Graph, Graph) -> [Text] -> Double -> (Graph, Graph)
+    transferVerticesUpdatingAccumulatedDistance (graph1, graph2) [] accumulatedDistance_in = (graph1, graph2)
+    transferVerticesUpdatingAccumulatedDistance (graph1, graph2) (vName:vNames) accumulatedDistance_in =
+        let 
+            (graph1', graph2') = transferVertexUpdatingAccumulatedDistance (graph1, graph2) vName accumulatedDistance_in
+        in
+            transferVerticesUpdatingAccumulatedDistance (graph1', graph2') vNames accumulatedDistance_in
+
+    transferVertexUpdatingAccumulatedDistance :: (Graph, Graph) -> Text -> Double -> (Graph, Graph)
+    transferVertexUpdatingAccumulatedDistance (graph1, graph2) vName accumulatedDistance_in =
         let
             txVertex = graphGetVertex graph1 vName
         in
@@ -164,33 +183,69 @@ module Shortest (
                         , accumulatedDistance = accumulatedDistance_in
                         , neighbours = neighbours txV
                     }
-                    newGraph2 = graphInsert graph2 parVertex
+                    newGraph2 = graphInsertVertex graph2 parVertex
                     newGraph1 = graphDeleteVertex graph1 txV
                 in
                     (newGraph1, newGraph2) 
 
-    transferVertex :: Graph -> Text -> Graph -> (Graph, Graph)
-    transferVertex graph1 vName graph2 =
-        let
-            txVertex = graphGetVertex graph1 vName
-        in
-            if isNothing txVertex
-            then (graph1, graph2)
-            else
-                let 
-                    txN = fromJust txVertex
-                    newGraph2 = graphInsert graph2 txN
-                    newGraph1 = graphDeleteVertex graph1 txN
-                in
-                    (newGraph1, newGraph2) 
+    -- transferVertex :: (Graph, Graph) -> Text -> (Graph, Graph)
+    -- transferVertex (graph1, graph2) vName =
+    --     let
+    --         txVertex = graphGetVertex graph1 vName
+    --     in
+    --         if isNothing txVertex
+    --         then (graph1, graph2)
+    --         else
+    --             let 
+    --                 txN = fromJust txVertex
+    --                 newGraph2 = graphInsertVertex graph2 txN
+    --                 newGraph1 = graphDeleteVertex graph1 txN
+    --             in
+    --                 (newGraph1, newGraph2) 
 
+    tellTheNeighbours :: Text -> (Graph, Graph) -> Double -> Maybe (Graph, Graph)
+    tellTheNeighbours vt (reds, yellows) accumulatedDistance_in =
+        let
+            vs = vertices reds
+            ns = graphGetVertexNeighbours reds vt
+        in 
+            if isNothing ns
+            then Nothing
+            else
+                do 
+                    let names = Prelude.map neighbour $ fromJust ns 
+                    let (reds1, yellows1) = transferVerticesUpdatingAccumulatedDistance (reds, yellows) names accumulatedDistance_in
+                    Just (reds1, yellows1)
+
+    -- tellTheNeighbours' :: Double -> [Vertex] -> [Neighbour] -> Maybe [Vertex]
+    -- tellTheNeighbours' _ [] _ = Just []
+    -- tellTheNeighbours' _ vs [] = Just vs
+    -- tellTheNeighbours' accumulatedDistance_in vs (n:ns) =
+    --     let
+    --         nName = neighbour n
+    --         v = getVertex vs nName
+    --     in 
+    --         if isNothing v
+    --         then Nothing
+    --         else
+    --             let
+    --                 v1 = fromJust v
+    --                 vs1 = deleteVertex vs v1
+    --                 vs2 = insertVertex vs Vertex {
+    --                     vertex = nName
+    --                     , accumulatedDistance = accumulatedDistance_in
+    --                     , neighbours = neighbours v1
+    --                     }
+    --             in
+    --                 tellTheNeighbours' accumulatedDistance_in vs2 ns
+    
     shortest :: String -> String -> IO ()
     shortest from to =
         do 
             m <- readMap
             let pg = mapToGraph m
             let (reds, yellows) =
-                    transferVertexUpdatingAccumulatedDistance pg (pack from) 0.0 Graph{vertices = []}
+                    transferVertexUpdatingAccumulatedDistance (pg, Graph{vertices = []}) (pack from) 0.0
             let greens = Graph{vertices = []}
             shortest' reds yellows greens (pack from) (pack to)
 
@@ -213,8 +268,8 @@ module Shortest (
                     storedDistance = howFar $ fromJust closest 
 --                    when isNothing closest $ error ("shortest': Unexpectedly found no closest vertex")
                     closestVertexName = neighbour $ fromJust closest
-                    (ys1, gs1) = transferVertexUpdatingAccumulatedDistance yellows from storedDistance greens
-                    (rs2, ys2) = transferVertexUpdatingAccumulatedDistance reds closestVertexName 0 yellows
+                    (ys1, gs1) = transferVertexUpdatingAccumulatedDistance (yellows, greens) from storedDistance
+                    -- (rs3, ys3) = transferVertexUpdatingAccumulatedDistance (reds, yellows) closestVertexName 0
                 in
                     do
                         print "==================="
@@ -230,7 +285,9 @@ module Shortest (
                         print "==================="
                         print ("gs1 = " ++ show gs1)
                         print "==================="
-                        print ("rs2 = " ++ show rs2)
+                        print ("(rs2, ys2) = " ++ (show $ tellTheNeighbours from (reds, ys1) storedDistance))
                         print "==================="
-                        print ("ys2 = " ++ show ys2)
-                        print "==================="
+                        -- print ("rs3 = " ++ show rs3)
+                        -- print "==================="
+                        -- print ("ys3 = " ++ show ys3)
+                        -- print "==================="
