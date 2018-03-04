@@ -162,9 +162,9 @@ module Shortest (
     graphInsertVertex pg vertex =
         Graph { vertices = insertVertex (vertices pg) vertex }
     
-    deleteNeighbour :: [Neighbour] -> Text -> [Neighbour]
-    deleteNeighbour ns name =
-        deleteBy (\x y -> neighbour x == y) name ns
+    deleteNeighbour :: [Neighbour] -> Neighbour -> [Neighbour]
+    deleteNeighbour ns n =
+        deleteBy (\x y -> neighbour x == neighbour y) n ns
 
     accumulateOrReplace :: Double -> Double -> AccumulateOrReplace -> Double
     accumulateOrReplace oldValue valueForConsideration accumulate =
@@ -181,20 +181,20 @@ module Shortest (
         else
            valueForConsideration
 
-    transferVerticesUpdatingAccumulatedDistance :: (Graph, Graph) -> [Text] -> Text -> Double -> AccumulateOrReplace -> (Graph, Graph)
-    transferVerticesUpdatingAccumulatedDistance (graph1, graph2) [] notThisOne distance_in accumulate =
+    transferVerticesUpdatingAccumulatedDistance :: (Graph, Graph) -> [Text] -> Double -> AccumulateOrReplace -> (Graph, Graph)
+    transferVerticesUpdatingAccumulatedDistance (graph1, graph2) [] distance_in accumulate =
         (graph1, graph2)
-    transferVerticesUpdatingAccumulatedDistance (graph1, graph2) [vName] notThisOne distance_in accumulate =
-            transferVertexUpdatingAccumulatedDistance (graph1, graph2) vName notThisOne distance_in accumulate
-    transferVerticesUpdatingAccumulatedDistance (graph1, graph2) (vName:vNames) notThisOne distance_in accumulate =
+    transferVerticesUpdatingAccumulatedDistance (graph1, graph2) [vName] distance_in accumulate =
+            transferVertexUpdatingAccumulatedDistance (graph1, graph2) vName distance_in accumulate
+    transferVerticesUpdatingAccumulatedDistance (graph1, graph2) (vName:vNames) distance_in accumulate =
         let 
             (graph1', graph2') = 
-                transferVertexUpdatingAccumulatedDistance (graph1, graph2) vName notThisOne distance_in accumulate
+                transferVertexUpdatingAccumulatedDistance (graph1, graph2) vName distance_in accumulate
         in
-                transferVerticesUpdatingAccumulatedDistance (graph1', graph2') vNames notThisOne distance_in accumulate
+                transferVerticesUpdatingAccumulatedDistance (graph1', graph2') vNames distance_in accumulate
 
-    transferVertexUpdatingAccumulatedDistance :: (Graph, Graph) -> Text -> Text -> Double -> AccumulateOrReplace -> (Graph, Graph)
-    transferVertexUpdatingAccumulatedDistance (graph1, graph2) vName notThisOne distance_in accumulate =
+    transferVertexUpdatingAccumulatedDistance :: (Graph, Graph) -> Text -> Double -> AccumulateOrReplace -> (Graph, Graph)
+    transferVertexUpdatingAccumulatedDistance (graph1, graph2) vName distance_in accumulate =
         let
             txVertex = graphGetVertex graph1 vName
         in
@@ -207,11 +207,7 @@ module Shortest (
                     v = Vertex {
                         vertex = vertex txV
                         , accumulatedDistance = accumulateOrReplace (accumulatedDistance txV) distance_in accumulate
-                        , neighbours = if notThisOne == "" 
-                                       then
-                                           neighbours txV
-                                       else
-                                         deleteNeighbour notThisOne $ neighbours txV
+                        , neighbours = neighbours txV
                     }
                     
                     newGraph2 = graphInsertVertex graph2 v
@@ -219,14 +215,14 @@ module Shortest (
                 in
                     (newGraph1, newGraph2) 
 
-    tellTheNeighbours :: Text -> Text -> (Graph, Graph) -> [Neighbour] -> Double -> (Graph, Graph)
-    tellTheNeighbours vertexName previousName (reds, yellows) neighbours distance_in =
+    tellTheNeighbours :: Text -> (Graph, Graph) -> [Neighbour] -> Double -> (Graph, Graph)
+    tellTheNeighbours vertexName (reds, yellows) neighbours distance_in =
         let
             neighbourNames = Prelude.map neighbour neighbours
             redNeighbours = Prelude.map vertex $ mapMaybe (graphGetVertex reds) neighbourNames
             yellowNeighbours = Prelude.map vertex $ mapMaybe (graphGetVertex yellows) neighbourNames
-            (rs', ys') = transferVerticesUpdatingAccumulatedDistance (reds, yellows) redNeighbours previousName distance_in Replace
-            (_, ys'') = transferVerticesUpdatingAccumulatedDistance (ys', ys') yellowNeighbours previousName distance_in Accumulate
+            (rs', ys') = transferVerticesUpdatingAccumulatedDistance (reds, yellows) redNeighbours distance_in Replace
+            (_, ys'') = transferVerticesUpdatingAccumulatedDistance (ys', ys') yellowNeighbours distance_in Accumulate
         in 
             (rs', ys'')
 
@@ -242,7 +238,7 @@ module Shortest (
             m <- readMap
             let pg = mapToGraph m
             let (reds, yellows) =
-                    transferVertexUpdatingAccumulatedDistance (pg, Graph{vertices = []}) (pack from) "" 0.0 Replace
+                    transferVertexUpdatingAccumulatedDistance (pg, Graph{vertices = []}) (pack from) 0.0 Replace
             let greens = Graph{vertices = []}
             let distance = 
                   trace ( "shortest': rs: " ++ show (graphVertexNames reds)
@@ -264,7 +260,7 @@ module Shortest (
                 let closestDistance = howFar closest
                     closestVertexName = neighbour closest
                     nextDistance = closestDistance + currentDistance
-                    (ys1, gs1) = transferVertexUpdatingAccumulatedDistance (yellows, greens) currentVertexName "" nextDistance Replace
+                    (ys1, gs1) = transferVertexUpdatingAccumulatedDistance (yellows, greens) currentVertexName nextDistance Replace
                     neighbours = graphGetVertexNeighbours gs1 currentVertexName
                     (rs2, ys2) = tellTheNeighbours currentVertexName (reds, ys1) (fromJust neighbours) currentDistance
                 trace ( "shortest': rs: " ++ show (graphVertexNames rs2)
