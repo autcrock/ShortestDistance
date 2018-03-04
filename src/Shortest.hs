@@ -6,9 +6,10 @@ module Shortest (
 
     import Data.Aeson
     import Data.List (sortBy, nub, find, delete, deleteBy)
-    import Data.Maybe (fromJust, fromMaybe, isNothing)
+    import Data.Maybe (fromJust, fromMaybe, mapMaybe, isNothing)
     import Data.Ord (comparing)
     import Data.Text (Text, pack)
+    import Debug.Trace
     import GHC.Generics hiding (from, to)
     import MapDefinitions (
         Map, Place, Destination, place, destinations, distance, map, readMap, to
@@ -30,6 +31,8 @@ module Shortest (
     data Graph = Graph {vertices :: [Vertex]} deriving (Show, Generic)
     instance ToJSON Graph
     instance FromJSON Graph
+
+    data AccumulateOrReplace = Accumulate | Replace deriving (Eq, Show)
 
     sortByDistance :: [Neighbour] -> [Neighbour]
     sortByDistance = sortBy (comparing howFar)
@@ -143,7 +146,7 @@ module Shortest (
 
     deleteVertex :: [Vertex] -> Vertex -> [Vertex]
     deleteVertex vs v =
-        deleteBy (\x _ -> vertex x == vertex v) v vs
+        deleteBy (\x y -> vertex x == vertex y) v vs
 
     graphDeleteVertex :: Graph -> Vertex -> Graph
     graphDeleteVertex pg v =
@@ -158,17 +161,40 @@ module Shortest (
     graphInsertVertex  :: Graph -> Vertex -> Graph
     graphInsertVertex pg vertex =
         Graph { vertices = insertVertex (vertices pg) vertex }
+    
+    deleteNeighbour :: [Neighbour] -> Text -> [Neighbour]
+    deleteNeighbour ns name =
+        deleteBy (\x y -> neighbour x == y) name ns
 
-    transferVerticesUpdatingAccumulatedDistance :: (Graph, Graph) -> [Text] -> Double -> (Graph, Graph)
-    transferVerticesUpdatingAccumulatedDistance (graph1, graph2) [] accumulatedDistance_in = (graph1, graph2)
-    transferVerticesUpdatingAccumulatedDistance (graph1, graph2) (vName:vNames) accumulatedDistance_in =
+    accumulateOrReplace :: Double -> Double -> AccumulateOrReplace -> Double
+    accumulateOrReplace oldValue valueForConsideration accumulate =
+        if accumulate == Accumulate
+        then
+            let 
+                newValue = oldValue + valueForConsideration 
+            in
+                if oldValue > newValue
+                then
+                    newValue
+                else
+                    oldValue
+        else
+           valueForConsideration
+
+    transferVerticesUpdatingAccumulatedDistance :: (Graph, Graph) -> [Text] -> Text -> Double -> AccumulateOrReplace -> (Graph, Graph)
+    transferVerticesUpdatingAccumulatedDistance (graph1, graph2) [] notThisOne distance_in accumulate =
+        (graph1, graph2)
+    transferVerticesUpdatingAccumulatedDistance (graph1, graph2) [vName] notThisOne distance_in accumulate =
+            transferVertexUpdatingAccumulatedDistance (graph1, graph2) vName notThisOne distance_in accumulate
+    transferVerticesUpdatingAccumulatedDistance (graph1, graph2) (vName:vNames) notThisOne distance_in accumulate =
         let 
-            (graph1', graph2') = transferVertexUpdatingAccumulatedDistance (graph1, graph2) vName accumulatedDistance_in
+            (graph1', graph2') = 
+                transferVertexUpdatingAccumulatedDistance (graph1, graph2) vName notThisOne distance_in accumulate
         in
-            transferVerticesUpdatingAccumulatedDistance (graph1', graph2') vNames accumulatedDistance_in
+                transferVerticesUpdatingAccumulatedDistance (graph1', graph2') vNames notThisOne distance_in accumulate
 
-    transferVertexUpdatingAccumulatedDistance :: (Graph, Graph) -> Text -> Double -> (Graph, Graph)
-    transferVertexUpdatingAccumulatedDistance (graph1, graph2) vName accumulatedDistance_in =
+    transferVertexUpdatingAccumulatedDistance :: (Graph, Graph) -> Text -> Text -> Double -> AccumulateOrReplace -> (Graph, Graph)
+    transferVertexUpdatingAccumulatedDistance (graph1, graph2) vName notThisOne distance_in accumulate =
         let
             txVertex = graphGetVertex graph1 vName
         in
@@ -178,116 +204,97 @@ module Shortest (
                 let 
                     txV = fromJust txVertex
 
-                    parVertex = Vertex {
+                    v = Vertex {
                         vertex = vertex txV
-                        , accumulatedDistance = accumulatedDistance_in
-                        , neighbours = neighbours txV
+                        , accumulatedDistance = accumulateOrReplace (accumulatedDistance txV) distance_in accumulate
+                        , neighbours = if notThisOne == "" 
+                                       then
+                                           neighbours txV
+                                       else
+                                         deleteNeighbour notThisOne $ neighbours txV
                     }
-                    newGraph2 = graphInsertVertex graph2 parVertex
+                    
+                    newGraph2 = graphInsertVertex graph2 v
                     newGraph1 = graphDeleteVertex graph1 txV
                 in
                     (newGraph1, newGraph2) 
 
-    -- transferVertex :: (Graph, Graph) -> Text -> (Graph, Graph)
-    -- transferVertex (graph1, graph2) vName =
-    --     let
-    --         txVertex = graphGetVertex graph1 vName
-    --     in
-    --         if isNothing txVertex
-    --         then (graph1, graph2)
-    --         else
-    --             let 
-    --                 txN = fromJust txVertex
-    --                 newGraph2 = graphInsertVertex graph2 txN
-    --                 newGraph1 = graphDeleteVertex graph1 txN
-    --             in
-    --                 (newGraph1, newGraph2) 
-
-    tellTheNeighbours :: Text -> (Graph, Graph) -> Double -> Maybe (Graph, Graph)
-    tellTheNeighbours vt (reds, yellows) accumulatedDistance_in =
+    tellTheNeighbours :: Text -> Text -> (Graph, Graph) -> [Neighbour] -> Double -> (Graph, Graph)
+    tellTheNeighbours vertexName previousName (reds, yellows) neighbours distance_in =
         let
-            vs = vertices reds
-            ns = graphGetVertexNeighbours reds vt
+            neighbourNames = Prelude.map neighbour neighbours
+            redNeighbours = Prelude.map vertex $ mapMaybe (graphGetVertex reds) neighbourNames
+            yellowNeighbours = Prelude.map vertex $ mapMaybe (graphGetVertex yellows) neighbourNames
+            (rs', ys') = transferVerticesUpdatingAccumulatedDistance (reds, yellows) redNeighbours previousName distance_in Replace
+            (_, ys'') = transferVerticesUpdatingAccumulatedDistance (ys', ys') yellowNeighbours previousName distance_in Accumulate
         in 
-            if isNothing ns
-            then Nothing
-            else
-                do 
-                    let names = Prelude.map neighbour $ fromJust ns 
-                    let (reds1, yellows1) = transferVerticesUpdatingAccumulatedDistance (reds, yellows) names accumulatedDistance_in
-                    Just (reds1, yellows1)
+            (rs', ys'')
 
-    -- tellTheNeighbours' :: Double -> [Vertex] -> [Neighbour] -> Maybe [Vertex]
-    -- tellTheNeighbours' _ [] _ = Just []
-    -- tellTheNeighbours' _ vs [] = Just vs
-    -- tellTheNeighbours' accumulatedDistance_in vs (n:ns) =
-    --     let
-    --         nName = neighbour n
-    --         v = getVertex vs nName
-    --     in 
-    --         if isNothing v
-    --         then Nothing
-    --         else
-    --             let
-    --                 v1 = fromJust v
-    --                 vs1 = deleteVertex vs v1
-    --                 vs2 = insertVertex vs Vertex {
-    --                     vertex = nName
-    --                     , accumulatedDistance = accumulatedDistance_in
-    --                     , neighbours = neighbours v1
-    --                     }
-    --             in
-    --                 tellTheNeighbours' accumulatedDistance_in vs2 ns
-    
+    vertexNames :: [Vertex] -> [Text]
+    vertexNames = Prelude.map vertex
+
+    graphVertexNames :: Graph -> [Text]
+    graphVertexNames g = vertexNames (vertices g)
+                    
     shortest :: String -> String -> IO ()
     shortest from to =
         do 
             m <- readMap
             let pg = mapToGraph m
             let (reds, yellows) =
-                    transferVertexUpdatingAccumulatedDistance (pg, Graph{vertices = []}) (pack from) 0.0
+                    transferVertexUpdatingAccumulatedDistance (pg, Graph{vertices = []}) (pack from) "" 0.0 Replace
             let greens = Graph{vertices = []}
-            shortest' reds yellows greens (pack from) (pack to)
+            let distance = 
+                  trace ( "shortest': rs: " ++ show (graphVertexNames reds)
+                    ++ " ys: " ++ show (graphVertexNames yellows)
+                    ++ " gs: " ++ show (graphVertexNames greens)
+                    ++ " from: " ++ from ++ " to: " ++ to ++ " closest: " ++ from
+                    ++ " nextDistance: " ++ show 0 )
+                    shortest' reds yellows greens (pack from) (pack to) (pack from) 0
+            print ("Shortest distance from [" ++ from ++ "] to [" ++ to ++ "] = " ++ show distance)
 
-    shortest' :: Graph -> Graph -> Graph -> Text -> Text -> IO()
-    shortest' reds yellows greens from to = 
-        let
-            v = head (vertices yellows)
-            vs = neighbours v
-        in
-            if null vs
-            then
-                error "shortest': Unexpectedly could not find neighbours."
-            else
-                let
-                    -- content = fromMaybe null neighbours
-                    -- closest = head content
-                    -- remainder = tail content
---                    closest = head ns
-                    closest = graphGetClosestToVertex yellows from
-                    storedDistance = howFar $ fromJust closest 
---                    when isNothing closest $ error ("shortest': Unexpectedly found no closest vertex")
-                    closestVertexName = neighbour $ fromJust closest
-                    (ys1, gs1) = transferVertexUpdatingAccumulatedDistance (yellows, greens) from storedDistance
-                    -- (rs3, ys3) = transferVertexUpdatingAccumulatedDistance (reds, yellows) closestVertexName 0
-                in
-                    do
-                        print "==================="
-                        print ("reds = " ++ show reds)
-                        print "==================="
-                        print ("yellows = " ++ show yellows)
-                        print "==================="
-                        print ("greens = " ++ show greens)
-                        print "==================="
-                        print ("closest vertex = " ++ show closestVertexName)
-                        print "==================="
-                        print ("ys1 = " ++ show ys1)
-                        print "==================="
-                        print ("gs1 = " ++ show gs1)
-                        print "==================="
-                        print ("(rs2, ys2) = " ++ (show $ tellTheNeighbours from (reds, ys1) storedDistance))
-                        print "==================="
-                        -- print ("rs3 = " ++ show rs3)
-                        -- print "==================="
-                        -- print ("ys3 = " ++ show ys3)
-                        -- print "==================="
+    shortest' :: Graph -> Graph -> Graph -> Text -> Text -> Text -> Double -> Maybe Double
+    shortest' reds yellows greens fromName toName currentVertexName currentDistance = 
+        if currentVertexName == toName
+        then
+            Just currentDistance
+        else
+            do
+                closest <- graphGetClosestToVertex yellows currentVertexName
+                let closestDistance = howFar closest
+                    closestVertexName = neighbour closest
+                    nextDistance = closestDistance + currentDistance
+                    (ys1, gs1) = transferVertexUpdatingAccumulatedDistance (yellows, greens) currentVertexName "" nextDistance Replace
+                    neighbours = graphGetVertexNeighbours gs1 currentVertexName
+                    (rs2, ys2) = tellTheNeighbours currentVertexName (reds, ys1) (fromJust neighbours) currentDistance
+                trace ( "shortest': rs: " ++ show (graphVertexNames rs2)
+                         ++ " ys: " ++ show (graphVertexNames ys2)
+                         ++ " gs: " ++ show (graphVertexNames gs1)
+                         ++ " from: " ++ show fromName ++ " to: " ++ show toName ++ " closest: " ++ show closestVertexName
+                         ++ " nextDistance: " ++ show nextDistance )
+                        shortest' rs2 ys2 gs1 fromName toName closestVertexName nextDistance
+
+
+            -- in 
+            --     do
+            --         print "==================="
+            --         print ("reds = " ++ show reds)
+            --         print "==================="
+            --         print ("yellows = " ++ show yellows)
+            --         print "==================="
+            --         print ("greens = " ++ show greens)
+            --         print "==================="
+            --         print ("closest vertex = " ++ show closestVertexName)
+            --         print "==================="
+            --         print ("ys1 = " ++ show ys1)
+            --         print "==================="
+            --         print ("gs1 = " ++ show gs1)
+            --         print "==================="
+            --         print ("fromName = " ++ show fromName ++ "; closestDistance = " ++ show closestDistance)
+            --         print "==================="
+            --         print ("neighbours = " ++ show neighbours)
+            --         print "==================="
+            --         print ("rs2 = " ++ show rs2)
+            --         print "==================="
+            --         print ("ys2 = " ++ show ys2)
+            --         print "==================="
