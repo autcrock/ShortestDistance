@@ -380,7 +380,7 @@ module Shortest (
                     then (yellows, greens)
                     else trace ("transferVertexUpdatingAccumulatedDistance called by shortest': yellows: " -- ++ show (graphVertexNames yellows) ++ ", greens: " ++ show (graphVertexNames greens)
                             ++ ", neighbours:" ++ show ([]::[Neighbour]) ++ ", currentVertexName: " ++ show currentVertexName ++ ", nextDistance: " ++ show nextDistance ) $
-                            transferVertexUpdatingAccumulatedDistance (yellows, greens) [] (fromJust closestVertex) nextDistance NoCompare
+                            transferVertexUpdatingAccumulatedDistance (yellows, greens) [] (fromJust closestVertex) currentDistance NoCompare
 
                 neighbours = graphGetAdmissibleVertexNeighbours yellows' currentVertexName greens'
                 (reds', yellows'', greens'') = 
