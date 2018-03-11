@@ -15,6 +15,7 @@ module MapDefinitions (
     , place
     , to
     , readMap
+    -- , readMapFromString
     , removeMap
     , saveMap
 )
@@ -65,7 +66,7 @@ where
     getMapFromFile inputFile =
         do
             inputMapAsJSON <- DBSL.readFile inputFile
-            DBSLC8.putStrLn inputMapAsJSON
+--            DBSLC8.putStrLn inputMapAsJSON
             let inputMap = eitherDecode inputMapAsJSON :: (Either String Map)
             return inputMap
 
@@ -99,7 +100,18 @@ where
         where anyErrors e
                 | isDoesNotExistError e = return ()
                 | otherwise = throwIO e
-    
+
+    readMapFromString :: String -> Map
+    readMapFromString candidateMap =
+        let
+            eitherMap = eitherDecode (DBSLC8.pack candidateMap) :: (Either String Map)
+        in
+            if isLeft eitherMap 
+                then 
+                    Map { map = [] }
+                else
+                    fromRight eitherMap
+        
     readMap :: IO Map
     readMap =
         do
@@ -112,6 +124,7 @@ where
         else return (fromRight eitherMap)
 
     -- unimplemented spacefillers below
+
     addNodeToMap :: Map -> String -> Map
     addNodeToMap map node = map
 
