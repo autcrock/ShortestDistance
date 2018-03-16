@@ -6,6 +6,8 @@ module Lib
     , remove
     ) where
 
+import Data.Aeson (encode)
+
 import MapDefinitions (Map
             , getMapFromFile
             , addNodeToMap
@@ -49,4 +51,4 @@ shortest couldBeJSON =
     do
 --        putStrLn $ "sd: shortest input: " ++ couldBeJSON
         result <- dijkstra couldBeJSON
-        print result
+        print $ encode result
