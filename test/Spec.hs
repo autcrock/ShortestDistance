@@ -3,9 +3,28 @@ import Lib ( initialise
             , delete
             , shortest
             , remove)
--- expected :: String -> String -> Double -> Boolean
--- expected from to expectedDistance =
---     shortest from to == 
+
+import Intermediate(
+    StartEnd(..)
+    , Distance(..))
+import Shortest (dijkstra)
+import Data.Aeson (eitherDecode, encode, ToJSON, FromJSON)
+import Data.ByteString.Lazy.Char8(unpack)
+
+expected :: String -> String -> Double -> IO ()
+expected from to expectedDistance =
+    do  
+        let enced = encode StartEnd { start = from, end = to }
+--        print $ unpack enced
+        fsd <- dijkstra $ unpack enced
+        let ed = Distance {distance = expectedDistance}
+        rsd <- dijkstra $ unpack (encode StartEnd { start = to, end = from })
+        print ( "[" ++ from ++  "] to [" ++ to
+            ++ "], expected distance: [" ++ show expectedDistance
+            ++ "]. Forward: [" ++ show (distance fsd)
+            ++ "]. Reverse: [" ++ show (distance rsd)
+            ++ "]. Forward correct [" ++ show (ed == fsd)
+            ++ "]. Reverse correct [" ++ show (ed == rsd) ++ "]" )
 
 main :: IO ()
 main = 
@@ -14,77 +33,49 @@ main =
         initialise mapData
 
         putStrLn $ "Test suite running through permutations of test locations A to H " ++ mapData
-        shortest "A" "A"
-        shortest "A" "B"
-        shortest "A" "C"
-        shortest "A" "D"
-        shortest "A" "E"
-        shortest "A" "F"
-        shortest "A" "G"
-        shortest "A" "H"
+        expected "A" "A" 0
+        expected "A" "B" 100
+        expected "A" "C" 30
+        expected "A" "D" 230
+        expected "A" "E" 310
+        expected "A" "F" 360
+        expected "A" "G" 370
+        expected "A" "H" 320
 
-        shortest "B" "A"
-        shortest "B" "B"
-        shortest "B" "C"
-        shortest "B" "D"
-        shortest "B" "E"
-        shortest "B" "F"
-        shortest "B" "G"
-        shortest "B" "H"
+        expected "B" "B" 0
+        expected "B" "C" 130
+        expected "B" "D" 330
+        expected "B" "E" 350
+        expected "B" "F" 300
+        expected "B" "G" 370
+        expected "B" "H" 380
 
-        shortest "C" "A"
-        shortest "C" "B"
-        shortest "C" "C"
-        shortest "C" "D"
-        shortest "C" "E"
-        shortest "C" "F"
-        shortest "C" "G"
-        shortest "C" "H"
+        expected "C" "C" 0
+        expected "C" "D" 200
+        expected "C" "E" 280
+        expected "C" "F" 330
+        expected "C" "G" 340
+        expected "C" "H" 290
         
-        shortest "D" "A"
-        shortest "D" "B"
-        shortest "D" "C"
-        shortest "D" "D"
-        shortest "D" "E"
-        shortest "D" "F"
-        shortest "D" "G"
-        shortest "D" "H"
+        expected "D" "D" 0
+        expected "D" "E" 80
+        expected "D" "F" 130
+        expected "D" "G" 140
+        expected "D" "H" 90
 
-        shortest "E" "A"
-        shortest "E" "B"
-        shortest "E" "C"
-        shortest "E" "D"
-        shortest "E" "E"
-        shortest "E" "F"
-        shortest "E" "G"
-        shortest "E" "H"
+        expected "E" "E" 0
+        expected "E" "F" 50
+        expected "E" "G" 80
+        expected "E" "H" 30
 
-        shortest "F" "A"
-        shortest "F" "B"
-        shortest "F" "C"
-        shortest "F" "D"
-        shortest "F" "E"
-        shortest "F" "F"
-        shortest "F" "G"
-        shortest "F" "H"
+        expected "F" "F" 0
+        expected "F" "G" 70
+        expected "F" "H" 80
 
-        shortest "G" "A"
-        shortest "G" "B"
-        shortest "G" "C"
-        shortest "G" "D"
-        shortest "G" "E"
-        shortest "G" "F"
-        shortest "G" "G"
-        shortest "G" "H"
+        expected "G" "G" 0
+        expected "G" "H" 50
 
-        shortest "H" "A"
-        shortest "H" "B"
-        shortest "H" "C"
-        shortest "H" "D"
-        shortest "H" "E"
-        shortest "H" "F"
-        shortest "H" "G"
-        shortest "H" "H"
+        expected "H" "H" 0
 
 mapData :: String
 mapData = "./test/testmap2.json"

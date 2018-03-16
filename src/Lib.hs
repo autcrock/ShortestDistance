@@ -6,7 +6,6 @@ module Lib
     , remove
     ) where
 
-import Shortest (shortest)
 import MapDefinitions (Map
             , getMapFromFile
             , addNodeToMap
@@ -14,6 +13,8 @@ import MapDefinitions (Map
             , saveMap
             , removeMap)
 
+import Shortest (dijkstra)
+            
 initialise :: String -> IO ()
 initialise filename = 
     do
@@ -42,3 +43,10 @@ maybeSaveMap (Right m) =
     do
         saveMap m
         return ()
+
+shortest :: String -> IO ()
+shortest couldBeJSON =
+    do
+--        putStrLn $ "sd: shortest input: " ++ couldBeJSON
+        result <- dijkstra couldBeJSON
+        print result

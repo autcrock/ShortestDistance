@@ -1,7 +1,0 @@
-{
-    "animalcomparisons":	[
-                {"domesticcat":	{"tiger":0.05, "lion": 0.06, "fluffywhitelapdog":1.5}},
-                {"tiger":	{"lion":1.2, "etc1": 0.5}},
-                {"etc1":	{"etc2":5.6, "etc3": 4, "etc4": 5}}
-    		]
-}

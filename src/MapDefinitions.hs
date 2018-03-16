@@ -15,7 +15,6 @@ module MapDefinitions (
     , place
     , to
     , readMap
-    -- , readMapFromString
     , removeMap
     , saveMap
 )
@@ -24,8 +23,8 @@ where
 
     import Control.Exception
     import Control.Monad (when)
-    import Data.Aeson
-    import Data.Aeson.Types
+    import Data.Aeson (eitherDecode, encode, ToJSON, FromJSON)
+--    import Data.Aeson.Types
     import Data.Either.Unwrap (isLeft, isRight, fromLeft, fromRight)
     import Data.Text (Text)
     import qualified Data.ByteString.Lazy as DBSL
