@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 2f7443e3834690dbb1964edc56a28d2bf0613ba3bcdfa27a77de1df84d883195
+-- hash: f445a83e901d26161f2e399bcd5f9eba2ed063471472bedaa2e495cca0250039
 
 name:           ShortestDistance
 version:        0.1.0.0
@@ -36,7 +36,7 @@ library
     , either-unwrap
     , text
   exposed-modules:
-      Intermediate
+      Graph
       Lib
       MapDefinitions
       Shortest

@@ -12,6 +12,7 @@ import Lib ( initialise
 main :: IO ()
 main = getArgs >>= operation >>= putStr
  
+operation :: [String] -> IO b
 operation ["-h"] = usage >> exit
 operation ["--help"] = usage >> exit
 operation ["-v"] = version >> exit
@@ -28,7 +29,7 @@ operation ["-r"] = remove >> exit
 operation ["--remove"] = remove >> exit
 operation _ = usage >> exit
 
-
+usage :: IO()
 usage   = do
             putStrLn "Usage: sd [-shida] [file]"
             putStrLn "  sd [-s, --shortest] StartEnd - StartEnd is as: '{\"start\": \"A\", \"end\": \"B\"}' - Find shortest path from place A to place B which are stored in a road network file."
@@ -37,7 +38,12 @@ usage   = do
             putStrLn "  sd [-d, --delete] place - Delete this place as JSON from the system file."
             putStrLn "  sd [-a, --add] place - Add this place as JSON to the system file."
             putStrLn "  sd [-r, --remove] - Remove the system file."
-            
+
+version :: IO()
 version = putStrLn "sd Alpha 0"
-exit    = exitSuccess
-die     = exitWith (ExitFailure 1)
+
+exit :: IO a
+exit = exitSuccess
+
+die :: IO a
+die = exitWith (ExitFailure 1)

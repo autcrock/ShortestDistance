@@ -1,6 +1,6 @@
 {-# LANGUAGE DeriveGeneric #-}
 
-module Intermediate (
+module Graph (
     mapToGraph
     , readStartEndFromString
     , sortVerticesByDistance
@@ -18,19 +18,14 @@ module Intermediate (
     , Distance(..)
 ) where
 
-    import Data.Aeson (eitherDecode, encode, ToJSON, FromJSON)
+    import Data.Aeson (eitherDecode, ToJSON, FromJSON)
     import Data.ByteString.Lazy.Char8(pack)
-    import Data.Either.Unwrap (isLeft, isRight, fromLeft, fromRight)
-    import Data.List (sortBy, nub, find, delete, deleteBy)
-    import Data.Maybe (fromJust, fromMaybe, mapMaybe, isNothing)
-    import Data.Ord (comparing, min)
+    import Data.Either.Unwrap (isLeft, fromRight)
+    import Data.List (sortBy, nub, find, deleteBy)
+    import Data.Ord (comparing)
     import Data.Text (Text)
     import GHC.Generics hiding (from, to)
     import qualified MapDefinitions as MD
---     (
---        Map, Place, Destination, place, destinations, distance, map, readMap, to
---        ) 
-    import Numeric.Natural (Natural)
 
     -- Intermediate data structure
     data Connection = Connection { from :: Text, to :: Text, dist :: Double } deriving (Show)
@@ -72,18 +67,18 @@ module Intermediate (
     getVertexNames = nub . Prelude.map from
 
     pullVertex :: Text -> [Connection] -> Double -> Vertex
-    pullVertex vertex cs accumulatedDistance =
+    pullVertex vertex_in cs accumulatedDistance_in =
         let
-            rawVertices = filter (\x -> from x == vertex) cs
-            neighbours = Prelude.map (\x -> Neighbour {
+            rawVertices = filter (\x -> from x == vertex_in) cs
+            ns = Prelude.map (\x -> Neighbour {
                  neighbour = to x
                  , howFar = dist x
                  }) rawVertices
         in
             Vertex {
-                vertex = vertex
-                , accumulatedDistance = accumulatedDistance
-                , neighbours = sortNeighboursByDistance neighbours
+                vertex = vertex_in
+                , accumulatedDistance = accumulatedDistance_in
+                , neighbours = sortNeighboursByDistance ns
                 }
 
     makeInfinity :: Double
@@ -93,9 +88,9 @@ module Intermediate (
     connectionsToGraph cs =
         let
             infinity = makeInfinity
-            vertices = getVertexNames cs
+            vs = getVertexNames cs
         in
-            Graph {vertices = [ pullVertex x cs infinity | x <- vertices ]}
+            Graph {vertices = [ pullVertex x cs infinity | x <- vs ]}
     
     insertPlaceInConnections :: MD.Place -> [Connection] -> [Connection]
     insertPlaceInConnections place connections =
@@ -106,7 +101,7 @@ module Intermediate (
         expandPlace' (MD.place p) (MD.destinations p) []
 
     expandPlace' :: Text -> [MD.Destination] -> [Connection] -> [Connection]
-    expandPlace' placeName [] connections = connections
+    expandPlace' _ [] connections = connections
     expandPlace' placeName [destination] connections =
          connections
          ++ [Connection {
@@ -130,9 +125,9 @@ module Intermediate (
         ++ expandPlace' placeName destinations connections
 
     mapToConnections :: MD.Map -> [Connection]
-    mapToConnections map =
+    mapToConnections m =
         let
-            places = MD.map map
+            places = MD.map m
         in
             if null places
                 then []
@@ -163,8 +158,8 @@ module Intermediate (
                     fromRight eitherStartEnd
 
     graphGetVertexNeighbours :: Graph -> Text -> Maybe [Neighbour]
-    graphGetVertexNeighbours g vertex = 
-        fmap neighbours (graphGetVertex g vertex)
+    graphGetVertexNeighbours g v = 
+        fmap neighbours (graphGetVertex g v)
         -- graphGetVertex g vertex >>= return . neighbours
 
         -- do
@@ -215,9 +210,9 @@ module Intermediate (
                         ns <- graphGetVertexNeighbours g currentVertexName
                         return $ deleteNeighboursByName ns greenNames
     
-    graphGetClosestToVertex :: Graph -> Text -> Graph -> Maybe Neighbour
-    graphGetClosestToVertex g vertex greens =
-        fmap head (graphGetAdmissibleVertexNeighbours g vertex greens)
+    -- graphGetClosestToVertex :: Graph -> Text -> Graph -> Maybe Neighbour
+    -- graphGetClosestToVertex g v greens =
+    --     fmap head (graphGetAdmissibleVertexNeighbours g vertex greens)
 
     graphGetMinimumYellowByDistance :: Graph -> Vertex
     graphGetMinimumYellowByDistance g =
@@ -235,9 +230,9 @@ module Intermediate (
     graphGetVertex :: Graph -> Text -> Maybe Vertex
     graphGetVertex pg = getVertex (vertices pg)
     
-    graphGetAccumulatedDistance :: Graph -> Text -> Maybe Double
-    graphGetAccumulatedDistance pg vertex =
-        fmap accumulatedDistance (graphGetVertex pg vertex)
+    -- graphGetAccumulatedDistance :: Graph -> Text -> Maybe Double
+    -- graphGetAccumulatedDistance pg vertex =
+    --     fmap accumulatedDistance (graphGetVertex pg vertex)
 
     deleteVertex :: [Vertex] -> Vertex -> [Vertex]
     deleteVertex vs v =
@@ -255,6 +250,6 @@ module Intermediate (
         sortVerticesByDistance (v:vs)
 
     graphInsertVertex  :: Graph -> Vertex -> Graph
-    graphInsertVertex pg vertex =
-        Graph { vertices = insertVertex (vertices pg) vertex }
+    graphInsertVertex pg v =
+        Graph { vertices = insertVertex (vertices pg) v }
     

@@ -1,14 +1,13 @@
 import Lib ( initialise
             , add
             , delete
-            , shortest
             , remove)
 
-import Intermediate(
+import Graph(
     StartEnd(..)
     , Distance(..))
 import Shortest (dijkstra)
-import Data.Aeson (eitherDecode, encode, ToJSON, FromJSON)
+import Data.Aeson (encode)
 import Data.ByteString.Lazy.Char8(unpack)
 
 expected :: String -> String -> Double -> IO ()

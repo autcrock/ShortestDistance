@@ -22,17 +22,16 @@ module MapDefinitions (
 where
 
     import Control.Exception
-    import Control.Monad (when)
+    import Control.Monad ()
     import Data.Aeson (eitherDecode, encode, ToJSON, FromJSON)
---    import Data.Aeson.Types
-    import Data.Either.Unwrap (isLeft, isRight, fromLeft, fromRight)
+    import Data.Either.Unwrap (isLeft, fromLeft, fromRight)
     import Data.Text (Text)
     import qualified Data.ByteString.Lazy as DBSL
     import qualified Data.ByteString.Lazy.Char8 as DBSLC8
     import GHC.Generics hiding (to)
-    import Prelude hiding (catch, map)
+    import Prelude hiding (map)
     import System.Directory
-    import System.IO.Error hiding (catch)
+    import System.IO.Error
 
             
     -- The map defined for storage purposes
@@ -125,8 +124,8 @@ where
     -- unimplemented spacefillers below
 
     addNodeToMap :: Map -> String -> Map
-    addNodeToMap map node = map
+    addNodeToMap m node = m
 
     deleteNodeFromMap :: Map -> String -> Map
-    deleteNodeFromMap map node = map
+    deleteNodeFromMap m node = m
 

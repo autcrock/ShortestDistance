@@ -10,8 +10,6 @@ import Data.Aeson (encode)
 
 import MapDefinitions (Map
             , getMapFromFile
-            , addNodeToMap
-            , deleteNodeFromMap
             , saveMap
             , removeMap)
 
@@ -21,8 +19,8 @@ initialise :: String -> IO ()
 initialise filename = 
     do
         putStrLn $ "sd: initialising a map using input from [" ++ filename ++ "]."
-        map <- getMapFromFile filename
-        maybeSaveMap map
+        m <- getMapFromFile filename
+        maybeSaveMap m
 
 add :: String -> IO ()
 add couldBeJSON = putStrLn $ "sd: adding a location using putative JSON [" ++ couldBeJSON ++ "]."
