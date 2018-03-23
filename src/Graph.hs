@@ -244,10 +244,3 @@ module Graph (
     graphInsertVertex  :: Graph -> Vertex -> Graph
     graphInsertVertex pg v =
         Graph { vertices = insertVertex (vertices pg) v }
-    
-    -- add :: String -> IO ()
-    -- add candidateVertex =
-    --     do 
-    --         m <- readMap
-    --         let pg = mapToGraph m
-

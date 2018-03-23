@@ -5,8 +5,6 @@ module MapDefinitions (
       Map
     , Place
     , Destination
-    , addNodeToMap
-    , deleteNodeFromMap
     , destinations
     , distance
     , getMapFromFile
@@ -29,11 +27,10 @@ where
     import Data.Aeson (eitherDecode, encode, ToJSON, FromJSON(..))
     import Data.Either.Unwrap (isLeft, fromLeft, fromRight)
     import Data.Text (Text)
-    import Data.List (intersect)
+    import Data.List (intersect, deleteBy)
     import qualified Data.ByteString.Lazy as DBSL
     import qualified Data.ByteString.Lazy.Char8 as DBSLC8
     import GHC.Generics hiding (to)
---    import Prelude hiding (map)
     import System.Directory
     import System.IO.Error
 
@@ -124,9 +121,11 @@ where
 
     deletePlaces' :: [Text] -> [Place] -> [Place]
     deletePlaces' [] places = places
-    deletePlaces' [placeName] places = filter (\x -> place x == placeName) places
+    deletePlaces' [placeName] places =
+        let dummyPlace = Place {place = placeName, destinations = []}
+        in deleteBy (\x y -> place x == place y) dummyPlace places
     deletePlaces' (placeName:moreNames) places =
-        let nextPlaces = filter (\x -> place x == placeName) places
+        let nextPlaces = deletePlaces' [placeName] places
         in deletePlaces' moreNames nextPlaces
 
     deleteDestinations :: [Text] -> [Place] -> [Place]
@@ -138,12 +137,13 @@ where
 
     deleteDestinations' :: Text -> [Place] -> [Place]
     deleteDestinations' placeName places =
-        filter (null . destinations)
+        filter (not . null . destinations)
             (Prelude.map (deleteDestinations'' placeName) places)
 
     deleteDestinations'' :: Text -> Place -> Place
-    deleteDestinations'' placeName place_in =
-        let ds = filter (\x -> to x == placeName) $ destinations place_in
+    deleteDestinations'' destinationName place_in =
+        let destinationToDelete = Destination { to = destinationName, distance = 0}
+            ds = deleteBy (\x y -> to x == to y) destinationToDelete $ destinations place_in
         in Place {place = place place_in, destinations = ds}
 
     removeMap :: IO ()
@@ -174,12 +174,3 @@ where
             putStrLn $ "sd: readMap: " ++ fromLeft eitherMap
             return Map { MapDefinitions.map = [] })
         else return (fromRight eitherMap)
-
-    -- unimplemented spacefillers below
-
-    addNodeToMap :: Map -> String -> Map
-    addNodeToMap m node = m
-
-    deleteNodeFromMap :: Map -> String -> Map
-    deleteNodeFromMap m node = m
-

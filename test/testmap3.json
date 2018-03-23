@@ -1,0 +1,23 @@
+{
+    "map":	[
+                {
+                    "place":"I",
+                    "destinations": [
+                        {"to": "B", "distance": 10},
+                        {"to": "C", "distance": 20},
+                        {"to": "G", "distance": 50}]
+                },
+                {
+                    "place":"J",
+                    "destinations": [
+                        {"to": "K", "distance": 10}]
+                },
+                {
+                    "place":"K",
+                    "destinations": [
+                        {"to": "L", "distance": 20},
+                        {"to": "M", "distance": 50},
+                        {"to": "J", "distance": 30}]
+                }
+    		]
+}

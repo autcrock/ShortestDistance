@@ -1,5 +1,6 @@
 module Lib
     ( initialise
+    , initialiseJSON
     , add
     , delete
     , shortest
@@ -27,6 +28,13 @@ initialise filename =
         putStrLn $ "sd: initialising a map using input from [" ++ filename ++ "]."
         m <- getMapFromFile filename
         maybeSaveMap m
+
+initialiseJSON :: String -> IO ()
+initialiseJSON couldBeJSON = 
+    do
+        putStrLn $ "sd: initialising a map using input from [" ++ couldBeJSON ++ "]."
+        let mapToSave = readMapFromString couldBeJSON
+        saveMap mapToSave
 
 add :: String -> IO ()
 add couldBeJSON = 
