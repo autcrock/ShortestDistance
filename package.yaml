@@ -26,6 +26,7 @@ dependencies:
 - directory
 - either-unwrap
 - text
+- unique
 
 library:
   source-dirs: src

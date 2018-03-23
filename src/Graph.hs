@@ -82,7 +82,7 @@ module Graph (
                 }
 
     makeInfinity :: Double
-    makeInfinity = read "Infinity" ::Double
+    makeInfinity = read "Infinity" :: Double
 
     connectionsToGraph :: [Connection] -> Graph
     connectionsToGraph cs =
@@ -210,10 +210,6 @@ module Graph (
                         ns <- graphGetVertexNeighbours g currentVertexName
                         return $ deleteNeighboursByName ns greenNames
     
-    -- graphGetClosestToVertex :: Graph -> Text -> Graph -> Maybe Neighbour
-    -- graphGetClosestToVertex g v greens =
-    --     fmap head (graphGetAdmissibleVertexNeighbours g vertex greens)
-
     graphGetMinimumYellowByDistance :: Graph -> Vertex
     graphGetMinimumYellowByDistance g =
         head (vertices g)
@@ -230,10 +226,6 @@ module Graph (
     graphGetVertex :: Graph -> Text -> Maybe Vertex
     graphGetVertex pg = getVertex (vertices pg)
     
-    -- graphGetAccumulatedDistance :: Graph -> Text -> Maybe Double
-    -- graphGetAccumulatedDistance pg vertex =
-    --     fmap accumulatedDistance (graphGetVertex pg vertex)
-
     deleteVertex :: [Vertex] -> Vertex -> [Vertex]
     deleteVertex vs v =
         deleteBy (\x y -> vertex x == vertex y) v vs
@@ -253,3 +245,9 @@ module Graph (
     graphInsertVertex pg v =
         Graph { vertices = insertVertex (vertices pg) v }
     
+    -- add :: String -> IO ()
+    -- add candidateVertex =
+    --     do 
+    --         m <- readMap
+    --         let pg = mapToGraph m
+

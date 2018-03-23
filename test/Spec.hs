@@ -9,21 +9,25 @@ import Graph(
 import Shortest (dijkstra)
 import Data.Aeson (encode)
 import Data.ByteString.Lazy.Char8(unpack)
+import Data.Foldable (foldrM)
 
-expected :: String -> String -> Double -> IO ()
-expected from to expectedDistance =
+expected :: (String, String, Double) -> IO Bool
+expected (from, to, expectedDistance) =
     do  
         let enced = encode StartEnd { start = from, end = to }
+            expectedD = Distance {distance = expectedDistance}
 --        print $ unpack enced
         fsd <- dijkstra $ unpack enced
-        let ed = Distance {distance = expectedDistance}
+        let forwardTrue = fsd == expectedD
         rsd <- dijkstra $ unpack (encode StartEnd { start = to, end = from })
+        let reverseTrue = rsd == expectedD
         print ( "[" ++ from ++  "] to [" ++ to
-            ++ "], expected distance: [" ++ show expectedDistance
+            ++ "],     , (distance: [" ++ show expectedDistance
             ++ "]. Forward: [" ++ show (distance fsd)
             ++ "]. Reverse: [" ++ show (distance rsd)
-            ++ "]. Forward correct [" ++ show (ed == fsd)
-            ++ "]. Reverse correct [" ++ show (ed == rsd) ++ "]" )
+            ++ "]. Forward correct [" ++ show forwardTrue
+            ++ "]. Reverse correct [" ++ show reverseTrue ++ "]" )
+        return (forwardTrue && reverseTrue)
 
 main :: IO ()
 main = 
@@ -32,49 +36,47 @@ main =
         initialise mapData
 
         putStrLn $ "Test suite running through permutations of test locations A to H " ++ mapData
-        expected "A" "A" 0
-        expected "A" "B" 100
-        expected "A" "C" 30
-        expected "A" "D" 230
-        expected "A" "E" 310
-        expected "A" "F" 360
-        expected "A" "G" 370
-        expected "A" "H" 320
-
-        expected "B" "B" 0
-        expected "B" "C" 130
-        expected "B" "D" 330
-        expected "B" "E" 350
-        expected "B" "F" 300
-        expected "B" "G" 370
-        expected "B" "H" 380
-
-        expected "C" "C" 0
-        expected "C" "D" 200
-        expected "C" "E" 280
-        expected "C" "F" 330
-        expected "C" "G" 340
-        expected "C" "H" 290
-        
-        expected "D" "D" 0
-        expected "D" "E" 80
-        expected "D" "F" 130
-        expected "D" "G" 140
-        expected "D" "H" 90
-
-        expected "E" "E" 0
-        expected "E" "F" 50
-        expected "E" "G" 80
-        expected "E" "H" 30
-
-        expected "F" "F" 0
-        expected "F" "G" 70
-        expected "F" "H" 80
-
-        expected "G" "G" 0
-        expected "G" "H" 50
-
-        expected "H" "H" 0
+        let dijkstraTestData =  [
+                ("A", "A", 0)
+                , ("A", "B", 100)
+                , ("A", "C", 30)
+                , ("A", "D", 230)
+                , ("A", "E", 310)
+                , ("A", "F", 360)
+                , ("A", "G", 370)
+                , ("A", "H", 320)
+                , ("B", "B", 0)
+                , ("B", "C", 130)
+                , ("B", "D", 330)
+                , ("B", "E", 350)
+                , ("B", "F", 300)
+                , ("B", "G", 370)
+                , ("B", "H", 380)
+                , ("C", "C", 0)
+                , ("C", "D", 200)
+                , ("C", "E", 280)
+                , ("C", "F", 330)
+                , ("C", "G", 340)
+                , ("C", "H", 290)
+                , ("D", "D", 0)
+                , ("D", "E", 80)
+                , ("D", "F", 130)
+                , ("D", "G", 140)
+                , ("D", "H", 90)
+                , ("E", "E", 0)
+                , ("E", "F", 50)
+                , ("E", "G", 80)
+                , ("E", "H", 30)
+                , ("F", "F", 0)
+                , ("F", "G", 70)
+                , ("F", "H", 80)
+                , ("G", "G", 0)
+                , ("G", "H", 50)
+                , ("H", "H", 0)
+                ]
+        results <- mapM expected dijkstraTestData
+        let r = and results
+        putStrLn $ "Overall result is: " ++ show r
 
 mapData :: String
 mapData = "./test/testmap2.json"

@@ -29,10 +29,6 @@ module Shortest (
     import MapDefinitions ( readMap )
     import Numeric.Natural ()
 
-    -- compareOrNot :: Double -> Double -> OptionalCompare -> Double
-    -- compareOrNot oldValue valueForConsideration compare =
-    --         oldValue + valueForConsideration 
-
     transferVerticesUpdatingAccumulatedDistance :: (Graph, Graph) -> [Neighbour] -> [Text] -> Double -> OptionalCompare -> (Graph, Graph)
     transferVerticesUpdatingAccumulatedDistance (graph1, graph2) _ [] _ _ =
         (graph1, graph2)
@@ -137,24 +133,6 @@ module Shortest (
                 transferVerticesUpdatingAccumulatedDistance (ys', ys') ns yellowNeighbourNames currentDistance Compare
         in 
             (rs', ys'')
-
-    -- vertexNames :: [Vertex] -> [Text]
-    -- vertexNames = Prelude.map vertex
-
-    -- vertexAccumulatedDistances :: [Vertex] -> [Text]
-    -- vertexAccumulatedDistances = Prelude.map accumulatedDistance
-
-    -- graphVertexNames :: Graph -> [Text]
-    -- graphVertexNames g = vertexNames (vertices g)
-
-    -- neighbourNames :: [Neighbour] -> [Text]
-    -- neighbourNames = Prelude.map neighbour
-
-    -- add :: String -> IO ()
-    -- add candidateVertex =
-    --     do 
-    --         m <- readMap
-    --         let pg = mapToGraph m
 
     dijkstra :: String -> IO Distance
     dijkstra couldBeStartEnd =

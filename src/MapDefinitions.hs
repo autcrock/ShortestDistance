@@ -11,25 +11,29 @@ module MapDefinitions (
     , distance
     , getMapFromFile
     , getPlacesFromFile
-    , map
+    , readMapFromString
+    , MapDefinitions.map
     , place
     , to
     , readMap
     , removeMap
     , saveMap
+    , insertPlaces
+    , deletePlaces
 )
 
 where
 
     import Control.Exception
     import Control.Monad ()
-    import Data.Aeson (eitherDecode, encode, ToJSON, FromJSON)
+    import Data.Aeson (eitherDecode, encode, ToJSON, FromJSON(..))
     import Data.Either.Unwrap (isLeft, fromLeft, fromRight)
     import Data.Text (Text)
+    import Data.List (intersect)
     import qualified Data.ByteString.Lazy as DBSL
     import qualified Data.ByteString.Lazy.Char8 as DBSLC8
     import GHC.Generics hiding (to)
-    import Prelude hiding (map)
+--    import Prelude hiding (map)
     import System.Directory
     import System.IO.Error
 
@@ -41,6 +45,7 @@ where
         to :: !Text,
         distance :: Double
     } deriving (Generic, Show)
+
     instance ToJSON Destination
     instance FromJSON Destination
 
@@ -64,7 +69,7 @@ where
     getMapFromFile inputFile =
         do
             inputMapAsJSON <- DBSL.readFile inputFile
---            DBSLC8.putStrLn inputMapAsJSON
+            -- DBSLC8.putStrLn inputMapAsJSON
             let inputMap = eitherDecode inputMapAsJSON :: (Either String Map)
             return inputMap
 
@@ -83,7 +88,7 @@ where
     getPlacesAST (Right m) =
         do
             putStrLn "sd: getPlacesAST: Extracting places AST: "
-            let placesAST = map m
+            let placesAST = MapDefinitions.map m
             return placesAST
                 
     saveMap :: Map -> IO ()
@@ -91,6 +96,55 @@ where
         do
             let encodedMap = encode theMap
             DBSL.writeFile systemMapFile encodedMap
+
+    getPlaceNames :: [Place] -> [Text]
+    getPlaceNames = Prelude.map place 
+            
+    insertPlaces :: Map -> Map -> Map
+    insertPlaces mapToInsert previousMap =
+        let placesToInsert = MapDefinitions.map mapToInsert
+            insertionNames = getPlaceNames placesToInsert
+            previousPlaces = MapDefinitions.map previousMap
+            previousNames = getPlaceNames previousPlaces
+            intersection = intersect insertionNames previousNames
+        in
+            if intersection /= []
+                then error ("Insertion of an already existing place is not allowed: " ++ show intersection ++ " - Maybe you meant to update instead.")
+                else Map {MapDefinitions.map = placesToInsert ++ previousPlaces}
+
+    deletePlaces :: Map -> Map -> Map
+    deletePlaces mapToDelete previousMap =
+        let placesToDelete = MapDefinitions.map mapToDelete
+            deletionNames = getPlaceNames placesToDelete
+            previousPlaces = MapDefinitions.map previousMap
+            filteredPlaces = deletePlaces' deletionNames previousPlaces
+            filteredPlaces' = deleteDestinations deletionNames filteredPlaces
+        in
+            Map {MapDefinitions.map = filteredPlaces'}
+
+    deletePlaces' :: [Text] -> [Place] -> [Place]
+    deletePlaces' [] places = places
+    deletePlaces' [placeName] places = filter (\x -> place x == placeName) places
+    deletePlaces' (placeName:moreNames) places =
+        let nextPlaces = filter (\x -> place x == placeName) places
+        in deletePlaces' moreNames nextPlaces
+
+    deleteDestinations :: [Text] -> [Place] -> [Place]
+    deleteDestinations [] places = places
+    deleteDestinations [placeName] places = deleteDestinations' placeName places
+    deleteDestinations (placeName:moreNames) places =
+        let nextPlaces = deleteDestinations' placeName places
+        in deleteDestinations moreNames nextPlaces
+
+    deleteDestinations' :: Text -> [Place] -> [Place]
+    deleteDestinations' placeName places =
+        filter (null . destinations)
+            (Prelude.map (deleteDestinations'' placeName) places)
+
+    deleteDestinations'' :: Text -> Place -> Place
+    deleteDestinations'' placeName place_in =
+        let ds = filter (\x -> to x == placeName) $ destinations place_in
+        in Place {place = place place_in, destinations = ds}
 
     removeMap :: IO ()
     removeMap =
@@ -106,7 +160,7 @@ where
         in
             if isLeft eitherMap 
                 then 
-                    Map { map = [] }
+                    Map { MapDefinitions.map = [] }
                 else
                     fromRight eitherMap
         
@@ -118,7 +172,7 @@ where
         then 
             (do
             putStrLn $ "sd: readMap: " ++ fromLeft eitherMap
-            return Map { map = [] })
+            return Map { MapDefinitions.map = [] })
         else return (fromRight eitherMap)
 
     -- unimplemented spacefillers below

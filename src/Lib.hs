@@ -8,10 +8,16 @@ module Lib
 
 import Data.Aeson (encode)
 
-import MapDefinitions (Map
-            , getMapFromFile
-            , saveMap
-            , removeMap)
+import MapDefinitions
+    ( Map
+    , getMapFromFile
+    , readMapFromString
+    , readMap
+    , saveMap
+    , removeMap
+    , insertPlaces
+    , deletePlaces
+    )
 
 import Shortest (dijkstra)
             
@@ -23,10 +29,22 @@ initialise filename =
         maybeSaveMap m
 
 add :: String -> IO ()
-add couldBeJSON = putStrLn $ "sd: adding a location using putative JSON [" ++ couldBeJSON ++ "]."
+add couldBeJSON = 
+    do
+        putStrLn $ "sd: adding one or more locations using putative JSON [" ++ couldBeJSON ++ "]."
+        let mapToInsert = readMapFromString couldBeJSON
+        savedMap <- readMap
+        let newMap = insertPlaces mapToInsert savedMap
+        saveMap newMap
 
 delete :: String -> IO ()
-delete couldBeJSON = putStrLn $ "sd: deleting a location using putative JSON [" ++ couldBeJSON ++ "]."
+delete couldBeJSON =
+    do
+        putStrLn $ "sd: deleting a location using putative JSON [" ++ couldBeJSON ++ "]."
+        let mapToDelete = readMapFromString couldBeJSON
+        savedMap <- readMap
+        let newMap = deletePlaces mapToDelete savedMap
+        saveMap newMap
 
 remove :: IO ()
 remove = 
@@ -43,7 +61,7 @@ maybeSaveMap (Right m) =
     do
         saveMap m
         return ()
-
+        
 shortest :: String -> IO ()
 shortest couldBeJSON =
     do
