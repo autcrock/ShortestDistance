@@ -197,6 +197,10 @@ main =
         putStrLn $ "Test suite deleting road from persistent map. Part8: " ++ part8
         xroad part8
 
+        let part11 = "{\"map\":[{\"place\":\"B\", \"destinations\": [ {\"to\": \"A\", \"distance\": 100}]}]}"
+        putStrLn $ "Test suite deleting reversed road from persistent map. Part11: " ++ part11
+        xroad part11
+
         let r = and (results ++ results1 ++ results2 ++ results3 ++ results4 ++ results5 ++ results6)
         putStrLn $ "Overall result is: " ++ show r
         putStrLn $ "Test suite removing persistent map : " ++ mapInputDataFile

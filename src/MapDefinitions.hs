@@ -161,8 +161,8 @@ where
             else 
                 let 
                     insertionNames = getPlaceNames placesToDo
-                    previousPlaces = MapDefinitions.map previousMap
-                    previousNames = getPlaceNames previousPlaces
+                    previousPs = MapDefinitions.map previousMap
+                    previousNames = getPlaceNames previousPs
                     start = head placesToDo
                     ds = destinations start
                 in
@@ -176,7 +176,7 @@ where
                                 if not $ isInfixOf insertionNames previousNames
                                 then error ("sd: Insertion/modification of a road requires a known starting location. Use -a or --addplace for a new location with roads: " ++ show placesToDo) 
                                 else 
-                                    insertOrReplaceRoad startOfRoad destination previousPlaces
+                                    insertOrReplaceRoad startOfRoad destination previousPs
     
     insertOrReplaceRoad :: Text -> Destination -> [Place] -> Map
     insertOrReplaceRoad start end previousPlaces =
@@ -220,14 +220,19 @@ where
                             ds = destinations start
                         in
                             if null ds || length ds > 1
-                                then error ("sd: Insertion/modification of only one road at a time is allowed: " ++ show placesToDo)
+                                then error ("sd: Deletion of only one road at a time is allowed: " ++ show placesToDo)
                                 else 
                                     let
                                         startOfRoad = place start
                                         destination = head ds
                                     in
                                         if not $ isInfixOf deletionNames previousNames
-                                        then error ("sd: Deletion of a road requires a known starting location. Use -a or --addplace for a new location with roads: " ++ show placesToDo) 
+                                        then 
+                                            let
+                                                newStartOfRoad = to destination
+                                                newDestination = Destination {to = startOfRoad, distance = distance destination}
+                                            in
+                                                deleteRoad''' newStartOfRoad newDestination previousPlaces
                                         else 
                                             deleteRoad' startOfRoad destination previousPlaces
 
@@ -252,6 +257,16 @@ where
                     let newDs = deleteBy (\x y -> to x == to y ) end ds
                     in Place {place = place thePlace, destinations = newDs}
                                             
+    deleteRoad''' :: Text -> Destination -> [Place] -> Map
+    deleteRoad''' start end previousPlaces =
+        let maybeThePlace = find (\x -> start == place x) previousPlaces
+        in 
+            if isNothing maybeThePlace
+            then error ("sd: Deletion of a road requires a known starting location. Tried: "
+                     ++ show start ++ " and " ++ show (to end)) 
+            else
+                    deleteRoad' start end previousPlaces
+
     removeMap :: IO ()
     removeMap =
         removeFile systemMapFile `catch` anyErrors
