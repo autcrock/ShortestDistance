@@ -18,6 +18,8 @@ module MapDefinitions (
     , saveMap
     , insertPlaces
     , deletePlaces
+    , insertOrModifyRoad
+    , deleteRoad
 )
 
 where
@@ -27,7 +29,8 @@ where
     import Data.Aeson (eitherDecode, encode, ToJSON, FromJSON(..))
     import Data.Either.Unwrap (isLeft, fromLeft, fromRight)
     import Data.Text (Text)
-    import Data.List (intersect, deleteBy)
+    import Data.Maybe (fromJust, isNothing)
+    import Data.List (intersect, deleteBy, isInfixOf, find)
     import qualified Data.ByteString.Lazy as DBSL
     import qualified Data.ByteString.Lazy.Char8 as DBSLC8
     import GHC.Generics hiding (to)
@@ -97,6 +100,9 @@ where
     getPlaceNames :: [Place] -> [Text]
     getPlaceNames = Prelude.map place 
             
+    -- getDestinationNames :: [Destination] -> [Text]
+    -- getDestinationNames = Prelude.map to 
+            
     insertPlaces :: Map -> Map -> Map
     insertPlaces mapToInsert previousMap =
         let placesToInsert = MapDefinitions.map mapToInsert
@@ -146,6 +152,106 @@ where
             ds = deleteBy (\x y -> to x == to y) destinationToDelete $ destinations place_in
         in Place {place = place place_in, destinations = ds}
 
+    insertOrModifyRoad :: Map -> Map -> Map
+    insertOrModifyRoad mapToInsert previousMap =
+        let placesToDo = MapDefinitions.map mapToInsert
+        in 
+            if null placesToDo || length placesToDo > 1
+            then error ("sd: Insertion/modification of only one road at a time is allowed: " ++ show placesToDo)
+            else 
+                let 
+                    insertionNames = getPlaceNames placesToDo
+                    previousPlaces = MapDefinitions.map previousMap
+                    previousNames = getPlaceNames previousPlaces
+                    start = head placesToDo
+                    ds = destinations start
+                in
+                    if null ds || length ds > 1
+                        then error ("sd: Insertion/modification of only one road at a time is allowed: " ++ show placesToDo)
+                        else 
+                            let
+                                startOfRoad = place start
+                                destination = head ds
+                            in
+                                if not $ isInfixOf insertionNames previousNames
+                                then error ("sd: Insertion/modification of a road requires a known starting location. Use -a or --addplace for a new location with roads: " ++ show placesToDo) 
+                                else 
+                                    insertOrReplaceRoad startOfRoad destination previousPlaces
+    
+    insertOrReplaceRoad :: Text -> Destination -> [Place] -> Map
+    insertOrReplaceRoad start end previousPlaces =
+        let thePlace = fromJust $ find (\x -> start == place x) previousPlaces
+            newPlaces = deleteBy (\x y -> place x == place y ) thePlace previousPlaces
+            theNewPlace = insertOrReplaceRoad' end thePlace 
+        in 
+            Map {MapDefinitions.map = theNewPlace:newPlaces}
+
+    insertOrReplaceRoad' :: Destination -> Place -> Place
+    insertOrReplaceRoad' end thePlace =
+        let ds = destinations thePlace
+            endD = to end
+            theEnd = find (\x -> endD == to x) (destinations thePlace)
+        in
+            if isNothing theEnd
+                then
+                    Place { place = place thePlace, destinations = end:ds }
+                else
+                    let newDs = deleteBy (\x y -> to x == to y ) end ds
+                    in Place {place = place thePlace, destinations = end:newDs}
+
+        
+    deleteRoad :: Map -> Map -> Map
+    deleteRoad mapToDelete previousMap =
+        let placesToDo = MapDefinitions.map mapToDelete
+        in 
+            if null placesToDo || length placesToDo > 1
+            then error ("sd: Deletion of only one road at a time is allowed: " ++ show placesToDo)
+            else 
+                let 
+                    deletionNames = getPlaceNames placesToDo
+                    previousPlaces = MapDefinitions.map previousMap
+                in
+                    if null previousPlaces
+                    then error ("sd: There are no places in the database: " ++ show placesToDo)
+                    else 
+                        let 
+                            previousNames = getPlaceNames previousPlaces
+                            start = head placesToDo
+                            ds = destinations start
+                        in
+                            if null ds || length ds > 1
+                                then error ("sd: Insertion/modification of only one road at a time is allowed: " ++ show placesToDo)
+                                else 
+                                    let
+                                        startOfRoad = place start
+                                        destination = head ds
+                                    in
+                                        if not $ isInfixOf deletionNames previousNames
+                                        then error ("sd: Deletion of a road requires a known starting location. Use -a or --addplace for a new location with roads: " ++ show placesToDo) 
+                                        else 
+                                            deleteRoad' startOfRoad destination previousPlaces
+
+    deleteRoad' :: Text -> Destination -> [Place] -> Map
+    deleteRoad' start end previousPlaces =
+        let thePlace = fromJust $ find (\x -> start == place x) previousPlaces
+            newPlaces = deleteBy (\x y -> place x == place y ) thePlace previousPlaces
+            theNewPlace = deleteRoad'' end thePlace 
+        in 
+            Map {MapDefinitions.map = theNewPlace:newPlaces}
+
+    deleteRoad'' :: Destination -> Place -> Place
+    deleteRoad'' end thePlace =
+        let ds = destinations thePlace
+            endD = to end
+            theEnd = find (\x -> endD == to x) ds
+        in
+            if isNothing theEnd
+                then
+                    thePlace
+                else
+                    let newDs = deleteBy (\x y -> to x == to y ) end ds
+                    in Place {place = place thePlace, destinations = newDs}
+                                            
     removeMap :: IO ()
     removeMap =
         removeFile systemMapFile `catch` anyErrors

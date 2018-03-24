@@ -1,10 +1,13 @@
 module Lib
-    ( initialise
-    , initialiseJSON
-    , add
-    , delete
-    , shortest
-    , remove
+    (
+        add
+        , clear
+        , delete
+        , initialise
+        , initialiseJSON
+        , road
+        , shortest
+        , xroad
     ) where
 
 import Data.Aeson (encode)
@@ -18,24 +21,12 @@ import MapDefinitions
     , removeMap
     , insertPlaces
     , deletePlaces
+    , insertOrModifyRoad
+    , deleteRoad
     )
 
 import Shortest (dijkstra)
             
-initialise :: String -> IO ()
-initialise filename = 
-    do
-        putStrLn $ "sd: initialising a map using input from [" ++ filename ++ "]."
-        m <- getMapFromFile filename
-        maybeSaveMap m
-
-initialiseJSON :: String -> IO ()
-initialiseJSON couldBeJSON = 
-    do
-        putStrLn $ "sd: initialising a map using input from [" ++ couldBeJSON ++ "]."
-        let mapToSave = readMapFromString couldBeJSON
-        saveMap mapToSave
-
 add :: String -> IO ()
 add couldBeJSON = 
     do
@@ -45,6 +36,12 @@ add couldBeJSON =
         let newMap = insertPlaces mapToInsert savedMap
         saveMap newMap
 
+clear :: IO ()
+clear = 
+    do
+        putStrLn "sd: Removing the system file."
+        removeMap
+
 delete :: String -> IO ()
 delete couldBeJSON =
     do
@@ -53,12 +50,6 @@ delete couldBeJSON =
         savedMap <- readMap
         let newMap = deletePlaces mapToDelete savedMap
         saveMap newMap
-
-remove :: IO ()
-remove = 
-    do
-        putStrLn "sd: Removing the system file."
-        removeMap
 
 maybeSaveMap :: Either String Map -> IO()
 maybeSaveMap (Left e) =
@@ -70,9 +61,43 @@ maybeSaveMap (Right m) =
         saveMap m
         return ()
         
+initialise :: String -> IO ()
+initialise filename = 
+    do
+        putStrLn $ "sd: initialising a map using input from file [" ++ filename ++ "]."
+        m <- getMapFromFile filename
+        maybeSaveMap m
+
+initialiseJSON :: String -> IO ()
+initialiseJSON couldBeJSON = 
+    do
+        putStrLn $ "sd: initialising a map using putative JSON [" ++ couldBeJSON ++ "]."
+        let mapToSave = readMapFromString couldBeJSON
+        saveMap mapToSave
+
+road :: String -> IO ()
+road couldBeJSON = 
+    do
+        putStrLn $ "sd: adding/modifying one or more roads using putative JSON [" ++ couldBeJSON ++ "]."
+        let mapToInsert = readMapFromString couldBeJSON
+        savedMap <- readMap
+        let newMap = insertOrModifyRoad mapToInsert savedMap
+        saveMap newMap
+
 shortest :: String -> IO ()
 shortest couldBeJSON =
     do
 --        putStrLn $ "sd: shortest input: " ++ couldBeJSON
         result <- dijkstra couldBeJSON
         print $ encode result
+
+xroad :: String -> IO ()
+xroad couldBeJSON =
+    do
+        putStrLn $ "sd: deleting one or more roads using putative JSON [" ++ couldBeJSON ++ "]."
+        let mapToDelete = readMapFromString couldBeJSON
+        savedMap <- readMap
+        let newMap = deleteRoad mapToDelete savedMap
+        saveMap newMap
+
+        

@@ -2,7 +2,7 @@ import Lib ( initialise
             , initialiseJSON
             , add
             , delete
-            , remove)
+            , clear)
 
 import Graph(
     StartEnd(..)
@@ -49,7 +49,7 @@ main =
         results <- mapM expected dijkstraTestData
 
         putStrLn $ "Test suite removing persistent map : " ++ mapInputDataFile
-        remove
+        clear
 
         let part1 = "{\"map\":[]}"
         putStrLn $ "Test suite initialising persistent map by additions. Part1: " ++ part1
@@ -144,7 +144,7 @@ main =
         putStrLn $ "Overall result is: " ++ show r
         putStrLn $ "Test suite removing persistent map : " ++ mapInputDataFile
         
-        remove
+        clear
 
 mapInputDataFile :: String
 mapInputDataFile = "./test/testmap2.json"
