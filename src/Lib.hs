@@ -1,14 +1,14 @@
 module Lib
     (
-        add
+        aplace
         , clear
-        , delete
+        , xplace
         , initialise
         , initialiseJSON
-        , road
+        , aroad
         , shortest
         , xroad
-    ) where
+        ) where
 
 import Data.Aeson (encode)
 
@@ -27,8 +27,8 @@ import MapDefinitions
 
 import Shortest (dijkstra)
             
-add :: String -> IO ()
-add couldBeJSON = 
+aplace :: String -> IO ()
+aplace couldBeJSON = 
     do
         putStrLn $ "sd: adding one or more locations using putative JSON [" ++ couldBeJSON ++ "]."
         let mapToInsert = readMapFromString couldBeJSON
@@ -42,8 +42,8 @@ clear =
         putStrLn "sd: Removing the system file."
         removeMap
 
-delete :: String -> IO ()
-delete couldBeJSON =
+xplace :: String -> IO ()
+xplace couldBeJSON =
     do
         putStrLn $ "sd: deleting a location using putative JSON [" ++ couldBeJSON ++ "]."
         let mapToDelete = readMapFromString couldBeJSON
@@ -75,8 +75,8 @@ initialiseJSON couldBeJSON =
         let mapToSave = readMapFromString couldBeJSON
         saveMap mapToSave
 
-road :: String -> IO ()
-road couldBeJSON = 
+aroad :: String -> IO ()
+aroad couldBeJSON = 
     do
         putStrLn $ "sd: adding/modifying one or more roads using putative JSON [" ++ couldBeJSON ++ "]."
         let mapToInsert = readMapFromString couldBeJSON
