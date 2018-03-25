@@ -212,7 +212,11 @@ module Graph (
     
     graphGetMinimumYellowByDistance :: Graph -> Vertex
     graphGetMinimumYellowByDistance g =
-        head (vertices g)
+        let vs = vertices g
+        in
+            if null vs
+                then error "sd: No more yellows. There is no connection between the start and end points."
+                else head (vertices g)
         
     getVertex :: [Vertex] -> Text -> Maybe Vertex
     getVertex vs vName =

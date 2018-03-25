@@ -26,6 +26,7 @@ operation ["-h"] = usage >> exit
 operation ["--help"] = usage >> exit
 operation ["-i", filename] = initialise filename >> exit
 operation ["--initialise", filename] = initialise filename >> exit
+operation ["--initialize", filename] = initialise filename >> exit
 operation ["-ar", aString] = aroad aString >> exit
 operation ["--addroad", aString] = aroad aString >> exit
 operation ["-s", aString] = shortest aString >> exit
@@ -38,16 +39,33 @@ operation _ = usage >> exit
 
 usage :: IO()
 usage   = do
-            putStrLn "Usage: sd [-shidxpac] [file]"
-            putStrLn "  sd [-ap, --addplace] place - Add this place as JSON to the system file."
-            putStrLn "  sd [-c, --clear] - Remove the system file."
-            putStrLn "  sd [-xd, --deleteplace] place - Delete this place as JSON from the system file."
-            putStrLn "  sd [-h, --help] - This message.  A road network is stored as JSON in a system file, for operations by the accompanying command line arguments."
-            putStrLn "  sd [-i, --initialise] filename - Initialise from a map definition in filename as JSON.  Remove system file first."
-            putStrLn "  sd [-ar, --addroad] place - Add or modify a road from this place as JSON to the system file."
-            putStrLn "  sd [-s, --shortest] StartEnd - StartEnd is as: '{\"start\": \"A\", \"end\": \"B\"}' - Find shortest path from place A to place B which are stored in a road network file."
-            putStrLn "  sd [-v, --version] - Remove the system file."
-            putStrLn "  sd [-xr, --xroad] place - Delete the road specified as JSON for this place from the system file."
+            putStrLn "Usage: sd switch [file|Map|StartEnd|nothing]"
+            putStrLn ""
+            putStrLn " Purpose: Manipulate and store a simple road network. Determine distances between locations with basic Dijkstra algorithm."
+            putStrLn ""
+            putStrLn " Argument types:"
+            putStrLn ""
+            putStrLn "   - A map defines zero or more locations each with zero or more destinations: eg:"
+            putStrLn "       '{\"map\":[{\"place\":\"A\", \"destinations\": [ {\"to\": \"B\", \"distance\": 100}, {\"to\": \"C\", \"distance\": 30}]}]}'"
+            putStrLn "     Maps are used as inputs for map initialisation, place and road addition, deletion and updating where applicable."
+            putStrLn "     Single destination maps only must be used for road addition, deletion or updating where applicable."
+            putStrLn "     Multiple place and destination lists may be used for persistent map initialisation, or for addition of new places."
+            putStrLn "     Empty destination and place lists may be used for addition and deletion of roads and places respectively."
+            putStrLn ""
+            putStrLn "   - A StartEnd pair is JSON defining a pair of places for calculation of distance: eg"
+            putStrLn "       '{\"start\": \"A\", \"end\": \"B\"}'"
+            putStrLn ""
+            putStrLn " Command line switches:"
+            putStrLn ""
+            putStrLn "   sd [-ap, --addplace] Place - Add this place as JSON to the system file."
+            putStrLn "   sd [-c, --clear] - Remove the system file."
+            putStrLn "   sd [-xd, --xplace] Place - Delete this place as JSON from the system file."
+            putStrLn "   sd [-h, --help] - This message.  A persisistent road network is stored in a file for distance between locations."
+            putStrLn "   sd [-i, --initialise] filename - Initialise from a map definition in filename as JSON.  Remove system file first."
+            putStrLn "   sd [-ar, --addroad] Place - Add or modify a road from this place as JSON to the system file."
+            putStrLn "   sd [-s, --shortest] StartEnd - Find shortest path from place A to place B which are stored in a road network file."
+            putStrLn "   sd [-v, --version] - Remove the system file."
+            putStrLn "   sd [-xr, --xroad] Place - Delete the road specified as JSON for this place from the system file."
 
 version :: IO()
 version = putStrLn "sd Alpha 0"
