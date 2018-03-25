@@ -5,7 +5,6 @@ import Lib (
     , initialise
     , initialiseJSON
     , aroad
-    , shortest
     , xroad
     )
 
@@ -15,23 +14,33 @@ import Graph(
 import Shortest (dijkstra)
 import Data.Aeson (encode)
 import Data.ByteString.Lazy.Char8(unpack)
+import MapDefinitions (Map(..), readMap) 
+
+mapInputDataFile :: String
+mapInputDataFile = "./test/testmap2.json"
+
+boolToResult :: Bool -> String
+boolToResult br = if br then "PASS" else "FAIL"
+
+boolToFinalResult :: Bool -> String
+boolToFinalResult br = if br then "ALL TESTS PASSED" else "ALL TESTS FAILED"
 
 expected :: (String, String, Double) -> IO Bool
 expected (from, to, expectedDistance) =
     do  
         let enced = encode StartEnd { start = from, end = to }
             expectedD = Distance {distance = expectedDistance}
---        print $ unpack enced
         fsd <- dijkstra $ unpack enced
         let forwardTrue = fsd == expectedD
         rsd <- dijkstra $ unpack (encode StartEnd { start = to, end = from })
         let reverseTrue = rsd == expectedD
-        print ( "[" ++ from ++  "] to [" ++ to
-            ++ "],     , (distance: [" ++ show expectedDistance
-            ++ "]. Forward: [" ++ show (distance fsd)
-            ++ "]. Reverse: [" ++ show (distance rsd)
-            ++ "]. Forward correct [" ++ show forwardTrue
-            ++ "]. Reverse correct [" ++ show reverseTrue ++ "]" )
+        print ( "From place [" ++ from ++  "] to [" ++ to
+            ++ "] the expected distance is: [" ++ show expectedDistance
+            ++ "]. Calculated forward: [" ++ show (distance fsd)
+            ++ "] " ++ boolToResult forwardTrue
+            ++ ", and reverse: [" ++ show (distance rsd)
+            ++ "] " ++ boolToResult reverseTrue
+            ++ "." )
         return (forwardTrue && reverseTrue)
 
 main :: IO ()
@@ -194,18 +203,47 @@ main =
         putStrLn "Test suite running through permutations of road insertion test data."
         results6 <- mapM expected dijkstraTestDataRoadInsertionAfterUpdatingAtoC
 
-        putStrLn $ "Test suite deleting road from persistent map. Part8: " ++ part8
+        let part11 = "{\"map\":[{\"place\":\"C\", \"destinations\": [ {\"to\": \"A\", \"distance\": 999}]}]}"
+        putStrLn $ "Test suite updating road A to C by additions in reverse. Part10: " ++ part11
+        aroad part11
+
+        let part12 = "{\"map\":[{\"place\":\"D\", \"destinations\": [ {\"to\": \"A\", \"distance\": 108}]}]}"
+        putStrLn $ "Test suite inserting road A to D by additions in reverse. Part12: " ++ part12
+        aroad part12
+
+        let dijkstraTestDataRoadInsertionAfterUpdatingCtoAAndInsertingAtoD =  [
+                ("A", "A", 0), ("A", "B", 600), ("A", "C", 999), ("A", "D", 108)
+                ,("B", "B", 0), ("B", "C", 1599), ("B", "D", 708)
+                ,("C", "C", 0), ("C", "D", 1107)
+                ,("C", "C", 0)
+                ]
+
+        putStrLn "Test suite running through permutations of road insertion test data."
+        results7 <- mapM expected dijkstraTestDataRoadInsertionAfterUpdatingCtoAAndInsertingAtoD
+
+        putStrLn $ "Test suite deleting road A to C from persistent map. Part8: " ++ part8
         xroad part8
 
-        let part11 = "{\"map\":[{\"place\":\"B\", \"destinations\": [ {\"to\": \"A\", \"distance\": 100}]}]}"
-        putStrLn $ "Test suite deleting reversed road from persistent map. Part11: " ++ part11
-        xroad part11
+        let part13 = "{\"map\":[{\"place\":\"B\", \"destinations\": [ {\"to\": \"A\", \"distance\": 100}]}]}"
+        putStrLn $ "Test suite deleting reversed road A to B from persistent map. Part11: " ++ part13
+        xroad part13
 
-        let r = and (results ++ results1 ++ results2 ++ results3 ++ results4 ++ results5 ++ results6)
-        putStrLn $ "Overall result is: " ++ show r
+        putStrLn $ "Test suite deleting reversed road A to D from persistent map. Part12: " ++ part12
+        xroad part12
+
+        let part14 = "{\"map\":[{\"place\":\"A\", \"destinations\": []}]}"
+        putStrLn $ "Test suite deleting place A from persistent map. Part14: " ++ part14
+        xplace part14
+
+        putStrLn $ "Test suite checking that the persistent map is now empty: " ++ mapInputDataFile
+        m <- readMap
+        let results8 = [m == MapDefinitions.Map {MapDefinitions.map=[]}]
+
         putStrLn $ "Test suite removing persistent map : " ++ mapInputDataFile
-        
-        -- clear
+        clear
 
-mapInputDataFile :: String
-mapInputDataFile = "./test/testmap2.json"
+        putStrLn "========================================================="
+        putStrLn $ "Test suite overall results: " ++ boolToFinalResult (and 
+            (results ++ results1 ++ results2 ++ results3 ++ results4
+             ++ results5 ++ results6 ++ results7 ++ results8))
+        putStrLn "========================================================="

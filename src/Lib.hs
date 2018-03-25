@@ -8,7 +8,7 @@ module Lib
         , aroad
         , shortest
         , xroad
-        ) where
+    ) where
 
 import Data.Aeson (encode)
 

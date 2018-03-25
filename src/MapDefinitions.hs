@@ -2,7 +2,7 @@
 {-# LANGUAGE FlexibleInstances, OverloadedStrings #-}
 
 module MapDefinitions (
-      Map
+      Map(..)
     , Place
     , Destination
     , destinations
@@ -10,7 +10,6 @@ module MapDefinitions (
     , getMapFromFile
     , getPlacesFromFile
     , readMapFromString
-    , MapDefinitions.map
     , place
     , to
     , readMap
@@ -44,7 +43,7 @@ where
     data Destination = Destination {
         to :: !Text,
         distance :: Double
-    } deriving (Generic, Show)
+    } deriving (Generic, Show, Eq)
 
     instance ToJSON Destination
     instance FromJSON Destination
@@ -52,13 +51,13 @@ where
     data Place = Place {
         place :: !Text,
         destinations :: [Destination]
-     } deriving (Generic, Show)
+     } deriving (Generic, Show, Eq)
     instance ToJSON Place
     instance FromJSON Place
 
     data Map = Map {
         map :: [Place]
-    } deriving (Generic, Show)
+    } deriving (Generic, Show, Eq)
     instance ToJSON Map
     instance FromJSON Map
     
@@ -174,8 +173,13 @@ where
                                 destination = head ds
                             in
                                 if not $ isInfixOf insertionNames previousNames
-                                then error ("sd: Insertion/modification of a road requires a known starting location. Use -a or --addplace for a new location with roads: " ++ show placesToDo) 
-                                else 
+                                then 
+                                    let
+                                        newStartOfRoad = to destination
+                                        newDestination = Destination {to = startOfRoad, distance = distance destination}
+                                    in
+                                        insertOrReplaceRoad'' newStartOfRoad newDestination previousPs
+                                else
                                     insertOrReplaceRoad startOfRoad destination previousPs
     
     insertOrReplaceRoad :: Text -> Destination -> [Place] -> Map
@@ -199,6 +203,16 @@ where
                     let newDs = deleteBy (\x y -> to x == to y ) end ds
                     in Place {place = place thePlace, destinations = end:newDs}
 
+    insertOrReplaceRoad'' :: Text -> Destination -> [Place] -> Map
+    insertOrReplaceRoad'' start end previousPlaces =
+        let maybeThePlace = find (\x -> start == place x) previousPlaces
+        in 
+            if isNothing maybeThePlace
+            then error ("sd: Insertion/update of a road requires a known starting location. Tried: "
+                ++ show start ++ " and " ++ show (to end))
+            else 
+                insertOrReplaceRoad start end previousPlaces
+                
         
     deleteRoad :: Map -> Map -> Map
     deleteRoad mapToDelete previousMap =
@@ -256,7 +270,7 @@ where
                 else
                     let newDs = deleteBy (\x y -> to x == to y ) end ds
                     in Place {place = place thePlace, destinations = newDs}
-                                            
+
     deleteRoad''' :: Text -> Destination -> [Place] -> Map
     deleteRoad''' start end previousPlaces =
         let maybeThePlace = find (\x -> start == place x) previousPlaces
