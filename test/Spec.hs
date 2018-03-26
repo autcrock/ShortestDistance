@@ -10,10 +10,15 @@ import Lib (
 
 import Graph(
     StartEnd(..)
-    , Distance(..))
-import Shortest (dijkstra)
+    , Distance(..)
+    )
+import Shortest (
+    dijkstra
+    , UnusualResult(..)
+    )
 import Data.Aeson (encode)
 import Data.ByteString.Lazy.Char8(unpack)
+import Data.Either.Unwrap (isLeft, fromLeft, fromRight)
 import MapDefinitions (Map(..), readMap) 
 
 mapInputDataFile :: String
@@ -23,22 +28,28 @@ boolToResult :: Bool -> String
 boolToResult br = if br then "PASS" else "FAIL"
 
 boolToFinalResult :: Bool -> String
-boolToFinalResult br = if br then "ALL TESTS PASSED" else "ALL TESTS FAILED"
+boolToFinalResult br = if br then "ALL TESTS PASSED" else "ONE OR MORE TESTS FAILED"
 
-expected :: (String, String, Double) -> IO Bool
+expected :: (String, String, Either UnusualResult Double) -> IO Bool
 expected (from, to, expectedDistance) =
     do  
         let enced = encode StartEnd { start = from, end = to }
-            expectedD = Distance {distance = expectedDistance}
+            expectedD = if isLeft expectedDistance
+                        then Left (fromLeft expectedDistance)
+                        else Right Distance {distance = fromRight expectedDistance}
         fsd <- dijkstra $ unpack enced
-        let forwardTrue = fsd == expectedD
+        let forwardTrue = if isLeft fsd
+                            then fromLeft fsd == fromLeft expectedD
+                            else fromRight fsd == fromRight expectedD
         rsd <- dijkstra $ unpack (encode StartEnd { start = to, end = from })
-        let reverseTrue = rsd == expectedD
+        let reverseTrue = if isLeft rsd
+            then fromLeft rsd == fromLeft expectedD
+            else fromRight rsd == fromRight expectedD
         print ( "From place [" ++ from ++  "] to [" ++ to
             ++ "] the expected distance is: [" ++ show expectedDistance
-            ++ "]. Calculated forward: [" ++ show (distance fsd)
+            ++ "]. Calculated forward: [" ++ show fsd
             ++ "] " ++ boolToResult forwardTrue
-            ++ ", and reverse: [" ++ show (distance rsd)
+            ++ ", and reverse: [" ++ show rsd
             ++ "] " ++ boolToResult reverseTrue
             ++ "." )
         return (forwardTrue && reverseTrue)
@@ -51,14 +62,14 @@ main =
 
         putStrLn $ "Test suite running through permutations of test locations A to H " ++ mapInputDataFile
         let dijkstraTestData =  [
-                ("A", "A", 0), ("A", "B", 100), ("A", "C", 30), ("A", "D", 230), ("A", "E", 310), ("A", "F", 360), ("A", "G", 370), ("A", "H", 320)
-                , ("B", "B", 0), ("B", "C", 130), ("B", "D", 330), ("B", "E", 350), ("B", "F", 300), ("B", "G", 370), ("B", "H", 380)
-                , ("C", "C", 0), ("C", "D", 200), ("C", "E", 280), ("C", "F", 330), ("C", "G", 340), ("C", "H", 290)
-                , ("D", "D", 0), ("D", "E", 80), ("D", "F", 130), ("D", "G", 140), ("D", "H", 90)
-                , ("E", "E", 0), ("E", "F", 50), ("E", "G", 80), ("E", "H", 30)
-                , ("F", "F", 0), ("F", "G", 70), ("F", "H", 80)
-                , ("G", "G", 0), ("G", "H", 50)
-                , ("H", "H", 0)
+                ("A", "A", Right 0), ("A", "B", Right 100), ("A", "C", Right 30), ("A", "D", Right 230), ("A", "E", Right 310), ("A", "F", Right 360), ("A", "G", Right 370), ("A", "H", Right 320)
+                , ("B", "B", Right 0), ("B", "C", Right 130), ("B", "D", Right 330), ("B", "E", Right 350), ("B", "F", Right 300), ("B", "G", Right 370), ("B", "H", Right 380)
+                , ("C", "C", Right 0), ("C", "D", Right 200), ("C", "E", Right 280), ("C", "F", Right 330), ("C", "G", Right 340), ("C", "H", Right 290)
+                , ("D", "D", Right 0), ("D", "E", Right 80), ("D", "F", Right 130), ("D", "G", Right 140), ("D", "H", Right 90)
+                , ("E", "E", Right 0), ("E", "F", Right 50), ("E", "G", Right 80), ("E", "H", Right 30)
+                , ("F", "F", Right 0), ("F", "G", Right 70), ("F", "H", Right 80)
+                , ("G", "G", Right 0), ("G", "H", Right 50)
+                , ("H", "H", Right 0)
                 ]
         results <- mapM expected dijkstraTestData
 
@@ -119,13 +130,13 @@ main =
         putStrLn $ "Test suite deleting location H from map " ++ part4
         xplace part4
         let dijkstraTestDataWithoutH =  [
-                ("A", "A", 0), ("A", "B", 100), ("A", "C", 30), ("A", "D", 230), ("A", "E", 310), ("A", "F", 360), ("A", "G", 430)
-                , ("B", "B", 0), ("B", "C", 130), ("B", "D", 330), ("B", "E", 350), ("B", "F", 300), ("B", "G", 370)
-                , ("C", "C", 0), ("C", "D", 200), ("C", "E", 280), ("C", "F", 330), ("C", "G", 400)
-                , ("D", "D", 0), ("D", "E", 80), ("D", "F", 130), ("D", "G", 200)
-                , ("E", "E", 0), ("E", "F", 50), ("E", "G", 120)
-                , ("F", "F", 0), ("F", "G", 70)
-                , ("G", "G", 0)
+                ("A", "A", Right 0), ("A", "B", Right 100), ("A", "C", Right 30), ("A", "D", Right 230), ("A", "E", Right 310), ("A", "F", Right 360), ("A", "G", Right 430)
+                , ("B", "B", Right 0), ("B", "C", Right 130), ("B", "D", Right 330), ("B", "E", Right 350), ("B", "F", Right 300), ("B", "G", Right 370)
+                , ("C", "C", Right 0), ("C", "D", Right 200), ("C", "E", Right 280), ("C", "F", Right 330), ("C", "G", Right 400)
+                , ("D", "D", Right 0), ("D", "E", Right 80), ("D", "F", Right 130), ("D", "G", Right 200)
+                , ("E", "E", Right 0), ("E", "F", Right 50), ("E", "G", Right 120)
+                , ("F", "F", Right 0), ("F", "G", Right 70)
+                , ("G", "G", Right 0)
                 ]
         putStrLn "Test suite running through permutations of test locations A to G without H in graph."
         results2 <- mapM expected dijkstraTestDataWithoutH
@@ -144,11 +155,11 @@ main =
         xplace part5
 
         let dijkstraTestDataWithoutHCandA =  [
-                ("B", "B", 0), ("B", "D", 430), ("B", "E", 350), ("B", "F", 300), ("B", "G", 370)
-                , ("D", "D", 0), ("D", "E", 80), ("D", "F", 130), ("D", "G", 200)
-                , ("E", "E", 0), ("E", "F", 50), ("E", "G", 120)
-                , ("F", "F", 0), ("F", "G", 70)
-                , ("G", "G", 0)
+                ("B", "B", Right 0), ("B", "D", Right 430), ("B", "E", Right 350), ("B", "F", Right 300), ("B", "G", Right 370)
+                , ("D", "D", Right 0), ("D", "E", Right 80), ("D", "F", Right 130), ("D", "G", Right 200)
+                , ("E", "E", Right 0), ("E", "F", Right 50), ("E", "G", Right 120)
+                , ("F", "F", Right 0), ("F", "G", Right 70)
+                , ("G", "G", Right 0)
                 ]
 
         putStrLn "Test suite running through permutations of test locations A to G without H in graph."
@@ -169,9 +180,9 @@ main =
         aroad part8
 
         let dijkstraTestDataRoadInsertion =  [
-                ("A", "A", 0), ("A", "B", 100), ("A", "C", 30)
-                ,("B", "B", 0), ("B", "C", 130)
-                ,("C", "C", 0)
+                ("A", "A", Right 0), ("A", "B", Right 100), ("A", "C", Right 30)
+                ,("B", "B", Right 0), ("B", "C", Right 130)
+                ,("C", "C", Right 0)
                 ]
 
         putStrLn "Test suite running through permutations of road insertion test data."
@@ -182,9 +193,9 @@ main =
         aroad part9
 
         let dijkstraTestDataRoadInsertionAfterUpdatingAtoB =  [
-                ("A", "A", 0), ("A", "B", 600), ("A", "C", 30)
-                ,("B", "B", 0), ("B", "C", 630)
-                ,("C", "C", 0)
+                ("A", "A", Right 0), ("A", "B", Right 600), ("A", "C", Right 30)
+                ,("B", "B", Right 0), ("B", "C", Right 630)
+                ,("C", "C", Right 0)
                 ]
 
         putStrLn "Test suite running through permutations of road insertion test data."
@@ -195,9 +206,9 @@ main =
         aroad part10
 
         let dijkstraTestDataRoadInsertionAfterUpdatingAtoC =  [
-                ("A", "A", 0), ("A", "B", 600), ("A", "C", 0)
-                ,("B", "B", 0), ("B", "C", 600)
-                ,("C", "C", 0)
+                ("A", "A", Right 0), ("A", "B", Right 600), ("A", "C", Right 0)
+                ,("B", "B", Right 0), ("B", "C", Right 600)
+                ,("C", "C", Right 0)
                 ]
 
         putStrLn "Test suite running through permutations of road insertion test data."
@@ -212,10 +223,10 @@ main =
         aroad part12
 
         let dijkstraTestDataRoadInsertionAfterUpdatingCtoAAndInsertingAtoD =  [
-                ("A", "A", 0), ("A", "B", 600), ("A", "C", 999), ("A", "D", 108)
-                ,("B", "B", 0), ("B", "C", 1599), ("B", "D", 708)
-                ,("C", "C", 0), ("C", "D", 1107)
-                ,("C", "C", 0)
+                ("A", "A", Right 0), ("A", "B", Right 600), ("A", "C", Right 999), ("A", "D", Right 108)
+                ,("B", "B", Right 0), ("B", "C", Right 1599), ("B", "D", Right 708)
+                ,("C", "C", Right 0), ("C", "D", Right 1107)
+                ,("C", "C", Right 0)
                 ]
 
         putStrLn "Test suite running through permutations of road insertion test data."

@@ -2,14 +2,14 @@
 
 module Graph (
     mapToGraph
+    , deleteNeighboursByName
     , readStartEndFromString
     , sortVerticesByDistance
     , graphGetVertex
+    , graphGetVertexNeighbours
     , neighbourHowFarByName
     , graphDeleteVertex
     , graphInsertVertex
-    , graphGetMinimumYellowByDistance
-    , graphGetAdmissibleVertexNeighbours
     , Graph(..)
     , Vertex(..)
     , Neighbour(..)
@@ -20,6 +20,7 @@ module Graph (
 
     import Data.Aeson (eitherDecode, ToJSON, FromJSON)
     import Data.ByteString.Lazy.Char8(pack)
+    import Data.Either (Either(..))
     import Data.Either.Unwrap (isLeft, fromRight)
     import Data.List (sortBy, nub, find, deleteBy)
     import Data.Ord (comparing)
@@ -103,26 +104,32 @@ module Graph (
     expandPlace' :: Text -> [MD.Destination] -> [Connection] -> [Connection]
     expandPlace' _ [] connections = connections
     expandPlace' placeName [destination] connections =
-         connections
-         ++ [Connection {
-             from = placeName,
-             to = MD.to destination,
-             dist = MD.distance destination }] 
-         ++ [Connection {
-            from = MD.to destination,
-            to = placeName,
-            dist = MD.distance destination }]
+        if MD.distance destination < 0
+        then error "sd: ERROR: Distances between places must be 0 or positive numbers."
+        else
+            connections
+            ++ [Connection {
+                from = placeName,
+                to = MD.to destination,
+                dist = MD.distance destination }] 
+            ++ [Connection {
+                from = MD.to destination,
+                to = placeName,
+                dist = MD.distance destination }]
     expandPlace' placeName (d : destinations) connections =
-        connections
-        ++ [Connection {
-            from = placeName,
-            to = MD.to d,
-            dist = MD.distance d }] 
-        ++ [Connection {
-            from = MD.to d,
-            to = placeName,
-            dist = MD.distance d }]
-        ++ expandPlace' placeName destinations connections
+        if MD.distance d < 0
+            then error "sd: ERROR: Distances between places must be 0 or positive numbers."
+            else
+                connections
+            ++ [Connection {
+                from = placeName,
+                to = MD.to d,
+                dist = MD.distance d }] 
+            ++ [Connection {
+                from = MD.to d,
+                to = placeName,
+                dist = MD.distance d }]
+            ++ expandPlace' placeName destinations connections
 
     mapToConnections :: MD.Map -> [Connection]
     mapToConnections m =
@@ -149,7 +156,7 @@ module Graph (
     readStartEndFromString :: String -> StartEnd
     readStartEndFromString candidateStartEnd =
         let
-            eitherStartEnd = eitherDecode (pack candidateStartEnd) :: (Either String StartEnd)
+            eitherStartEnd = eitherDecode (Data.ByteString.Lazy.Char8.pack candidateStartEnd) :: (Either String StartEnd)
         in
             if isLeft eitherStartEnd 
                 then 
@@ -193,31 +200,6 @@ module Graph (
             in
                 maybe (error "neighbourHowFarByName: Error: Unexpected Nothing returned by getNeighbour.") howFar n
 
-    graphGetAdmissibleVertexNeighbours :: Graph -> Text -> Graph -> Maybe [Neighbour]
-    graphGetAdmissibleVertexNeighbours g currentVertexName greens =
-        let
-            gvs = vertices greens
-        in
-            if
-                null gvs
-            then 
-                graphGetVertexNeighbours g currentVertexName
-            else
-                let
-                    greenNames = Prelude.map vertex gvs
-                in
-                    do
-                        ns <- graphGetVertexNeighbours g currentVertexName
-                        return $ deleteNeighboursByName ns greenNames
-    
-    graphGetMinimumYellowByDistance :: Graph -> Vertex
-    graphGetMinimumYellowByDistance g =
-        let vs = vertices g
-        in
-            if null vs
-                then error "sd: No more yellows. There is no connection between the start and end points."
-                else head (vertices g)
-        
     getVertex :: [Vertex] -> Text -> Maybe Vertex
     getVertex vs vName =
         find (\x -> vertex x == vName) vs

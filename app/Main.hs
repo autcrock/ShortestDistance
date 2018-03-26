@@ -42,6 +42,8 @@ usage   = do
             putStrLn "Usage: sd switch [file|Map|StartEnd|nothing]"
             putStrLn ""
             putStrLn " Purpose: Manipulate and store a simple road network. Determine distances between locations with basic Dijkstra algorithm."
+            putStrLn "          sd can handle multiple disjoint place/road maps.  It will tell you if two places are not connected."
+            putStrLn "          NOTE: sd relies on its caller to ensure that road lengths are not negative."
             putStrLn ""
             putStrLn " Argument types:"
             putStrLn ""
@@ -64,6 +66,7 @@ usage   = do
             putStrLn "   sd [-i, --initialise] filename - Initialise from a map definition in filename as JSON.  Remove system file first."
             putStrLn "   sd [-ar, --addroad] Place - Add or modify a road from this place as JSON to the system file."
             putStrLn "   sd [-s, --shortest] StartEnd - Find shortest path from place A to place B which are stored in a road network file."
+            putStrLn "                                  Returns either a JSON Distance or a message eg that the two places were not connected."
             putStrLn "   sd [-v, --version] - Remove the system file."
             putStrLn "   sd [-xr, --xroad] Place - Delete the road specified as JSON for this place from the system file."
 

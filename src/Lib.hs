@@ -11,6 +11,7 @@ module Lib
     ) where
 
 import Data.Aeson (encode)
+import Data.Either.Unwrap (isLeft, fromLeft, fromRight)
 
 import MapDefinitions
     ( Map
@@ -89,7 +90,10 @@ shortest couldBeJSON =
     do
 --        putStrLn $ "sd: shortest input: " ++ couldBeJSON
         result <- dijkstra couldBeJSON
-        print $ encode result
+        let isItLeft = isLeft result
+        if isItLeft
+        then print $ encode (fromLeft result)
+        else print $ encode (fromRight result)
 
 xroad :: String -> IO ()
 xroad couldBeJSON =
