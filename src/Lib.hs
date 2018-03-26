@@ -88,7 +88,6 @@ aroad couldBeJSON =
 shortest :: String -> IO ()
 shortest couldBeJSON =
     do
---        putStrLn $ "sd: shortest input: " ++ couldBeJSON
         result <- dijkstra couldBeJSON
         let isItLeft = isLeft result
         if isItLeft

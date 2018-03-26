@@ -99,9 +99,6 @@ where
     getPlaceNames :: [Place] -> [Text]
     getPlaceNames = Prelude.map place 
             
-    -- getDestinationNames :: [Destination] -> [Text]
-    -- getDestinationNames = Prelude.map to 
-            
     insertPlaces :: Map -> Map -> Map
     insertPlaces mapToInsert previousMap =
         let placesToInsert = MapDefinitions.map mapToInsert
