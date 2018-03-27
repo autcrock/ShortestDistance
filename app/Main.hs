@@ -1,3 +1,4 @@
+{-# LANGUAGE OverloadedStrings #-}
 module Main where
 
 import System.Environment
@@ -11,6 +12,23 @@ import Lib ( aplace
             , shortest
             , xroad
             )
+
+import Network.Wai
+import Network.HTTP.Types
+import Network.Wai.Handler.Warp (run)
+
+app :: Application
+app _ respond = do
+    putStrLn "I've done some IO here"
+    respond $ responseLBS
+        status200
+        [("Content-Type", "text/plain")]
+        "<p>Hello, Web!</p>"
+
+runWebApp :: IO ()
+runWebApp = do
+    putStrLn "http://localhost:8080/"
+    run 8080 app        
 
 main :: IO ()
 main = getArgs >>= operation >>= putStr
@@ -33,6 +51,8 @@ operation ["-s", aString] = shortest aString >> exit
 operation ["--shortest", aString] = shortest aString >> exit
 operation ["-v"] = version >> exit
 operation ["--version"] = version >> exit
+operation ["-w"] = runWebApp >> exit
+operation ["-webapp"] = runWebApp >> exit
 operation ["-xr", aString] = xroad aString >> exit
 operation ["--xroad", aString] = xroad aString >> exit
 operation _ = usage >> exit

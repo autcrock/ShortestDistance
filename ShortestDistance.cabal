@@ -57,8 +57,11 @@ executable sd
     , bytestring
     , directory
     , either-unwrap
+    , http-types
     , text
     , unique
+    , wai
+    , warp
   other-modules:
       Paths_ShortestDistance
   default-language: Haskell2010
