@@ -1,5 +1,4 @@
 {-# LANGUAGE DeriveGeneric #-}
-
 module Graph (
     mapToGraph
     , deleteNeighboursByName
