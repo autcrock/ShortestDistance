@@ -3,38 +3,38 @@ module Main where
 import System.Environment
 import System.Exit
      
-import Lib ( aplace
+import Lib ( aPlace
             , clear
-            , xplace
+            , xPlace
             , initialise
-            , aroad
+            , aRoad
             , shortest
-            , xroad
+            , xRoad
             )
 
 main :: IO ()
 main = getArgs >>= operation >>= putStr
  
 operation :: [String] -> IO b
-operation ["-ap", aString] = aplace aString >> exit
-operation ["--addplace", aString] = aplace aString >> exit
+operation ["-ap", aString] = aPlace aString >> exit
+operation ["--addplace", aString] = aPlace aString >> exit
 operation ["-c"] = clear >> exit
 operation ["--clear"] = clear >> exit
-operation ["-xp", aString] = xplace aString >> exit
-operation ["--xplace", aString] = xplace aString >> exit
+operation ["-xp", aString] = xPlace aString >> exit
+operation ["--xplace", aString] = xPlace aString >> exit
 operation ["-h"] = usage >> exit
 operation ["--help"] = usage >> exit
 operation ["-i", filename] = initialise filename >> exit
 operation ["--initialise", filename] = initialise filename >> exit
 operation ["--initialize", filename] = initialise filename >> exit
-operation ["-ar", aString] = aroad aString >> exit
-operation ["--addroad", aString] = aroad aString >> exit
+operation ["-ar", aString] = aRoad aString >> exit
+operation ["--addroad", aString] = aRoad aString >> exit
 operation ["-s", aString] = shortest aString >> exit
 operation ["--shortest", aString] = shortest aString >> exit
 operation ["-v"] = version >> exit
 operation ["--version"] = version >> exit
-operation ["-xr", aString] = xroad aString >> exit
-operation ["--xroad", aString] = xroad aString >> exit
+operation ["-xr", aString] = xRoad aString >> exit
+operation ["--xroad", aString] = xRoad aString >> exit
 operation _ = usage >> exit
 
 usage :: IO()

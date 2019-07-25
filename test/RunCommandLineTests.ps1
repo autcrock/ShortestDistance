@@ -33,11 +33,11 @@ Write-Output ""
 Write-Output "SHORTEST PATH FROM H to C"
 stack exec -- sd --shortest '{\"start\": \"H\", \"end\": \"C\"}'
 Write-Output ""
-Write-Output "ADD destinations I and C to place H"
-stack exec -- sd --addplace '{\"map\":[{\"place\":\"H\", \"destinations\": [ {\"to\": \"I\", \"distance\": 100}, {\"to\": \"C\", \"distance\": 24}]}]}'
+Write-Output "ADD directConnections I and C to place H"
+stack exec -- sd --addplace '{\"map\":[{\"place\":\"H\", \"directConnections\": [ {\"to\": \"I\", \"howFar\": 100}, {\"to\": \"C\", \"howFar\": 24}]}]}'
 Write-Output ""
-Write-Output "ADD new place U with destinations V and X"
-stack exec -- sd --addplace '{\"map\":[{\"place\":\"U\", \"destinations\": [ {\"to\": \"V\", \"distance\": 100}, {\"to\": \"X\", \"distance\": 32.5}]}]}'
+Write-Output "ADD new place U with directConnections V and X"
+stack exec -- sd --addplace '{\"map\":[{\"place\":\"U\", \"directConnections\": [ {\"to\": \"V\", \"howFar\": 100}, {\"to\": \"X\", \"howFar\": 32.5}]}]}'
 Write-Output ""
 Write-Output "SHORTEST PATH FROM H to I"
 stack exec -- sd --shortest '{\"start\": \"H\", \"end\": \"I\"}'
@@ -46,7 +46,7 @@ Write-Output "SHORTEST PATH FROM A to G"
 stack exec -- sd --shortest '{\"start\": \"A\", \"end\": \"G\"}'
 Write-Output ""
 Write-Output "DELETE PLACE H AND ROADS TO ITS NEIGHBOURS - ALTERS DISTANCE BETWEEN A and G."
-stack exec -- sd --xplace '{\"map\":[{\"place\":\"H\", \"destinations\": []}]}'
+stack exec -- sd --xplace '{\"map\":[{\"place\":\"H\", \"directConnections\": []}]}'
 Write-Output ""
 Write-Output "SHORTEST PATH FROM A to G"
 stack exec -- sd --shortest '{\"start\": \"A\", \"end\": \"G\"}'
@@ -55,7 +55,7 @@ Write-Output "SHORTEST PATH FROM A to C"
 stack exec -- sd --shortest '{\"start\": \"A\", \"end\": \"C\"}'
 Write-Output ""
 Write-Output "ADD road Z to U"
-stack exec -- sd --addroad '{\"map\":[{\"place\":\"U\", \"destinations\": [ {\"to\": \"Z\", \"distance\": 99.9999}]}]}'
+stack exec -- sd --addroad '{\"map\":[{\"place\":\"U\", \"directConnections\": [ {\"to\": \"Z\", \"howFar\": 99.9999}]}]}'
 Write-Output ""
 Write-Output "SHORTEST PATH FROM Z to U"
 stack exec -- sd --shortest '{\"start\": \"Z\", \"end\": \"U\"}'
@@ -64,25 +64,25 @@ Write-Output "DELIBERATE FAILURE NEXT - THERE IS NO CONNECTION BETWEEN Z and A"
 stack exec -- sd --shortest '{\"start\": \"Z\", \"end\": \"A\"}'
 Write-Output ""
 Write-Output "ADD connection between U and C to allow A and Z to connect."
-stack exec -- sd --addroad '{\"map\":[{\"place\":\"U\", \"destinations\": [ {\"to\": \"C\", \"distance\": 123}]}]}'
+stack exec -- sd --addroad '{\"map\":[{\"place\":\"U\", \"directConnections\": [ {\"to\": \"C\", \"howFar\": 123}]}]}'
 Write-Output ""
 Write-Output "THERE IS NOW A CONNECTION BETWEEN Z and A"
 stack exec -- sd --shortest '{\"start\": \"Z\", \"end\": \"A\"}'
 Write-Output ""
 Write-Output "REMOVE connection between U and C to stop A and Z connection."
-stack exec -- sd --xroad '{\"map\":[{\"place\":\"U\", \"destinations\": [ {\"to\": \"C\", \"distance\": 123}]}]}'
+stack exec -- sd --xroad '{\"map\":[{\"place\":\"U\", \"directConnections\": [ {\"to\": \"C\", \"howFar\": 123}]}]}'
 Write-Output ""
 Write-Output "DELIBERATE FAILURE NEXT - THERE IS AGAIN NO CONNECTION BETWEEN Z and A"
 stack exec -- sd --shortest '{\"start\": \"Z\", \"end\": \"A\"}'
 Write-Output ""
 Write-Output "UPDATE DISTANCE BETWEEN U and Z to 10"
-stack exec -- sd --addroad '{\"map\":[{\"place\":\"U\", \"destinations\": [ {\"to\": \"Z\", \"distance\": 10}]}]}'
+stack exec -- sd --addroad '{\"map\":[{\"place\":\"U\", \"directConnections\": [ {\"to\": \"Z\", \"howFar\": 10}]}]}'
 Write-Output ""
 Write-Output "SHORTEST PATH FROM Z to U"
 stack exec -- sd --shortest '{\"start\": \"Z\", \"end\": \"U\"}'
 Write-Output ""
 Write-Output "ADD NEW DESTINATION H to C in database"
-stack exec -- sd --addroad '{\"map\":[{\"place\":\"H\", \"destinations\": [ {\"to\": \"C\", \"distance\": 2024.2}]}]}'
+stack exec -- sd --addroad '{\"map\":[{\"place\":\"H\", \"directConnections\": [ {\"to\": \"C\", \"howFar\": 2024.2}]}]}'
 Write-Output ""
 Write-Output "CHECK DISTANCE BETWEEN H and C"
 stack exec -- sd --shortest '{\"start\": \"H\", \"end\": \"C\"}'

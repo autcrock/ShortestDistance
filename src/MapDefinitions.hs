@@ -1,17 +1,17 @@
 {-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE FlexibleInstances, OverloadedStrings #-}
+{-# LANGUAGE FlexibleInstances, OverloadedStrings, DisambiguateRecordFields #-}
 
 module MapDefinitions (
       Map(..)
     , Place
     , Destination
-    , destinations
-    , distance
+    , directConnections
+    , howFar
     , getMapFromFile
     , getPlacesFromFile
     , readMapFromString
     , place
-    , to
+    , at
     , readMap
     , removeMap
     , saveMap
@@ -36,28 +36,41 @@ where
     import System.Directory
     import System.IO.Error
 
-            
     -- The map defined for storage purposes
     -- This is meant to be saved, edited, read etc and/or passed to the Shortest module for searching
 
     data Destination = Destination {
-        to :: !Text,
-        distance :: Double
+        at :: !Text,
+        howFar :: Double
     } deriving (Generic, Show, Eq)
 
     instance ToJSON Destination
     instance FromJSON Destination
 
+    -- Shortest distance query input
+    data StartEnd = StartEnd {
+        start :: !Text,
+        end :: !Text
+     } deriving (Generic, Show, Eq)
+    instance ToJSON StartEnd
+    instance FromJSON StartEnd
+
+    -- Shortest distance output
+    newtype Distance = Distance{distance :: Double}
+                         deriving (Generic, Show, Eq)
+    instance ToJSON Distance
+    instance FromJSON Distance
+
+    
     data Place = Place {
         place :: !Text,
-        destinations :: [Destination]
+        directConnections :: [Destination]
      } deriving (Generic, Show, Eq)
     instance ToJSON Place
     instance FromJSON Place
 
-    data Map = Map {
-        map :: [Place]
-    } deriving (Generic, Show, Eq)
+    newtype Map = Map{map :: [Place]}
+                    deriving (Generic, Show, Eq)
     instance ToJSON Map
     instance FromJSON Map
     
@@ -124,7 +137,7 @@ where
     deletePlaces' :: [Text] -> [Place] -> [Place]
     deletePlaces' [] places = places
     deletePlaces' [placeName] places =
-        let dummyPlace = Place {place = placeName, destinations = []}
+        let dummyPlace = Place {place = placeName, directConnections = []}
         in deleteBy (\x y -> place x == place y) dummyPlace places
     deletePlaces' (placeName:moreNames) places =
         let nextPlaces = deletePlaces' [placeName] places
@@ -139,14 +152,14 @@ where
 
     deleteDestinations' :: Text -> [Place] -> [Place]
     deleteDestinations' placeName places =
-        filter (not . null . destinations)
+        filter (not . null . directConnections)
             (Prelude.map (deleteDestinations'' placeName) places)
 
     deleteDestinations'' :: Text -> Place -> Place
     deleteDestinations'' destinationName place_in =
-        let destinationToDelete = Destination { to = destinationName, distance = 0}
-            ds = deleteBy (\x y -> to x == to y) destinationToDelete $ destinations place_in
-        in Place {place = place place_in, destinations = ds}
+        let destinationToDelete = Destination { at = destinationName, howFar = 0}
+            ds = deleteBy (\x y -> at x == at y) destinationToDelete $ directConnections place_in
+        in Place {place = place place_in, directConnections = ds}
 
     insertOrModifyRoad :: Map -> Map -> Map
     insertOrModifyRoad mapToInsert previousMap =
@@ -160,7 +173,7 @@ where
                     previousPs = MapDefinitions.map previousMap
                     previousNames = getPlaceNames previousPs
                     start = head placesToDo
-                    ds = destinations start
+                    ds = directConnections start
                 in
                     if null ds || length ds > 1
                         then error ("sd: Insertion/modification of only one road at a time is allowed: " ++ show placesToDo)
@@ -172,8 +185,8 @@ where
                                 if not $ isInfixOf insertionNames previousNames
                                 then 
                                     let
-                                        newStartOfRoad = to destination
-                                        newDestination = Destination {to = startOfRoad, distance = distance destination}
+                                        newStartOfRoad = at destination
+                                        newDestination = Destination {at = startOfRoad, howFar = howFar destination}
                                     in
                                         insertOrReplaceRoad'' newStartOfRoad newDestination previousPs
                                 else
@@ -189,16 +202,16 @@ where
 
     insertOrReplaceRoad' :: Destination -> Place -> Place
     insertOrReplaceRoad' end thePlace =
-        let ds = destinations thePlace
-            endD = to end
-            theEnd = find (\x -> endD == to x) (destinations thePlace)
+        let ds = directConnections thePlace
+            endD = at end
+            theEnd = find (\x -> endD == at x) (directConnections thePlace)
         in
             if isNothing theEnd
                 then
-                    Place { place = place thePlace, destinations = end:ds }
+                    Place { place = place thePlace, directConnections = end:ds }
                 else
-                    let newDs = deleteBy (\x y -> to x == to y ) end ds
-                    in Place {place = place thePlace, destinations = end:newDs}
+                    let newDs = deleteBy (\x y -> at x == at y ) end ds
+                    in Place {place = place thePlace, directConnections = end:newDs}
 
     insertOrReplaceRoad'' :: Text -> Destination -> [Place] -> Map
     insertOrReplaceRoad'' start end previousPlaces =
@@ -206,7 +219,7 @@ where
         in 
             if isNothing maybeThePlace
             then error ("sd: Insertion/update of a road requires a known starting location. Tried: "
-                ++ show start ++ " and " ++ show (to end))
+                ++ show start ++ " and " ++ show (at end))
             else 
                 insertOrReplaceRoad start end previousPlaces
                 
@@ -228,7 +241,7 @@ where
                         let 
                             previousNames = getPlaceNames previousPlaces
                             start = head placesToDo
-                            ds = destinations start
+                            ds = directConnections start
                         in
                             if null ds || length ds > 1
                                 then error ("sd: Deletion of only one road at a time is allowed: " ++ show placesToDo)
@@ -240,8 +253,8 @@ where
                                         if not $ isInfixOf deletionNames previousNames
                                         then 
                                             let
-                                                newStartOfRoad = to destination
-                                                newDestination = Destination {to = startOfRoad, distance = distance destination}
+                                                newStartOfRoad = at destination
+                                                newDestination = Destination {at = startOfRoad, howFar = howFar destination}
                                             in
                                                 deleteRoad''' newStartOfRoad newDestination previousPlaces
                                         else 
@@ -257,16 +270,17 @@ where
 
     deleteRoad'' :: Destination -> Place -> Place
     deleteRoad'' end thePlace =
-        let ds = destinations thePlace
-            endD = to end
-            theEnd = find (\x -> endD == to x) ds
+        let ds = directConnections thePlace
+            endD = at end
+            theEnd = find (\x -> endD == at x) ds
         in
             if isNothing theEnd
                 then
                     thePlace
                 else
-                    let newDs = deleteBy (\x y -> to x == to y ) end ds
-                    in Place {place = place thePlace, destinations = newDs}
+                    let newDs = deleteBy (\x y -> at x == at y ) end ds
+                    in Place {place = place thePlace, directConnections = newDs}
+
 
     deleteRoad''' :: Text -> Destination -> [Place] -> Map
     deleteRoad''' start end previousPlaces =
@@ -274,7 +288,7 @@ where
         in 
             if isNothing maybeThePlace
             then error ("sd: Deletion of a road requires a known starting location. Tried: "
-                     ++ show start ++ " and " ++ show (to end)) 
+                     ++ show start ++ " and " ++ show (at end))
             else
                     deleteRoad' start end previousPlaces
 

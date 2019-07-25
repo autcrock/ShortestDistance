@@ -2,22 +2,22 @@
     "map":	[
                 {
                     "place":"I",
-                    "destinations": [
-                        {"to": "B", "distance": 10},
-                        {"to": "C", "distance": 20},
-                        {"to": "G", "distance": 50}]
+                    "directConnections": [
+                        {"at": "B", "howFar": 10},
+                        {"at": "C", "howFar": 20},
+                        {"at": "G", "howFar": 50}]
                 },
                 {
                     "place":"J",
-                    "destinations": [
-                        {"to": "K", "distance": 10}]
+                    "directConnections": [
+                        {"at": "K", "howFar": 10}]
                 },
                 {
                     "place":"K",
-                    "destinations": [
-                        {"to": "L", "distance": 20},
-                        {"to": "M", "distance": 50},
-                        {"to": "J", "distance": 30}]
+                    "directConnections": [
+                        {"at": "L", "howFar": 20},
+                        {"at": "M", "howFar": 50},
+                        {"at": "J", "howFar": 30}]
                 }
     		]
 }

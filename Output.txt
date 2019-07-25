@@ -1,0 +1,321 @@
+--------------------------------------------------------------------
+
+EXAMPLE USAGE OF sd.exe
+--------------------------------------------------------------------
+
+BUILDING sd.exe and RUNNING TESTS
+[0mShortestDistance> test (suite: sd-test)[0m
+[0m[0m
+Test suite initialising persistent map : ./test/testmap2.json
+sd: initialising a map using input from file [./test/testmap2.json].
+Test suite running through permutations of test locations A to H ./test/testmap2.json
+"From place [A] to [A] the expected distance is: [Right 0.0]. Calculated forward: [Right (Distance {distance = 0.0})] PASS, and reverse: [Right (Distance {distance = 0.0})] PASS."
+"From place [A] to [B] the expected distance is: [Right 100.0]. Calculated forward: [Right (Distance {distance = 100.0})] PASS, and reverse: [Right (Distance {distance = 100.0})] PASS."
+"From place [A] to [C] the expected distance is: [Right 30.0]. Calculated forward: [Right (Distance {distance = 30.0})] PASS, and reverse: [Right (Distance {distance = 30.0})] PASS."
+"From place [A] to [D] the expected distance is: [Right 230.0]. Calculated forward: [Right (Distance {distance = 230.0})] PASS, and reverse: [Right (Distance {distance = 230.0})] PASS."
+"From place [A] to [E] the expected distance is: [Right 310.0]. Calculated forward: [Right (Distance {distance = 310.0})] PASS, and reverse: [Right (Distance {distance = 310.0})] PASS."
+"From place [A] to [F] the expected distance is: [Right 360.0]. Calculated forward: [Right (Distance {distance = 360.0})] PASS, and reverse: [Right (Distance {distance = 360.0})] PASS."
+"From place [A] to [G] the expected distance is: [Right 370.0]. Calculated forward: [Right (Distance {distance = 370.0})] PASS, and reverse: [Right (Distance {distance = 370.0})] PASS."
+"From place [A] to [H] the expected distance is: [Right 320.0]. Calculated forward: [Right (Distance {distance = 320.0})] PASS, and reverse: [Right (Distance {distance = 320.0})] PASS."
+"From place [B] to [B] the expected distance is: [Right 0.0]. Calculated forward: [Right (Distance {distance = 0.0})] PASS, and reverse: [Right (Distance {distance = 0.0})] PASS."
+"From place [B] to [C] the expected distance is: [Right 130.0]. Calculated forward: [Right (Distance {distance = 130.0})] PASS, and reverse: [Right (Distance {distance = 130.0})] PASS."
+"From place [B] to [D] the expected distance is: [Right 330.0]. Calculated forward: [Right (Distance {distance = 330.0})] PASS, and reverse: [Right (Distance {distance = 330.0})] PASS."
+"From place [B] to [E] the expected distance is: [Right 350.0]. Calculated forward: [Right (Distance {distance = 350.0})] PASS, and reverse: [Right (Distance {distance = 350.0})] PASS."
+"From place [B] to [F] the expected distance is: [Right 300.0]. Calculated forward: [Right (Distance {distance = 300.0})] PASS, and reverse: [Right (Distance {distance = 300.0})] PASS."
+"From place [B] to [G] the expected distance is: [Right 370.0]. Calculated forward: [Right (Distance {distance = 370.0})] PASS, and reverse: [Right (Distance {distance = 370.0})] PASS."
+"From place [B] to [H] the expected distance is: [Right 380.0]. Calculated forward: [Right (Distance {distance = 380.0})] PASS, and reverse: [Right (Distance {distance = 380.0})] PASS."
+"From place [C] to [C] the expected distance is: [Right 0.0]. Calculated forward: [Right (Distance {distance = 0.0})] PASS, and reverse: [Right (Distance {distance = 0.0})] PASS."
+"From place [C] to [D] the expected distance is: [Right 200.0]. Calculated forward: [Right (Distance {distance = 200.0})] PASS, and reverse: [Right (Distance {distance = 200.0})] PASS."
+"From place [C] to [E] the expected distance is: [Right 280.0]. Calculated forward: [Right (Distance {distance = 280.0})] PASS, and reverse: [Right (Distance {distance = 280.0})] PASS."
+"From place [C] to [F] the expected distance is: [Right 330.0]. Calculated forward: [Right (Distance {distance = 330.0})] PASS, and reverse: [Right (Distance {distance = 330.0})] PASS."
+"From place [C] to [G] the expected distance is: [Right 340.0]. Calculated forward: [Right (Distance {distance = 340.0})] PASS, and reverse: [Right (Distance {distance = 340.0})] PASS."
+"From place [C] to [H] the expected distance is: [Right 290.0]. Calculated forward: [Right (Distance {distance = 290.0})] PASS, and reverse: [Right (Distance {distance = 290.0})] PASS."
+"From place [D] to [D] the expected distance is: [Right 0.0]. Calculated forward: [Right (Distance {distance = 0.0})] PASS, and reverse: [Right (Distance {distance = 0.0})] PASS."
+"From place [D] to [E] the expected distance is: [Right 80.0]. Calculated forward: [Right (Distance {distance = 80.0})] PASS, and reverse: [Right (Distance {distance = 80.0})] PASS."
+"From place [D] to [F] the expected distance is: [Right 130.0]. Calculated forward: [Right (Distance {distance = 130.0})] PASS, and reverse: [Right (Distance {distance = 130.0})] PASS."
+"From place [D] to [G] the expected distance is: [Right 140.0]. Calculated forward: [Right (Distance {distance = 140.0})] PASS, and reverse: [Right (Distance {distance = 140.0})] PASS."
+"From place [D] to [H] the expected distance is: [Right 90.0]. Calculated forward: [Right (Distance {distance = 90.0})] PASS, and reverse: [Right (Distance {distance = 90.0})] PASS."
+"From place [E] to [E] the expected distance is: [Right 0.0]. Calculated forward: [Right (Distance {distance = 0.0})] PASS, and reverse: [Right (Distance {distance = 0.0})] PASS."
+"From place [E] to [F] the expected distance is: [Right 50.0]. Calculated forward: [Right (Distance {distance = 50.0})] PASS, and reverse: [Right (Distance {distance = 50.0})] PASS."
+"From place [E] to [G] the expected distance is: [Right 80.0]. Calculated forward: [Right (Distance {distance = 80.0})] PASS, and reverse: [Right (Distance {distance = 80.0})] PASS."
+"From place [E] to [H] the expected distance is: [Right 30.0]. Calculated forward: [Right (Distance {distance = 30.0})] PASS, and reverse: [Right (Distance {distance = 30.0})] PASS."
+"From place [F] to [F] the expected distance is: [Right 0.0]. Calculated forward: [Right (Distance {distance = 0.0})] PASS, and reverse: [Right (Distance {distance = 0.0})] PASS."
+"From place [F] to [G] the expected distance is: [Right 70.0]. Calculated forward: [Right (Distance {distance = 70.0})] PASS, and reverse: [Right (Distance {distance = 70.0})] PASS."
+"From place [F] to [H] the expected distance is: [Right 80.0]. Calculated forward: [Right (Distance {distance = 80.0})] PASS, and reverse: [Right (Distance {distance = 80.0})] PASS."
+"From place [G] to [G] the expected distance is: [Right 0.0]. Calculated forward: [Right (Distance {distance = 0.0})] PASS, and reverse: [Right (Distance {distance = 0.0})] PASS."
+"From place [G] to [H] the expected distance is: [Right 50.0]. Calculated forward: [Right (Distance {distance = 50.0})] PASS, and reverse: [Right (Distance {distance = 50.0})] PASS."
+"From place [H] to [H] the expected distance is: [Right 0.0]. Calculated forward: [Right (Distance {distance = 0.0})] PASS, and reverse: [Right (Distance {distance = 0.0})] PASS."
+Test suite removing persistent map : ./test/testmap2.json
+sd: Removing the system file.
+Test suite initialising persistent map by additions. Part1: {"map":[]}
+sd: initialising a map using putative JSON [{"map":[]}].
+Test suite initialising persistent map by additions. Part2: {"map":[{"place":"A", "directConnections": [ {"at": "B", "howFar": 100}, {"at": "C", "howFar": 30}]}]}
+sd: adding one or more locations using putative JSON [{"map":[{"place":"A", "directConnections": [ {"at": "B", "howFar": 100}, {"at": "C", "howFar": 30}]}]}].
+Test suite initialising persistent map by additions. Part2: {"map":[{ "place":"B","directConnections": [    {"at": "F", "howFar": 300}]},{    "place":"C",    "directConnections": [        {"at": "D", "howFar": 200}]},{    "place":"D",    "directConnections": [        {"at": "H", "howFar": 90},        {"at": "E", "howFar": 80}]},{    "place":"E",    "directConnections": [        {"at": "H", "howFar": 30},        {"at": "G", "howFar": 150},        {"at": "F", "howFar": 50}]},{    "place":"F",    "directConnections": [        {"at": "G", "howFar": 70}]},{    "place":"G",    "directConnections": [        {"at": "H", "howFar": 50}]}]}
+sd: adding one or more locations using putative JSON [{"map":[{ "place":"B","directConnections": [    {"at": "F", "howFar": 300}]},{    "place":"C",    "directConnections": [        {"at": "D", "howFar": 200}]},{    "place":"D",    "directConnections": [        {"at": "H", "howFar": 90},        {"at": "E", "howFar": 80}]},{    "place":"E",    "directConnections": [        {"at": "H", "howFar": 30},        {"at": "G", "howFar": 150},        {"at": "F", "howFar": 50}]},{    "place":"F",    "directConnections": [        {"at": "G", "howFar": 70}]},{    "place":"G",    "directConnections": [        {"at": "H", "howFar": 50}]}]}].
+Test suite running through permutations of test locations A to H ./test/testmap2.json
+"From place [A] to [A] the expected distance is: [Right 0.0]. Calculated forward: [Right (Distance {distance = 0.0})] PASS, and reverse: [Right (Distance {distance = 0.0})] PASS."
+"From place [A] to [B] the expected distance is: [Right 100.0]. Calculated forward: [Right (Distance {distance = 100.0})] PASS, and reverse: [Right (Distance {distance = 100.0})] PASS."
+"From place [A] to [C] the expected distance is: [Right 30.0]. Calculated forward: [Right (Distance {distance = 30.0})] PASS, and reverse: [Right (Distance {distance = 30.0})] PASS."
+"From place [A] to [D] the expected distance is: [Right 230.0]. Calculated forward: [Right (Distance {distance = 230.0})] PASS, and reverse: [Right (Distance {distance = 230.0})] PASS."
+"From place [A] to [E] the expected distance is: [Right 310.0]. Calculated forward: [Right (Distance {distance = 310.0})] PASS, and reverse: [Right (Distance {distance = 310.0})] PASS."
+"From place [A] to [F] the expected distance is: [Right 360.0]. Calculated forward: [Right (Distance {distance = 360.0})] PASS, and reverse: [Right (Distance {distance = 360.0})] PASS."
+"From place [A] to [G] the expected distance is: [Right 370.0]. Calculated forward: [Right (Distance {distance = 370.0})] PASS, and reverse: [Right (Distance {distance = 370.0})] PASS."
+"From place [A] to [H] the expected distance is: [Right 320.0]. Calculated forward: [Right (Distance {distance = 320.0})] PASS, and reverse: [Right (Distance {distance = 320.0})] PASS."
+"From place [B] to [B] the expected distance is: [Right 0.0]. Calculated forward: [Right (Distance {distance = 0.0})] PASS, and reverse: [Right (Distance {distance = 0.0})] PASS."
+"From place [B] to [C] the expected distance is: [Right 130.0]. Calculated forward: [Right (Distance {distance = 130.0})] PASS, and reverse: [Right (Distance {distance = 130.0})] PASS."
+"From place [B] to [D] the expected distance is: [Right 330.0]. Calculated forward: [Right (Distance {distance = 330.0})] PASS, and reverse: [Right (Distance {distance = 330.0})] PASS."
+"From place [B] to [E] the expected distance is: [Right 350.0]. Calculated forward: [Right (Distance {distance = 350.0})] PASS, and reverse: [Right (Distance {distance = 350.0})] PASS."
+"From place [B] to [F] the expected distance is: [Right 300.0]. Calculated forward: [Right (Distance {distance = 300.0})] PASS, and reverse: [Right (Distance {distance = 300.0})] PASS."
+"From place [B] to [G] the expected distance is: [Right 370.0]. Calculated forward: [Right (Distance {distance = 370.0})] PASS, and reverse: [Right (Distance {distance = 370.0})] PASS."
+"From place [B] to [H] the expected distance is: [Right 380.0]. Calculated forward: [Right (Distance {distance = 380.0})] PASS, and reverse: [Right (Distance {distance = 380.0})] PASS."
+"From place [C] to [C] the expected distance is: [Right 0.0]. Calculated forward: [Right (Distance {distance = 0.0})] PASS, and reverse: [Right (Distance {distance = 0.0})] PASS."
+"From place [C] to [D] the expected distance is: [Right 200.0]. Calculated forward: [Right (Distance {distance = 200.0})] PASS, and reverse: [Right (Distance {distance = 200.0})] PASS."
+"From place [C] to [E] the expected distance is: [Right 280.0]. Calculated forward: [Right (Distance {distance = 280.0})] PASS, and reverse: [Right (Distance {distance = 280.0})] PASS."
+"From place [C] to [F] the expected distance is: [Right 330.0]. Calculated forward: [Right (Distance {distance = 330.0})] PASS, and reverse: [Right (Distance {distance = 330.0})] PASS."
+"From place [C] to [G] the expected distance is: [Right 340.0]. Calculated forward: [Right (Distance {distance = 340.0})] PASS, and reverse: [Right (Distance {distance = 340.0})] PASS."
+"From place [C] to [H] the expected distance is: [Right 290.0]. Calculated forward: [Right (Distance {distance = 290.0})] PASS, and reverse: [Right (Distance {distance = 290.0})] PASS."
+"From place [D] to [D] the expected distance is: [Right 0.0]. Calculated forward: [Right (Distance {distance = 0.0})] PASS, and reverse: [Right (Distance {distance = 0.0})] PASS."
+"From place [D] to [E] the expected distance is: [Right 80.0]. Calculated forward: [Right (Distance {distance = 80.0})] PASS, and reverse: [Right (Distance {distance = 80.0})] PASS."
+"From place [D] to [F] the expected distance is: [Right 130.0]. Calculated forward: [Right (Distance {distance = 130.0})] PASS, and reverse: [Right (Distance {distance = 130.0})] PASS."
+"From place [D] to [G] the expected distance is: [Right 140.0]. Calculated forward: [Right (Distance {distance = 140.0})] PASS, and reverse: [Right (Distance {distance = 140.0})] PASS."
+"From place [D] to [H] the expected distance is: [Right 90.0]. Calculated forward: [Right (Distance {distance = 90.0})] PASS, and reverse: [Right (Distance {distance = 90.0})] PASS."
+"From place [E] to [E] the expected distance is: [Right 0.0]. Calculated forward: [Right (Distance {distance = 0.0})] PASS, and reverse: [Right (Distance {distance = 0.0})] PASS."
+"From place [E] to [F] the expected distance is: [Right 50.0]. Calculated forward: [Right (Distance {distance = 50.0})] PASS, and reverse: [Right (Distance {distance = 50.0})] PASS."
+"From place [E] to [G] the expected distance is: [Right 80.0]. Calculated forward: [Right (Distance {distance = 80.0})] PASS, and reverse: [Right (Distance {distance = 80.0})] PASS."
+"From place [E] to [H] the expected distance is: [Right 30.0]. Calculated forward: [Right (Distance {distance = 30.0})] PASS, and reverse: [Right (Distance {distance = 30.0})] PASS."
+"From place [F] to [F] the expected distance is: [Right 0.0]. Calculated forward: [Right (Distance {distance = 0.0})] PASS, and reverse: [Right (Distance {distance = 0.0})] PASS."
+"From place [F] to [G] the expected distance is: [Right 70.0]. Calculated forward: [Right (Distance {distance = 70.0})] PASS, and reverse: [Right (Distance {distance = 70.0})] PASS."
+"From place [F] to [H] the expected distance is: [Right 80.0]. Calculated forward: [Right (Distance {distance = 80.0})] PASS, and reverse: [Right (Distance {distance = 80.0})] PASS."
+"From place [G] to [G] the expected distance is: [Right 0.0]. Calculated forward: [Right (Distance {distance = 0.0})] PASS, and reverse: [Right (Distance {distance = 0.0})] PASS."
+"From place [G] to [H] the expected distance is: [Right 50.0]. Calculated forward: [Right (Distance {distance = 50.0})] PASS, and reverse: [Right (Distance {distance = 50.0})] PASS."
+"From place [H] to [H] the expected distance is: [Right 0.0]. Calculated forward: [Right (Distance {distance = 0.0})] PASS, and reverse: [Right (Distance {distance = 0.0})] PASS."
+Test suite deleting location H from map {"map":[{ "place":"H","directConnections": []}]}
+sd: deleting a location using putative JSON [{"map":[{ "place":"H","directConnections": []}]}].
+Test suite running through permutations of test locations A to G without H in graph.
+"From place [A] to [A] the expected distance is: [Right 0.0]. Calculated forward: [Right (Distance {distance = 0.0})] PASS, and reverse: [Right (Distance {distance = 0.0})] PASS."
+"From place [A] to [B] the expected distance is: [Right 100.0]. Calculated forward: [Right (Distance {distance = 100.0})] PASS, and reverse: [Right (Distance {distance = 100.0})] PASS."
+"From place [A] to [C] the expected distance is: [Right 30.0]. Calculated forward: [Right (Distance {distance = 30.0})] PASS, and reverse: [Right (Distance {distance = 30.0})] PASS."
+"From place [A] to [D] the expected distance is: [Right 230.0]. Calculated forward: [Right (Distance {distance = 230.0})] PASS, and reverse: [Right (Distance {distance = 230.0})] PASS."
+"From place [A] to [E] the expected distance is: [Right 310.0]. Calculated forward: [Right (Distance {distance = 310.0})] PASS, and reverse: [Right (Distance {distance = 310.0})] PASS."
+"From place [A] to [F] the expected distance is: [Right 360.0]. Calculated forward: [Right (Distance {distance = 360.0})] PASS, and reverse: [Right (Distance {distance = 360.0})] PASS."
+"From place [A] to [G] the expected distance is: [Right 430.0]. Calculated forward: [Right (Distance {distance = 430.0})] PASS, and reverse: [Right (Distance {distance = 430.0})] PASS."
+"From place [B] to [B] the expected distance is: [Right 0.0]. Calculated forward: [Right (Distance {distance = 0.0})] PASS, and reverse: [Right (Distance {distance = 0.0})] PASS."
+"From place [B] to [C] the expected distance is: [Right 130.0]. Calculated forward: [Right (Distance {distance = 130.0})] PASS, and reverse: [Right (Distance {distance = 130.0})] PASS."
+"From place [B] to [D] the expected distance is: [Right 330.0]. Calculated forward: [Right (Distance {distance = 330.0})] PASS, and reverse: [Right (Distance {distance = 330.0})] PASS."
+"From place [B] to [E] the expected distance is: [Right 350.0]. Calculated forward: [Right (Distance {distance = 350.0})] PASS, and reverse: [Right (Distance {distance = 350.0})] PASS."
+"From place [B] to [F] the expected distance is: [Right 300.0]. Calculated forward: [Right (Distance {distance = 300.0})] PASS, and reverse: [Right (Distance {distance = 300.0})] PASS."
+"From place [B] to [G] the expected distance is: [Right 370.0]. Calculated forward: [Right (Distance {distance = 370.0})] PASS, and reverse: [Right (Distance {distance = 370.0})] PASS."
+"From place [C] to [C] the expected distance is: [Right 0.0]. Calculated forward: [Right (Distance {distance = 0.0})] PASS, and reverse: [Right (Distance {distance = 0.0})] PASS."
+"From place [C] to [D] the expected distance is: [Right 200.0]. Calculated forward: [Right (Distance {distance = 200.0})] PASS, and reverse: [Right (Distance {distance = 200.0})] PASS."
+"From place [C] to [E] the expected distance is: [Right 280.0]. Calculated forward: [Right (Distance {distance = 280.0})] PASS, and reverse: [Right (Distance {distance = 280.0})] PASS."
+"From place [C] to [F] the expected distance is: [Right 330.0]. Calculated forward: [Right (Distance {distance = 330.0})] PASS, and reverse: [Right (Distance {distance = 330.0})] PASS."
+"From place [C] to [G] the expected distance is: [Right 400.0]. Calculated forward: [Right (Distance {distance = 400.0})] PASS, and reverse: [Right (Distance {distance = 400.0})] PASS."
+"From place [D] to [D] the expected distance is: [Right 0.0]. Calculated forward: [Right (Distance {distance = 0.0})] PASS, and reverse: [Right (Distance {distance = 0.0})] PASS."
+"From place [D] to [E] the expected distance is: [Right 80.0]. Calculated forward: [Right (Distance {distance = 80.0})] PASS, and reverse: [Right (Distance {distance = 80.0})] PASS."
+"From place [D] to [F] the expected distance is: [Right 130.0]. Calculated forward: [Right (Distance {distance = 130.0})] PASS, and reverse: [Right (Distance {distance = 130.0})] PASS."
+"From place [D] to [G] the expected distance is: [Right 200.0]. Calculated forward: [Right (Distance {distance = 200.0})] PASS, and reverse: [Right (Distance {distance = 200.0})] PASS."
+"From place [E] to [E] the expected distance is: [Right 0.0]. Calculated forward: [Right (Distance {distance = 0.0})] PASS, and reverse: [Right (Distance {distance = 0.0})] PASS."
+"From place [E] to [F] the expected distance is: [Right 50.0]. Calculated forward: [Right (Distance {distance = 50.0})] PASS, and reverse: [Right (Distance {distance = 50.0})] PASS."
+"From place [E] to [G] the expected distance is: [Right 120.0]. Calculated forward: [Right (Distance {distance = 120.0})] PASS, and reverse: [Right (Distance {distance = 120.0})] PASS."
+"From place [F] to [F] the expected distance is: [Right 0.0]. Calculated forward: [Right (Distance {distance = 0.0})] PASS, and reverse: [Right (Distance {distance = 0.0})] PASS."
+"From place [F] to [G] the expected distance is: [Right 70.0]. Calculated forward: [Right (Distance {distance = 70.0})] PASS, and reverse: [Right (Distance {distance = 70.0})] PASS."
+"From place [G] to [G] the expected distance is: [Right 0.0]. Calculated forward: [Right (Distance {distance = 0.0})] PASS, and reverse: [Right (Distance {distance = 0.0})] PASS."
+Test suite deleting locations C and A from map {"map":[{ "place":"C","directConnections": []},{ "place":"A","directConnections": []}]}
+sd: deleting a location using putative JSON [{"map":[{ "place":"C","directConnections": []},{ "place":"A","directConnections": []}]}].
+Test suite running through permutations of test locations A to G without H in graph.
+"From place [B] to [B] the expected distance is: [Right 0.0]. Calculated forward: [Right (Distance {distance = 0.0})] PASS, and reverse: [Right (Distance {distance = 0.0})] PASS."
+"From place [B] to [D] the expected distance is: [Right 430.0]. Calculated forward: [Right (Distance {distance = 430.0})] PASS, and reverse: [Right (Distance {distance = 430.0})] PASS."
+"From place [B] to [E] the expected distance is: [Right 350.0]. Calculated forward: [Right (Distance {distance = 350.0})] PASS, and reverse: [Right (Distance {distance = 350.0})] PASS."
+"From place [B] to [F] the expected distance is: [Right 300.0]. Calculated forward: [Right (Distance {distance = 300.0})] PASS, and reverse: [Right (Distance {distance = 300.0})] PASS."
+"From place [B] to [G] the expected distance is: [Right 370.0]. Calculated forward: [Right (Distance {distance = 370.0})] PASS, and reverse: [Right (Distance {distance = 370.0})] PASS."
+"From place [D] to [D] the expected distance is: [Right 0.0]. Calculated forward: [Right (Distance {distance = 0.0})] PASS, and reverse: [Right (Distance {distance = 0.0})] PASS."
+"From place [D] to [E] the expected distance is: [Right 80.0]. Calculated forward: [Right (Distance {distance = 80.0})] PASS, and reverse: [Right (Distance {distance = 80.0})] PASS."
+"From place [D] to [F] the expected distance is: [Right 130.0]. Calculated forward: [Right (Distance {distance = 130.0})] PASS, and reverse: [Right (Distance {distance = 130.0})] PASS."
+"From place [D] to [G] the expected distance is: [Right 200.0]. Calculated forward: [Right (Distance {distance = 200.0})] PASS, and reverse: [Right (Distance {distance = 200.0})] PASS."
+"From place [E] to [E] the expected distance is: [Right 0.0]. Calculated forward: [Right (Distance {distance = 0.0})] PASS, and reverse: [Right (Distance {distance = 0.0})] PASS."
+"From place [E] to [F] the expected distance is: [Right 50.0]. Calculated forward: [Right (Distance {distance = 50.0})] PASS, and reverse: [Right (Distance {distance = 50.0})] PASS."
+"From place [E] to [G] the expected distance is: [Right 120.0]. Calculated forward: [Right (Distance {distance = 120.0})] PASS, and reverse: [Right (Distance {distance = 120.0})] PASS."
+"From place [F] to [F] the expected distance is: [Right 0.0]. Calculated forward: [Right (Distance {distance = 0.0})] PASS, and reverse: [Right (Distance {distance = 0.0})] PASS."
+"From place [F] to [G] the expected distance is: [Right 70.0]. Calculated forward: [Right (Distance {distance = 70.0})] PASS, and reverse: [Right (Distance {distance = 70.0})] PASS."
+"From place [G] to [G] the expected distance is: [Right 0.0]. Calculated forward: [Right (Distance {distance = 0.0})] PASS, and reverse: [Right (Distance {distance = 0.0})] PASS."
+Test suite initialising persistent map by additions - road testing. Part1: {"map":[]}
+sd: initialising a map using putative JSON [{"map":[]}].
+Test suite initialising persistent map by additions - road testing. Part6: {"map":[{"place":"A", "directConnections": []}]}
+sd: adding one or more locations using putative JSON [{"map":[{"place":"A", "directConnections": []}]}].
+Test suite initialising persistent map by additions. Part7: {"map":[{"place":"A", "directConnections": [ {"at": "B", "howFar": 100}]}]}
+sd: adding/modifying one or more roads using putative JSON [{"map":[{"place":"A", "directConnections": [ {"at": "B", "howFar": 100}]}]}].
+Test suite initialising persistent map by additions. Part8: {"map":[{"place":"A", "directConnections": [ {"at": "C", "howFar": 30}]}]}
+sd: adding/modifying one or more roads using putative JSON [{"map":[{"place":"A", "directConnections": [ {"at": "C", "howFar": 30}]}]}].
+Test suite running through permutations of road insertion test data.
+"From place [A] to [A] the expected distance is: [Right 0.0]. Calculated forward: [Right (Distance {distance = 0.0})] PASS, and reverse: [Right (Distance {distance = 0.0})] PASS."
+"From place [A] to [B] the expected distance is: [Right 100.0]. Calculated forward: [Right (Distance {distance = 100.0})] PASS, and reverse: [Right (Distance {distance = 100.0})] PASS."
+"From place [A] to [C] the expected distance is: [Right 30.0]. Calculated forward: [Right (Distance {distance = 30.0})] PASS, and reverse: [Right (Distance {distance = 30.0})] PASS."
+"From place [B] to [B] the expected distance is: [Right 0.0]. Calculated forward: [Right (Distance {distance = 0.0})] PASS, and reverse: [Right (Distance {distance = 0.0})] PASS."
+"From place [B] to [C] the expected distance is: [Right 130.0]. Calculated forward: [Right (Distance {distance = 130.0})] PASS, and reverse: [Right (Distance {distance = 130.0})] PASS."
+"From place [C] to [C] the expected distance is: [Right 0.0]. Calculated forward: [Right (Distance {distance = 0.0})] PASS, and reverse: [Right (Distance {distance = 0.0})] PASS."
+Test suite updating road A to B map by additions. Part9: {"map":[{"place":"A", "directConnections": [ {"at": "B", "howFar": 600}]}]}
+sd: adding/modifying one or more roads using putative JSON [{"map":[{"place":"A", "directConnections": [ {"at": "B", "howFar": 600}]}]}].
+Test suite running through permutations of road insertion test data.
+"From place [A] to [A] the expected distance is: [Right 0.0]. Calculated forward: [Right (Distance {distance = 0.0})] PASS, and reverse: [Right (Distance {distance = 0.0})] PASS."
+"From place [A] to [B] the expected distance is: [Right 600.0]. Calculated forward: [Right (Distance {distance = 600.0})] PASS, and reverse: [Right (Distance {distance = 600.0})] PASS."
+"From place [A] to [C] the expected distance is: [Right 30.0]. Calculated forward: [Right (Distance {distance = 30.0})] PASS, and reverse: [Right (Distance {distance = 30.0})] PASS."
+"From place [B] to [B] the expected distance is: [Right 0.0]. Calculated forward: [Right (Distance {distance = 0.0})] PASS, and reverse: [Right (Distance {distance = 0.0})] PASS."
+"From place [B] to [C] the expected distance is: [Right 630.0]. Calculated forward: [Right (Distance {distance = 630.0})] PASS, and reverse: [Right (Distance {distance = 630.0})] PASS."
+"From place [C] to [C] the expected distance is: [Right 0.0]. Calculated forward: [Right (Distance {distance = 0.0})] PASS, and reverse: [Right (Distance {distance = 0.0})] PASS."
+Test suite updating road A to C map by additions as zero length road. Part10: {"map":[{"place":"A", "directConnections": [ {"at": "C", "howFar": 0}]}]}
+sd: adding/modifying one or more roads using putative JSON [{"map":[{"place":"A", "directConnections": [ {"at": "C", "howFar": 0}]}]}].
+Test suite running through permutations of road insertion test data.
+"From place [A] to [A] the expected distance is: [Right 0.0]. Calculated forward: [Right (Distance {distance = 0.0})] PASS, and reverse: [Right (Distance {distance = 0.0})] PASS."
+"From place [A] to [B] the expected distance is: [Right 600.0]. Calculated forward: [Right (Distance {distance = 600.0})] PASS, and reverse: [Right (Distance {distance = 600.0})] PASS."
+"From place [A] to [C] the expected distance is: [Right 0.0]. Calculated forward: [Right (Distance {distance = 0.0})] PASS, and reverse: [Right (Distance {distance = 0.0})] PASS."
+"From place [B] to [B] the expected distance is: [Right 0.0]. Calculated forward: [Right (Distance {distance = 0.0})] PASS, and reverse: [Right (Distance {distance = 0.0})] PASS."
+"From place [B] to [C] the expected distance is: [Right 600.0]. Calculated forward: [Right (Distance {distance = 600.0})] PASS, and reverse: [Right (Distance {distance = 600.0})] PASS."
+"From place [C] to [C] the expected distance is: [Right 0.0]. Calculated forward: [Right (Distance {distance = 0.0})] PASS, and reverse: [Right (Distance {distance = 0.0})] PASS."
+Test suite updating road A to C by additions in reverse. Part10: {"map":[{"place":"C", "directConnections": [ {"at": "A", "howFar": 999}]}]}
+sd: adding/modifying one or more roads using putative JSON [{"map":[{"place":"C", "directConnections": [ {"at": "A", "howFar": 999}]}]}].
+Test suite inserting road A to D by additions in reverse. Part12: {"map":[{"place":"D", "directConnections": [ {"at": "A", "howFar": 108}]}]}
+sd: adding/modifying one or more roads using putative JSON [{"map":[{"place":"D", "directConnections": [ {"at": "A", "howFar": 108}]}]}].
+Test suite running through permutations of road insertion test data.
+"From place [A] to [A] the expected distance is: [Right 0.0]. Calculated forward: [Right (Distance {distance = 0.0})] PASS, and reverse: [Right (Distance {distance = 0.0})] PASS."
+"From place [A] to [B] the expected distance is: [Right 600.0]. Calculated forward: [Right (Distance {distance = 600.0})] PASS, and reverse: [Right (Distance {distance = 600.0})] PASS."
+"From place [A] to [C] the expected distance is: [Right 999.0]. Calculated forward: [Right (Distance {distance = 999.0})] PASS, and reverse: [Right (Distance {distance = 999.0})] PASS."
+"From place [A] to [D] the expected distance is: [Right 108.0]. Calculated forward: [Right (Distance {distance = 108.0})] PASS, and reverse: [Right (Distance {distance = 108.0})] PASS."
+"From place [B] to [B] the expected distance is: [Right 0.0]. Calculated forward: [Right (Distance {distance = 0.0})] PASS, and reverse: [Right (Distance {distance = 0.0})] PASS."
+"From place [B] to [C] the expected distance is: [Right 1599.0]. Calculated forward: [Right (Distance {distance = 1599.0})] PASS, and reverse: [Right (Distance {distance = 1599.0})] PASS."
+"From place [B] to [D] the expected distance is: [Right 708.0]. Calculated forward: [Right (Distance {distance = 708.0})] PASS, and reverse: [Right (Distance {distance = 708.0})] PASS."
+"From place [C] to [C] the expected distance is: [Right 0.0]. Calculated forward: [Right (Distance {distance = 0.0})] PASS, and reverse: [Right (Distance {distance = 0.0})] PASS."
+"From place [C] to [D] the expected distance is: [Right 1107.0]. Calculated forward: [Right (Distance {distance = 1107.0})] PASS, and reverse: [Right (Distance {distance = 1107.0})] PASS."
+"From place [C] to [C] the expected distance is: [Right 0.0]. Calculated forward: [Right (Distance {distance = 0.0})] PASS, and reverse: [Right (Distance {distance = 0.0})] PASS."
+Test suite deleting road A to C from persistent map. Part8: {"map":[{"place":"A", "directConnections": [ {"at": "C", "howFar": 30}]}]}
+sd: deleting one or more roads using putative JSON [{"map":[{"place":"A", "directConnections": [ {"at": "C", "howFar": 30}]}]}].
+Test suite deleting reversed road A to B from persistent map. Part11: {"map":[{"place":"B", "directConnections": [ {"at": "A", "howFar": 100}]}]}
+sd: deleting one or more roads using putative JSON [{"map":[{"place":"B", "directConnections": [ {"at": "A", "howFar": 100}]}]}].
+Test suite deleting reversed road A to D from persistent map. Part12: {"map":[{"place":"D", "directConnections": [ {"at": "A", "howFar": 108}]}]}
+sd: deleting one or more roads using putative JSON [{"map":[{"place":"D", "directConnections": [ {"at": "A", "howFar": 108}]}]}].
+Test suite deleting place A from persistent map. Part14: {"map":[{"place":"A", "directConnections": []}]}
+sd: deleting a location using putative JSON [{"map":[{"place":"A", "directConnections": []}]}].
+Test suite checking that the persistent map is now empty: ./test/testmap2.json
+Test suite removing persistent map : ./test/testmap2.json
+sd: Removing the system file.
+=========================================================
+Test suite overall results: ALL TESTS PASSED
+=========================================================
+[0m[0m
+[0mShortestDistance> Test suite sd-test passed[0m
+--------------------------------------------------------------------
+
+SHOW sd.exe USAGE
+Usage: sd switch [file|Map|StartEnd|nothing]
+
+ Purpose: Manipulate and store a simple road network. Determine distances between locations with basic Dijkstra algorithm.
+          sd can handle multiple disjoint place/road maps.  It will tell you if two places are not connected.
+          NOTE: sd relies on its caller to ensure that road lengths are not negative.
+
+ Argument types:
+
+   - A map defines zero or more locations each with zero or more destinations: eg:
+       '{"map":[{"place":"A", "destinations": [ {"to": "B", "distance": 100}, {"to": "C", "distance": 30}]}]}'
+     Maps are used as inputs for map initialisation, place and road addition, deletion and updating where applicable.
+     Single destination maps only must be used for road addition, deletion or updating where applicable.
+     Multiple place and destination lists may be used for persistent map initialisation, or for addition of new places.
+     Empty destination and place lists may be used for addition and deletion of roads and places respectively.
+
+   - A StartEnd pair is JSON defining a pair of places for calculation of distance: eg
+       '{"start": "A", "end": "B"}'
+
+ Command line switches:
+
+   sd [-ap, --addplace] Place - Add this place as JSON to the system file.
+   sd [-c, --clear] - Remove the system file.
+   sd [-xd, --xplace] Place - Delete this place as JSON from the system file.
+   sd [-h, --help] - This message.  A persisistent road network is stored in a file for distance between locations.
+   sd [-i, --initialise] filename - Initialise from a map definition in filename as JSON.  Remove system file first.
+   sd [-ar, --addroad] Place - Add or modify a road from this place as JSON to the system file.
+   sd [-s, --shortest] StartEnd - Find shortest path from place A to place B which are stored in a road network file.
+                                  Returns either a JSON Distance or a message eg that the two places were not connected.
+   sd [-v, --version] - Remove the system file.
+   sd [-xr, --xroad] Place - Delete the road specified as JSON for this place from the system file.
+--------------------------------------------------------------------
+
+INITIALISE PERSISTENT MAP USING DATA PROVIDED WITH TEST PROBLEM
+sd: initialising a map using input from file [./test/testmap2.json].
+--------------------------------------------------------------------
+
+SHORTEST PATH FROM A to B - see tests above for more comprehensive testing
+"{\"distance\":100}"
+
+SHORTEST PATH FROM A to H
+"{\"distance\":320}"
+
+SHORTEST PATH FROM A to C
+"{\"distance\":30}"
+
+SHORTEST PATH FROM H to B
+"{\"distance\":380}"
+
+SHORTEST PATH FROM H to C
+"{\"distance\":290}"
+
+ADD destinations I and C to place H
+sd: adding one or more locations using putative JSON [{"map":[{"place":"H", "directConnections": [ {"at": "I", "howFar": 100}, {"at": "C", "howFar": 24}]}]}].
+
+ADD new place U with destinations V and X
+sd: adding one or more locations using putative JSON [{"map":[{"place":"U", "directConnections": [ {"at": "V", "howFar": 100}, {"at": "X", "howFar": 32.5}]}]}].
+
+SHORTEST PATH FROM H to I
+"{\"distance\":100}"
+
+SHORTEST PATH FROM A to G
+"{\"distance\":104}"
+
+DELETE PLACE H AND ROADS TO ITS NEIGHBOURS - ALTERS DISTANCE BETWEEN A and G.
+sd: deleting a location using putative JSON [{"map":[{"place":"H", "directConnections": []}]}].
+
+SHORTEST PATH FROM A to G
+"{\"distance\":430}"
+
+SHORTEST PATH FROM A to C
+"{\"distance\":30}"
+
+ADD road Z to U
+sd: adding/modifying one or more roads using putative JSON [{"map":[{"place":"U", "directConnections": [ {"at": "Z", "howFar": 99.9999}]}]}].
+
+SHORTEST PATH FROM Z to U
+"{\"distance\":99.9999}"
+
+DELIBERATE FAILURE NEXT - THERE IS NO CONNECTION BETWEEN Z and A
+"{\"tag\":\"NotConnected\",\"contents\":[\"Z\",\"A\"]}"
+
+ADD connection between U and C to allow A and Z to connect.
+sd: adding/modifying one or more roads using putative JSON [{"map":[{"place":"U", "directConnections": [ {"at": "C", "howFar": 123}]}]}].
+
+THERE IS NOW A CONNECTION BETWEEN Z and A
+"{\"distance\":252.9999}"
+
+REMOVE connection between U and C to stop A and Z connection.
+sd: deleting one or more roads using putative JSON [{"map":[{"place":"U", "directConnections": [ {"at": "C", "howFar": 123}]}]}].
+
+DELIBERATE FAILURE NEXT - THERE IS AGAIN NO CONNECTION BETWEEN Z and A
+"{\"tag\":\"NotConnected\",\"contents\":[\"Z\",\"A\"]}"
+
+UPDATE DISTANCE BETWEEN U and Z to 10
+sd: adding/modifying one or more roads using putative JSON [{"map":[{"place":"U", "directConnections": [ {"at": "Z", "howFar": 10}]}]}].
+
+SHORTEST PATH FROM Z to U
+"{\"distance\":10}"
+
+ADD NEW DESTINATION H to C in database
+sd: adding/modifying one or more roads using putative JSON [{"map":[{"place":"H", "directConnections": [ {"at": "C", "howFar": 2024.2}]}]}].
+
+CHECK DISTANCE BETWEEN H and C
+"{\"distance\":2024.2}"
+
+CHECK DISTANCE BETWEEN C and H
+"{\"distance\":2024.2}"
+
+CHECK DISTANCE BETWEEN A and C again
+"{\"distance\":30}"
+
+CLEAR THE PERSISTENT DATABASE
+sd: Removing the system file.

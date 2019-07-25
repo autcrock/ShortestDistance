@@ -2,42 +2,42 @@
     "map":	[
                 {
                     "place":"A",
-                    "destinations": [
-                        {"to": "B", "distance": 100},
-                        {"to": "C", "distance": 30}]
+                    "directConnections": [
+                        {"at": "B", "howFar": 100},
+                        {"at": "C", "howFar": 30}]
                 },
                 {
                     "place":"B",
-                    "destinations": [
-                        {"to": "F", "distance": 300}]
+                    "directConnections": [
+                        {"at": "F", "howFar": 300}]
                 },
                 {
                     "place":"C",
-                    "destinations": [
-                        {"to": "D", "distance": 200}]
+                    "directConnections": [
+                        {"at": "D", "howFar": 200}]
                 },
                 {
                     "place":"D",
-                    "destinations": [
-                        {"to": "H", "distance": 90},
-                        {"to": "E", "distance": 80}]
+                    "directConnections": [
+                        {"at": "H", "howFar": 90},
+                        {"at": "E", "howFar": 80}]
                 },
                 {
                     "place":"E",
-                    "destinations": [
-                        {"to": "H", "distance": 30},
-                        {"to": "G", "distance": 150},
-                        {"to": "F", "distance": 50}]
+                    "directConnections": [
+                        {"at": "H", "howFar": 30},
+                        {"at": "G", "howFar": 150},
+                        {"at": "F", "howFar": 50}]
                 },
                 {
                     "place":"F",
-                    "destinations": [
-                        {"to": "G", "distance": 70}]
+                    "directConnections": [
+                        {"at": "G", "howFar": 70}]
                 },
                 {
                     "place":"G",
-                    "destinations": [
-                        {"to": "H", "distance": 50}]
+                    "directConnections": [
+                        {"at": "H", "howFar": 50}]
                 }
     		]
 }

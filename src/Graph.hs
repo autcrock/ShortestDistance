@@ -21,13 +21,15 @@ module Graph (
     import Data.ByteString.Lazy.Char8(pack)
     import Data.Either (Either(..))
     import Data.Either.Unwrap (isLeft, fromRight)
-    import Data.List (sortBy, nub, find, deleteBy)
+    import Data.List (sortBy, sortOn, nub, find, deleteBy)
     import Data.Ord (comparing)
     import Data.Text (Text)
     import GHC.Generics hiding (from, to)
     import qualified MapDefinitions as MD
 
     -- Intermediate data structure
+
+
     data Connection = Connection { from :: Text, to :: Text, dist :: Double } deriving (Show)
 
     -- Manipulation in Dijkstra
@@ -41,12 +43,12 @@ module Graph (
     instance ToJSON Vertex
     instance FromJSON Vertex
 
-    data Graph = Graph {vertices :: [Vertex]} deriving (Show, Generic)
+    newtype Graph = Graph{vertices :: [Vertex]} deriving (Show, Generic)
     instance ToJSON Graph
     instance FromJSON Graph
 
     -- Input and Output
-    data Distance = Distance {distance:: Double} deriving (Show, Generic, Eq)
+    newtype Distance = Distance{distance :: Double} deriving (Show, Generic, Eq)
     instance ToJSON Distance
     instance FromJSON Distance
 
@@ -58,10 +60,10 @@ module Graph (
     data OptionalCompare = Compare | NoCompare deriving (Eq, Show)
 
     sortNeighboursByDistance :: [Neighbour] -> [Neighbour]
-    sortNeighboursByDistance = sortBy (comparing howFar)
+    sortNeighboursByDistance = sortOn howFar
 
     sortVerticesByDistance :: [Vertex] -> [Vertex]
-    sortVerticesByDistance = sortBy (comparing accumulatedDistance)
+    sortVerticesByDistance = sortOn accumulatedDistance
 
     getVertexNames :: [Connection] -> [Text]
     getVertexNames = nub . Prelude.map from
@@ -98,36 +100,36 @@ module Graph (
         
     expandPlace :: MD.Place -> [Connection]
     expandPlace p =
-        expandPlace' (MD.place p) (MD.destinations p) []
+        expandPlace' (MD.place p) (MD.directConnections p) []
 
     expandPlace' :: Text -> [MD.Destination] -> [Connection] -> [Connection]
     expandPlace' _ [] connections = connections
     expandPlace' placeName [destination] connections =
-        if MD.distance destination < 0
+        if MD.howFar destination < 0
         then error "sd: ERROR: Distances between places must be 0 or positive numbers."
         else
             connections
             ++ [Connection {
                 from = placeName,
-                to = MD.to destination,
-                dist = MD.distance destination }] 
+                to = MD.at destination,
+                dist = MD.howFar destination }]
             ++ [Connection {
-                from = MD.to destination,
+                from = MD.at destination,
                 to = placeName,
-                dist = MD.distance destination }]
+                dist = MD.howFar destination }]
     expandPlace' placeName (d : destinations) connections =
-        if MD.distance d < 0
+        if MD.howFar d < 0
             then error "sd: ERROR: Distances between places must be 0 or positive numbers."
             else
                 connections
             ++ [Connection {
                 from = placeName,
-                to = MD.to d,
-                dist = MD.distance d }] 
+                to = MD.at d,
+                dist = MD.howFar d }]
             ++ [Connection {
-                from = MD.to d,
+                from = MD.at d,
                 to = placeName,
-                dist = MD.distance d }]
+                dist = MD.howFar d }]
             ++ expandPlace' placeName destinations connections
 
     mapToConnections :: MD.Map -> [Connection]

@@ -1,11 +1,11 @@
 import Lib (
-    aplace
+    aPlace
     , clear
-    , xplace
+    , xPlace
     , initialise
     , initialiseJSON
-    , aroad
-    , xroad
+    , aRoad
+    , xRoad
     )
 
 import Graph(
@@ -79,56 +79,56 @@ main =
         let part1 = "{\"map\":[]}"
         putStrLn $ "Test suite initialising persistent map by additions. Part1: " ++ part1
         initialiseJSON part1
-        let part2 = "{\"map\":[{\"place\":\"A\", \"destinations\": [ {\"to\": \"B\", \"distance\": 100}, {\"to\": \"C\", \"distance\": 30}]}]}"
+        let part2 = "{\"map\":[{\"place\":\"A\", \"directConnections\": [ {\"at\": \"B\", \"howFar\": 100}, {\"at\": \"C\", \"howFar\": 30}]}]}"
         putStrLn $ "Test suite initialising persistent map by additions. Part2: " ++ part2
-        aplace part2
+        aPlace part2
         let part3 = "{\"map\":[{ \
             \\"place\":\"B\",\
-            \\"destinations\": [\
-            \    {\"to\": \"F\", \"distance\": 300}]\
+            \\"directConnections\": [\
+            \    {\"at\": \"F\", \"howFar\": 300}]\
             \},\
             \{\
             \    \"place\":\"C\",\
-            \    \"destinations\": [\
-            \        {\"to\": \"D\", \"distance\": 200}]\
+            \    \"directConnections\": [\
+            \        {\"at\": \"D\", \"howFar\": 200}]\
             \},\
             \{\
             \    \"place\":\"D\",\
-            \    \"destinations\": [\
-            \        {\"to\": \"H\", \"distance\": 90},\
-            \        {\"to\": \"E\", \"distance\": 80}]\
+            \    \"directConnections\": [\
+            \        {\"at\": \"H\", \"howFar\": 90},\
+            \        {\"at\": \"E\", \"howFar\": 80}]\
             \},\
             \{\
             \    \"place\":\"E\",\
-            \    \"destinations\": [\
-            \        {\"to\": \"H\", \"distance\": 30},\
-            \        {\"to\": \"G\", \"distance\": 150},\
-            \        {\"to\": \"F\", \"distance\": 50}]\
+            \    \"directConnections\": [\
+            \        {\"at\": \"H\", \"howFar\": 30},\
+            \        {\"at\": \"G\", \"howFar\": 150},\
+            \        {\"at\": \"F\", \"howFar\": 50}]\
             \},\
             \{\
             \    \"place\":\"F\",\
-            \    \"destinations\": [\
-            \        {\"to\": \"G\", \"distance\": 70}]\
+            \    \"directConnections\": [\
+            \        {\"at\": \"G\", \"howFar\": 70}]\
             \},\
             \{\
             \    \"place\":\"G\",\
-            \    \"destinations\": [\
-            \        {\"to\": \"H\", \"distance\": 50}]\
+            \    \"directConnections\": [\
+            \        {\"at\": \"H\", \"howFar\": 50}]\
             \}\
             \]}"
         putStrLn $ "Test suite initialising persistent map by additions. Part2: " ++ part3
-        aplace part3
+        aPlace part3
         
         putStrLn $ "Test suite running through permutations of test locations A to H " ++ mapInputDataFile
         results1 <- mapM expected dijkstraTestData
 
         let part4 = "{\"map\":[{ \
             \\"place\":\"H\",\
-            \\"destinations\": []\
+            \\"directConnections\": []\
             \}\
             \]}"
         putStrLn $ "Test suite deleting location H from map " ++ part4
-        xplace part4
+        xPlace part4
         let dijkstraTestDataWithoutH =  [
                 ("A", "A", Right 0), ("A", "B", Right 100), ("A", "C", Right 30), ("A", "D", Right 230), ("A", "E", Right 310), ("A", "F", Right 360), ("A", "G", Right 430)
                 , ("B", "B", Right 0), ("B", "C", Right 130), ("B", "D", Right 330), ("B", "E", Right 350), ("B", "F", Right 300), ("B", "G", Right 370)
@@ -143,16 +143,16 @@ main =
 
         let part5 = "{\"map\":[{ \
             \\"place\":\"C\",\
-            \\"destinations\": []\
+            \\"directConnections\": []\
             \}\
             \,{ \
             \\"place\":\"A\",\
-            \\"destinations\": []\
+            \\"directConnections\": []\
             \}\
             \]}"
 
         putStrLn $ "Test suite deleting locations C and A from map " ++ part5
-        xplace part5
+        xPlace part5
 
         let dijkstraTestDataWithoutHCandA =  [
                 ("B", "B", Right 0), ("B", "D", Right 430), ("B", "E", Right 350), ("B", "F", Right 300), ("B", "G", Right 370)
@@ -167,17 +167,17 @@ main =
 
         putStrLn $ "Test suite initialising persistent map by additions - road testing. Part1: " ++ part1
         initialiseJSON part1
-        let part6 = "{\"map\":[{\"place\":\"A\", \"destinations\": []}]}"
+        let part6 = "{\"map\":[{\"place\":\"A\", \"directConnections\": []}]}"
         putStrLn $ "Test suite initialising persistent map by additions - road testing. Part6: " ++ part6
-        aplace part6
+        aPlace part6
 
-        let part7 = "{\"map\":[{\"place\":\"A\", \"destinations\": [ {\"to\": \"B\", \"distance\": 100}]}]}"
+        let part7 = "{\"map\":[{\"place\":\"A\", \"directConnections\": [ {\"at\": \"B\", \"howFar\": 100}]}]}"
         putStrLn $ "Test suite initialising persistent map by additions. Part7: " ++ part7
-        aroad part7
+        aRoad part7
 
-        let part8 = "{\"map\":[{\"place\":\"A\", \"destinations\": [ {\"to\": \"C\", \"distance\": 30}]}]}"
+        let part8 = "{\"map\":[{\"place\":\"A\", \"directConnections\": [ {\"at\": \"C\", \"howFar\": 30}]}]}"
         putStrLn $ "Test suite initialising persistent map by additions. Part8: " ++ part8
-        aroad part8
+        aRoad part8
 
         let dijkstraTestDataRoadInsertion =  [
                 ("A", "A", Right 0), ("A", "B", Right 100), ("A", "C", Right 30)
@@ -188,9 +188,9 @@ main =
         putStrLn "Test suite running through permutations of road insertion test data."
         results4 <- mapM expected dijkstraTestDataRoadInsertion
 
-        let part9 = "{\"map\":[{\"place\":\"A\", \"destinations\": [ {\"to\": \"B\", \"distance\": 600}]}]}"
+        let part9 = "{\"map\":[{\"place\":\"A\", \"directConnections\": [ {\"at\": \"B\", \"howFar\": 600}]}]}"
         putStrLn $ "Test suite updating road A to B map by additions. Part9: " ++ part9
-        aroad part9
+        aRoad part9
 
         let dijkstraTestDataRoadInsertionAfterUpdatingAtoB =  [
                 ("A", "A", Right 0), ("A", "B", Right 600), ("A", "C", Right 30)
@@ -201,9 +201,9 @@ main =
         putStrLn "Test suite running through permutations of road insertion test data."
         results5 <- mapM expected dijkstraTestDataRoadInsertionAfterUpdatingAtoB
 
-        let part10 = "{\"map\":[{\"place\":\"A\", \"destinations\": [ {\"to\": \"C\", \"distance\": 0}]}]}"
+        let part10 = "{\"map\":[{\"place\":\"A\", \"directConnections\": [ {\"at\": \"C\", \"howFar\": 0}]}]}"
         putStrLn $ "Test suite updating road A to C map by additions as zero length road. Part10: " ++ part10
-        aroad part10
+        aRoad part10
 
         let dijkstraTestDataRoadInsertionAfterUpdatingAtoC =  [
                 ("A", "A", Right 0), ("A", "B", Right 600), ("A", "C", Right 0)
@@ -214,13 +214,13 @@ main =
         putStrLn "Test suite running through permutations of road insertion test data."
         results6 <- mapM expected dijkstraTestDataRoadInsertionAfterUpdatingAtoC
 
-        let part11 = "{\"map\":[{\"place\":\"C\", \"destinations\": [ {\"to\": \"A\", \"distance\": 999}]}]}"
+        let part11 = "{\"map\":[{\"place\":\"C\", \"directConnections\": [ {\"at\": \"A\", \"howFar\": 999}]}]}"
         putStrLn $ "Test suite updating road A to C by additions in reverse. Part10: " ++ part11
-        aroad part11
+        aRoad part11
 
-        let part12 = "{\"map\":[{\"place\":\"D\", \"destinations\": [ {\"to\": \"A\", \"distance\": 108}]}]}"
+        let part12 = "{\"map\":[{\"place\":\"D\", \"directConnections\": [ {\"at\": \"A\", \"howFar\": 108}]}]}"
         putStrLn $ "Test suite inserting road A to D by additions in reverse. Part12: " ++ part12
-        aroad part12
+        aRoad part12
 
         let dijkstraTestDataRoadInsertionAfterUpdatingCtoAAndInsertingAtoD =  [
                 ("A", "A", Right 0), ("A", "B", Right 600), ("A", "C", Right 999), ("A", "D", Right 108)
@@ -233,18 +233,18 @@ main =
         results7 <- mapM expected dijkstraTestDataRoadInsertionAfterUpdatingCtoAAndInsertingAtoD
 
         putStrLn $ "Test suite deleting road A to C from persistent map. Part8: " ++ part8
-        xroad part8
+        xRoad part8
 
-        let part13 = "{\"map\":[{\"place\":\"B\", \"destinations\": [ {\"to\": \"A\", \"distance\": 100}]}]}"
+        let part13 = "{\"map\":[{\"place\":\"B\", \"directConnections\": [ {\"at\": \"A\", \"howFar\": 100}]}]}"
         putStrLn $ "Test suite deleting reversed road A to B from persistent map. Part11: " ++ part13
-        xroad part13
+        xRoad part13
 
         putStrLn $ "Test suite deleting reversed road A to D from persistent map. Part12: " ++ part12
-        xroad part12
+        xRoad part12
 
-        let part14 = "{\"map\":[{\"place\":\"A\", \"destinations\": []}]}"
+        let part14 = "{\"map\":[{\"place\":\"A\", \"directConnections\": []}]}"
         putStrLn $ "Test suite deleting place A from persistent map. Part14: " ++ part14
-        xplace part14
+        xPlace part14
 
         putStrLn $ "Test suite checking that the persistent map is now empty: " ++ mapInputDataFile
         m <- readMap
