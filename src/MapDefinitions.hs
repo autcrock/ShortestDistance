@@ -4,6 +4,7 @@
 module MapDefinitions (
       Map(..)
     , Place
+    , StartEnd(..)
     , Destination
     , directConnections
     , howFar
@@ -35,9 +36,6 @@ where
     import GHC.Generics hiding (to)
     import System.Directory
     import System.IO.Error
-
-    -- The map defined for storage purposes
-    -- This is meant to be saved, edited, read etc and/or passed to the Shortest module for searching
 
     data Destination = Destination {
         at :: !Text,
@@ -81,7 +79,6 @@ where
     getMapFromFile inputFile =
         do
             inputMapAsJSON <- DBSL.readFile inputFile
-            -- DBSLC8.putStrLn inputMapAsJSON
             let inputMap = eitherDecode inputMapAsJSON :: (Either String Map)
             return inputMap
 

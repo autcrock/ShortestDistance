@@ -1,3 +1,12 @@
+{-# LANGUAGE OverloadedStrings #-}
+
+import Data.Aeson (encode)
+import Data.Text (Text)
+import Data.Either.Unwrap (isLeft, fromLeft, fromRight)
+import Data.String.Conversions (cs)
+
+import qualified Data.Text as T
+import qualified Data.Text.IO as TIO
 import Lib (
     aPlace
     , clear
@@ -8,50 +17,42 @@ import Lib (
     , xRoad
     )
 
-import Graph(
-    StartEnd(..)
-    , Distance(..)
-    )
-import Shortest (
-    dijkstra
-    , UnusualResult(..)
-    )
-import Data.Aeson (encode)
-import Data.ByteString.Lazy.Char8(unpack)
-import Data.Either.Unwrap (isLeft, fromLeft, fromRight)
-import MapDefinitions (Map(..), readMap) 
+import MapDefinitions (Map(..), StartEnd(..), readMap)
+import Shortest (dijkstra, UnusualResult(..), Distance(..))
 
 mapInputDataFile :: String
 mapInputDataFile = "./test/testmap2.json"
 
-boolToResult :: Bool -> String
+boolToResult :: Bool -> Text
 boolToResult br = if br then "PASS" else "FAIL"
 
 boolToFinalResult :: Bool -> String
 boolToFinalResult br = if br then "ALL TESTS PASSED" else "ONE OR MORE TESTS FAILED"
 
-expected :: (String, String, Either UnusualResult Double) -> IO Bool
+expected :: (Text, Text, Either UnusualResult Double) -> IO Bool
 expected (from, to, expectedDistance) =
     do  
         let enced = encode StartEnd { start = from, end = to }
             expectedD = if isLeft expectedDistance
                         then Left (fromLeft expectedDistance)
                         else Right Distance {distance = fromRight expectedDistance}
-        fsd <- dijkstra $ unpack enced
+        fsd <- dijkstra $ cs enced
         let forwardTrue = if isLeft fsd
                             then fromLeft fsd == fromLeft expectedD
                             else fromRight fsd == fromRight expectedD
-        rsd <- dijkstra $ unpack (encode StartEnd { start = to, end = from })
+        rsd <- dijkstra $ cs $ encode StartEnd { start = to, end = from }
         let reverseTrue = if isLeft rsd
             then fromLeft rsd == fromLeft expectedD
             else fromRight rsd == fromRight expectedD
-        print ( "From place [" ++ from ++  "] to [" ++ to
-            ++ "] the expected distance is: [" ++ show expectedDistance
-            ++ "]. Calculated forward: [" ++ show fsd
-            ++ "] " ++ boolToResult forwardTrue
-            ++ ", and reverse: [" ++ show rsd
-            ++ "] " ++ boolToResult reverseTrue
-            ++ "." )
+        TIO.putStrLn $ T.concat [
+            "From place [", from,"] to [", to,
+            "] the expected distance is: [", cs (show expectedD),
+            "]. Calculated forward: [", cs (show $ fromRight fsd),
+            "] ", boolToResult forwardTrue,
+            ", and reverse: [", cs (show $ fromRight rsd),
+            "] ", boolToResult reverseTrue,
+            "."
+            ]
         return (forwardTrue && reverseTrue)
 
 main :: IO ()

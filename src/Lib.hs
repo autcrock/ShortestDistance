@@ -12,6 +12,7 @@ module Lib
 
 import Data.Aeson (encode)
 import Data.Either.Unwrap (isLeft, fromLeft, fromRight)
+import Data.String.Conversions (cs)
 
 import MapDefinitions
     ( Map
@@ -88,7 +89,7 @@ aRoad couldBeJSON =
 shortest :: String -> IO ()
 shortest couldBeJSON =
     do
-        result <- dijkstra couldBeJSON
+        result <- dijkstra (cs couldBeJSON)
         let isItLeft = isLeft result
         if isItLeft
         then print $ encode (fromLeft result)
@@ -102,5 +103,3 @@ xRoad couldBeJSON =
         savedMap <- readMap
         let newMap = deleteRoad mapToDelete savedMap
         saveMap newMap
-
-        

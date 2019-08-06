@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 4f034526cb08ec172242d5477d1904fe2e34ce8e2bacb0190ebd919fa4a67731
+-- hash: 0b459f381bd5ea9ad4d99973529872b4e3011270852f37a2f91e08874084ccea
 
 name:           ShortestDistance
 version:        0.1.0.0
@@ -29,12 +29,14 @@ library
   hs-source-dirs:
       src
   build-depends:
-      aeson
+      aeson >=1.4.2.0
     , base >=4.7 && <5
     , bytestring
     , directory
     , either-unwrap
+    , string-conversions
     , text
+    , text-show >=3.8.2
     , unique
   exposed-modules:
       Graph
@@ -52,12 +54,14 @@ executable sd
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       ShortestDistance
-    , aeson
+    , aeson >=1.4.2.0
     , base >=4.7 && <5
     , bytestring
     , directory
     , either-unwrap
+    , string-conversions
     , text
+    , text-show >=3.8.2
     , unique
   other-modules:
       Paths_ShortestDistance
@@ -71,12 +75,14 @@ test-suite sd-test
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       ShortestDistance
-    , aeson
+    , aeson >=1.4.2.0
     , base >=4.7 && <5
     , bytestring
     , directory
     , either-unwrap
+    , string-conversions
     , text
+    , text-show >=3.8.2
     , unique
   other-modules:
       Paths_ShortestDistance

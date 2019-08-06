@@ -1,7 +1,10 @@
-{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DeriveGeneric     #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Shortest (
     UnusualResult(..)
+    , Distance(..)
     , dijkstra
 ) where
 
@@ -22,15 +25,21 @@ module Shortest (
         , graphInsertVertex
         , Graph(Graph), vertices
         , Vertex(Vertex), vertex, accumulatedDistance, neighbours
-        , Neighbour(), neighbour
-        , OptionalCompare(Compare, NoCompare)
-        , start, end
-        , Distance(..))
+        , Neighbour(), neighbourName
+--        , OptionalCompare(Compare, NoCompare)
+--        , start, end
+        )
 
-    import MapDefinitions ( readMap )
-    import Numeric.Natural ()
+    import MapDefinitions ( readMap, StartEnd(..) )
 
-    data UnusualResult = NegativeRoadLength | NotConnected String String deriving (Show, Generic, Eq)
+    newtype Distance = Distance{distance :: Double} deriving (Show, Generic, Eq)
+    instance ToJSON Distance
+    instance FromJSON Distance
+
+    -- When updating vertex data
+    data OptionalCompare = Compare | NoCompare deriving (Eq, Show)
+
+    data UnusualResult = NegativeRoadLength | NotConnected Text Text deriving (Show, Generic, Eq)
     instance ToJSON UnusualResult
     instance FromJSON UnusualResult
 
@@ -57,11 +66,9 @@ module Shortest (
 
     graphGetMinimumYellowByDistance :: Graph -> Text -> Text -> Either UnusualResult Vertex
     graphGetMinimumYellowByDistance g from to=
-        let vs = vertices g
-        in
-            if null vs
-                then Left $ NotConnected (unpack from) (unpack to)
-                else Right $ head (vertices g)
+        if null $ vertices g
+            then Left $ NotConnected from to
+            else Right $ head (vertices g)
         
     graphGetAdmissibleVertexNeighbours :: Graph -> Text -> Graph -> Maybe [Neighbour]
     graphGetAdmissibleVertexNeighbours g currentVertexName greens =
@@ -81,7 +88,7 @@ module Shortest (
                         return $ deleteNeighboursByName ns greenNames
     
     transferVertexUpdatingAccumulatedDistance :: (Graph, Graph) -> [Neighbour] -> Text -> Double -> OptionalCompare -> (Graph, Graph)
-    transferVertexUpdatingAccumulatedDistance (graph1, graph2) neighbours_in currentVName currentDistance optCompare =
+    transferVertexUpdatingAccumulatedDistance (graph1, graph2) neighboursIn currentVName currentDistance optCompare =
         let
             txVertex = graphGetVertex graph1 currentVName
         in
@@ -92,9 +99,9 @@ module Shortest (
                     txV = fromJust txVertex
                     accumulatedD = accumulatedDistance txV
                     neighbourDistance =
-                        neighbourHowFarByName neighbours_in currentVName
+                        neighbourHowFarByName neighboursIn currentVName
                     
-                    accumulatedD' = 
+                    accumulatedD' =
                         pickMinimumAccumulatedDistance accumulatedD neighbourDistance currentDistance optCompare
                     v =  Vertex {
                         vertex = vertex txV
@@ -104,8 +111,7 @@ module Shortest (
                     
                     graph2' = graphDeleteVertex graph2 txV
                     newGraph1 = graphDeleteVertex graph1 txV
-                    newGraph2 = 
-                              graphInsertVertex graph2' v
+                    newGraph2 = graphInsertVertex graph2' v
                 in
                     (newGraph1, newGraph2) 
 
@@ -128,7 +134,7 @@ module Shortest (
     tellTheNeighbours :: (Graph, Graph) -> [Neighbour] -> Double -> (Graph, Graph)
     tellTheNeighbours (reds, yellows) ns currentDistance =
         let
-            nNames = Prelude.map neighbour ns
+            nNames = Prelude.map neighbourName ns
 
             redNeighbours = mapMaybe (graphGetVertex reds) nNames
             redNeighbourNames = Prelude.map vertex redNeighbours
@@ -142,7 +148,7 @@ module Shortest (
         in 
             (rs', ys'')
 
-    dijkstra :: String -> IO (Either UnusualResult Distance)
+    dijkstra :: Text -> IO (Either UnusualResult Distance)
     dijkstra couldBeStartEnd =
         do 
             m <- readMap
@@ -152,13 +158,13 @@ module Shortest (
                 to = end startEnd
                 currentDistance = 0
                 (reds, yellows) =
-                    transferVertexUpdatingAccumulatedDistance (pg, Graph{vertices = []}) [] (pack from) currentDistance NoCompare
+                    transferVertexUpdatingAccumulatedDistance (pg, Graph{vertices = []}) [] from currentDistance NoCompare
                 greens = Graph{vertices = []}
                 shortestDistanceByDijkstra = 
-                    dijkstra' reds yellows greens (pack from) (pack to) (pack from) currentDistance
+                    dijkstra' reds yellows greens from to from currentDistance
                 theResult = if isLeft shortestDistanceByDijkstra
                             then Left $ fromLeft shortestDistanceByDijkstra
-                            else Right Distance {Graph.distance = fromRight shortestDistanceByDijkstra}
+                            else Right Distance {distance = fromRight shortestDistanceByDijkstra}
             return theResult
 
     dijkstra' :: Graph -> Graph -> Graph -> Text -> Text -> Text -> Double -> Either UnusualResult Double

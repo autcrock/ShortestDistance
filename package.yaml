@@ -21,12 +21,14 @@ description:         Please see the README on Github at <https://github.com/gith
 
 dependencies:
 - base >= 4.7 && < 5
-- aeson
+- aeson >= 1.4.2.0
 - bytestring
 - directory
 - either-unwrap
 - text
 - unique
+- text-show >= 3.8.2
+- string-conversions
 
 library:
   source-dirs: src
@@ -52,3 +54,4 @@ tests:
     - -with-rtsopts=-N
     dependencies:
     - ShortestDistance
+    - string-conversions

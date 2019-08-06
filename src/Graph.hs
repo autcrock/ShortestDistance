@@ -12,28 +12,25 @@ module Graph (
     , Graph(..)
     , Vertex(..)
     , Neighbour(..)
-    , OptionalCompare(..)
-    , StartEnd(..)
-    , Distance(..)
 ) where
 
     import Data.Aeson (eitherDecode, ToJSON, FromJSON)
-    import Data.ByteString.Lazy.Char8(pack)
     import Data.Either (Either(..))
     import Data.Either.Unwrap (isLeft, fromRight)
     import Data.List (sortBy, sortOn, nub, find, deleteBy)
     import Data.Ord (comparing)
     import Data.Text (Text)
+    import Data.String.Conversions (cs)
+    import qualified Data.Text.Lazy.Encoding as DTE
     import GHC.Generics hiding (from, to)
     import qualified MapDefinitions as MD
 
+
     -- Intermediate data structure
-
-
     data Connection = Connection { from :: Text, to :: Text, dist :: Double } deriving (Show)
 
     -- Manipulation in Dijkstra
-    data Neighbour = Neighbour { neighbour :: Text, howFar :: Double} deriving (Show, Generic)
+    data Neighbour = Neighbour { neighbourName :: Text, howFar :: Double} deriving (Show, Generic)
     instance ToJSON Neighbour
     instance FromJSON Neighbour
 
@@ -46,18 +43,6 @@ module Graph (
     newtype Graph = Graph{vertices :: [Vertex]} deriving (Show, Generic)
     instance ToJSON Graph
     instance FromJSON Graph
-
-    -- Input and Output
-    newtype Distance = Distance{distance :: Double} deriving (Show, Generic, Eq)
-    instance ToJSON Distance
-    instance FromJSON Distance
-
-    data StartEnd = StartEnd {start:: String, end:: String} deriving (Show, Generic)
-    instance ToJSON StartEnd
-    instance FromJSON StartEnd
-
-    -- When updating vertex data
-    data OptionalCompare = Compare | NoCompare deriving (Eq, Show)
 
     sortNeighboursByDistance :: [Neighbour] -> [Neighbour]
     sortNeighboursByDistance = sortOn howFar
@@ -73,7 +58,7 @@ module Graph (
         let
             rawVertices = filter (\x -> from x == vertex_in) cs
             ns = Prelude.map (\x -> Neighbour {
-                 neighbour = to x
+                 neighbourName = to x
                  , howFar = dist x
                  }) rawVertices
         in
@@ -154,14 +139,14 @@ module Graph (
         in
             connectionsToGraph connections
 
-    readStartEndFromString :: String -> StartEnd
+    readStartEndFromString :: Text -> MD.StartEnd
     readStartEndFromString candidateStartEnd =
         let
-            eitherStartEnd = eitherDecode (Data.ByteString.Lazy.Char8.pack candidateStartEnd) :: (Either String StartEnd)
+            eitherStartEnd = eitherDecode $ cs candidateStartEnd :: (Either String MD.StartEnd)
         in
             if isLeft eitherStartEnd 
                 then 
-                    error ( "readStartEndFromString: Input [" ++ candidateStartEnd ++ "] is not valid.")
+                    error ( "readStartEndFromString: Input [" ++ (cs candidateStartEnd) ++ "] is not valid.")
                 else
                     fromRight eitherStartEnd
 
@@ -176,11 +161,11 @@ module Graph (
     
     deleteNeighbour :: [Neighbour] -> Neighbour -> [Neighbour]
     deleteNeighbour ns n =
-        deleteBy (\x y -> neighbour x == neighbour y) n ns
+        deleteBy (\x y -> neighbourName x == neighbourName y) n ns
 
     deleteNeighbourByName :: [Neighbour] -> Text -> [Neighbour]
     deleteNeighbourByName ns name =
-        deleteNeighbour ns Neighbour {neighbour = name, howFar = 0}
+        deleteNeighbour ns Neighbour {neighbourName = name, howFar = 0}
 
     deleteNeighboursByName :: [Neighbour] -> [Text] -> [Neighbour]
     deleteNeighboursByName [] _ = []
@@ -202,13 +187,10 @@ module Graph (
                 maybe (error "neighbourHowFarByName: Error: Unexpected Nothing returned by getNeighbour.") howFar n
 
     getVertex :: [Vertex] -> Text -> Maybe Vertex
-    getVertex vs vName =
-        find (\x -> vertex x == vName) vs
+    getVertex vs vName = find (\x -> vertex x == vName) vs
 
     getNeighbour :: [Neighbour] -> Text -> Maybe Neighbour
-    getNeighbour ns nName =
-        -- trace ("getNeighbour calling find on: ns: " ++ show ns ++ ", nName" ++ show nName) $
-        find (\x -> neighbour x == nName) ns
+    getNeighbour ns nName = find (\x -> neighbourName x == nName) ns
         
     graphGetVertex :: Graph -> Text -> Maybe Vertex
     graphGetVertex pg = getVertex (vertices pg)
