@@ -26,8 +26,6 @@ module Shortest (
         , Graph(Graph), vertices
         , Vertex(Vertex), vertex, accumulatedDistance, neighbours
         , Neighbour(), neighbourName
---        , OptionalCompare(Compare, NoCompare)
---        , start, end
         )
 
     import MapDefinitions ( readMap, StartEnd(..) )

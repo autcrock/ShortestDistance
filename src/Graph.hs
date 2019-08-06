@@ -55,29 +55,23 @@ module Graph (
 
     pullVertex :: Text -> [Connection] -> Double -> Vertex
     pullVertex vertex_in cs accumulatedDistance_in =
-        let
-            rawVertices = filter (\x -> from x == vertex_in) cs
-            ns = Prelude.map (\x -> Neighbour {
-                 neighbourName = to x
-                 , howFar = dist x
-                 }) rawVertices
-        in
-            Vertex {
-                vertex = vertex_in
-                , accumulatedDistance = accumulatedDistance_in
-                , neighbours = sortNeighboursByDistance ns
-                }
+        let rawVertices = filter (\x -> from x == vertex_in) cs
+            ns = Prelude.map (\x -> Neighbour { neighbourName = to x
+                                              , howFar = dist x
+                                              })
+                             rawVertices
+        in Vertex { vertex = vertex_in
+                  , accumulatedDistance = accumulatedDistance_in
+                  , neighbours = sortNeighboursByDistance ns }
 
     makeInfinity :: Double
     makeInfinity = read "Infinity" :: Double
 
     connectionsToGraph :: [Connection] -> Graph
     connectionsToGraph cs =
-        let
-            infinity = makeInfinity
+        let infinity = makeInfinity
             vs = getVertexNames cs
-        in
-            Graph {vertices = [ pullVertex x cs infinity | x <- vs ]}
+        in Graph {vertices = [ pullVertex x cs infinity | x <- vs ]}
     
     insertPlaceInConnections :: MD.Place -> [Connection] -> [Connection]
     insertPlaceInConnections place connections =
@@ -90,41 +84,30 @@ module Graph (
     expandPlace' :: Text -> [MD.Destination] -> [Connection] -> [Connection]
     expandPlace' _ [] connections = connections
     expandPlace' placeName [destination] connections =
-        if MD.howFar destination < 0
-        then error "sd: ERROR: Distances between places must be 0 or positive numbers."
-        else
-            connections
-            ++ [Connection {
-                from = placeName,
-                to = MD.at destination,
-                dist = MD.howFar destination }]
-            ++ [Connection {
-                from = MD.at destination,
-                to = placeName,
-                dist = MD.howFar destination }]
+        if MD.howFar destination < 0 then error "sd: ERROR: Distances between places must be 0 or positive numbers."
+        else connections
+            ++ [Connection { from = placeName,
+                             to = MD.at destination,
+                             dist = MD.howFar destination }]
+            ++ [Connection { from = MD.at destination,
+                             to = placeName,
+                             dist = MD.howFar destination }]
     expandPlace' placeName (d : destinations) connections =
-        if MD.howFar d < 0
-            then error "sd: ERROR: Distances between places must be 0 or positive numbers."
-            else
-                connections
-            ++ [Connection {
-                from = placeName,
-                to = MD.at d,
-                dist = MD.howFar d }]
-            ++ [Connection {
-                from = MD.at d,
-                to = placeName,
-                dist = MD.howFar d }]
+        if MD.howFar d < 0 then error "sd: ERROR: Distances between places must be 0 or positive numbers."
+        else connections
+            ++ [Connection { from = placeName,
+                             to = MD.at d,
+                             dist = MD.howFar d }]
+            ++ [Connection { from = MD.at d,
+                             to = placeName,
+                             dist = MD.howFar d }]
             ++ expandPlace' placeName destinations connections
 
     mapToConnections :: MD.Map -> [Connection]
     mapToConnections m =
-        let
-            places = MD.map m
-        in
-            if null places
-                then []
-                else mapToConnections' places []
+        let places = MD.map m
+        in if null places then []
+           else mapToConnections' places []
     
     mapToConnections' :: [MD.Place] -> [Connection] -> [Connection]
     mapToConnections' [] done = done
@@ -134,21 +117,15 @@ module Graph (
 
     mapToGraph :: MD.Map -> Graph
     mapToGraph m =
-        let
-            connections = mapToConnections m
-        in
-            connectionsToGraph connections
+        let connections = mapToConnections m
+        in connectionsToGraph connections
 
     readStartEndFromString :: Text -> MD.StartEnd
     readStartEndFromString candidateStartEnd =
-        let
-            eitherStartEnd = eitherDecode $ cs candidateStartEnd :: (Either String MD.StartEnd)
-        in
-            if isLeft eitherStartEnd 
-                then 
-                    error ( "readStartEndFromString: Input [" ++ (cs candidateStartEnd) ++ "] is not valid.")
-                else
-                    fromRight eitherStartEnd
+        let eitherStartEnd = eitherDecode $ cs candidateStartEnd :: (Either String MD.StartEnd)
+        in if isLeft eitherStartEnd then 
+             error ( "readStartEndFromString: Input [" ++ (cs candidateStartEnd) ++ "] is not valid.")
+           else fromRight eitherStartEnd
 
     graphGetVertexNeighbours :: Graph -> Text -> Maybe [Neighbour]
     graphGetVertexNeighbours g v = 
@@ -175,16 +152,9 @@ module Graph (
 
     neighbourHowFarByName :: [Neighbour] -> Text -> Double
     neighbourHowFarByName ns name =
-        if null ns
-        then
-            0
-        else
-            let
-                n = 
-                    -- trace ("getNeighbour called by neighbourHowFarByName: ns: " ++ show ns ++ ", name: " ++ show name) $
-                    getNeighbour ns name
-            in
-                maybe (error "neighbourHowFarByName: Error: Unexpected Nothing returned by getNeighbour.") howFar n
+        if null ns then 0
+        else let n = getNeighbour ns name
+             in maybe (error "neighbourHowFarByName: Error: Unexpected Nothing returned by getNeighbour.") howFar n
 
     getVertex :: [Vertex] -> Text -> Maybe Vertex
     getVertex vs vName = find (\x -> vertex x == vName) vs
@@ -196,20 +166,15 @@ module Graph (
     graphGetVertex pg = getVertex (vertices pg)
     
     deleteVertex :: [Vertex] -> Vertex -> [Vertex]
-    deleteVertex vs v =
-        deleteBy (\x y -> vertex x == vertex y) v vs
+    deleteVertex vs v = deleteBy (\x y -> vertex x == vertex y) v vs
 
     graphDeleteVertex :: Graph -> Vertex -> Graph
     graphDeleteVertex pg v =
-        let 
-            vs = deleteVertex (vertices pg) v
-        in 
-            Graph { vertices = vs }
+        let vs = deleteVertex (vertices pg) v
+        in Graph { vertices = vs }
     
     insertVertex :: [Vertex] -> Vertex -> [Vertex]
-    insertVertex vs v = 
-        sortVerticesByDistance (v:vs)
+    insertVertex vs v = sortVerticesByDistance (v:vs)
 
     graphInsertVertex  :: Graph -> Vertex -> Graph
-    graphInsertVertex pg v =
-        Graph { vertices = insertVertex (vertices pg) v }
+    graphInsertVertex pg v = Graph { vertices = insertVertex (vertices pg) v }
