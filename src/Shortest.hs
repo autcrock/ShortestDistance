@@ -166,9 +166,8 @@ module Shortest (
             return theResult
 
     dijkstra' :: Graph -> Graph -> Graph -> Text -> Text -> Text -> Double -> Either UnusualResult Double
-    dijkstra' reds yellows greens fromName toName currentVertexName currentDistance = 
-        if currentVertexName == toName
-        then
+    dijkstra' reds yellows greens fromName toName currentVertexName currentDistance 
+        | currentVertexName == toName =
             let
                 vy = graphGetVertex yellows toName
             in
@@ -179,7 +178,7 @@ module Shortest (
                         then error "dijkstra': Error: Destination vertex was not found in either yellows or greens unexpectedly."
                         else Right (min currentDistance (accumulatedDistance $ fromJust vg))
                 else Right (min currentDistance (accumulatedDistance $ fromJust vy))
-        else
+        | otherwise =
             let eitherCurrentVertex = graphGetMinimumYellowByDistance yellows fromName toName
             in
                 if isLeft eitherCurrentVertex

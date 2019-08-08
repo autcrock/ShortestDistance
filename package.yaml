@@ -43,6 +43,7 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - ShortestDistance
+    - string-conversions
 
 tests:
   sd-test:

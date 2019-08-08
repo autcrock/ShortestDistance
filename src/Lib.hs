@@ -28,27 +28,31 @@ import MapDefinitions
     )
 
 import Shortest (dijkstra)
-            
-aPlace :: String -> IO ()
-aPlace couldBeJSON =
-    do putStrLn $ "sd: adding one or more locations using putative JSON [" ++ couldBeJSON ++ "]."
+
+mapOperation :: String -> (Map -> Map -> Map) -> String -> IO()
+mapOperation errorMessage operation couldBeJSON =
+    do putStrLn (errorMessage ++ " [" ++ couldBeJSON ++ "].")
        let mapToInsert = readMapFromString couldBeJSON
        savedMap <- readMap
-       let newMap = insertPlaces mapToInsert savedMap
+       let newMap = operation mapToInsert savedMap
        saveMap newMap
+
+aPlace :: String -> IO ()
+aPlace = mapOperation "sd: adding one or more locations using putative JSON"  insertPlaces
+
+xPlace :: String -> IO ()
+xPlace = mapOperation "sd: deleting a location using putative JSON" deletePlaces
+
+aRoad :: String -> IO ()
+aRoad = mapOperation "sd: adding/modifying one or more roads using putative JSON" insertOrModifyRoad
+
+xRoad :: String -> IO ()
+xRoad = mapOperation "sd: deleting one or more roads using putative JSON" deleteRoad
 
 clear :: IO ()
 clear = 
     do putStrLn "sd: Removing the system file."
        removeMap
-
-xPlace :: String -> IO ()
-xPlace couldBeJSON =
-    do putStrLn $ "sd: deleting a location using putative JSON [" ++ couldBeJSON ++ "]."
-       let mapToDelete = readMapFromString couldBeJSON
-       savedMap <- readMap
-       let newMap = deletePlaces mapToDelete savedMap
-       saveMap newMap
 
 maybeSaveMap :: Either String Map -> IO()
 maybeSaveMap (Left e) =
@@ -70,26 +74,16 @@ initialiseJSON couldBeJSON =
        let mapToSave = readMapFromString couldBeJSON
        saveMap mapToSave
 
-aRoad :: String -> IO ()
-aRoad couldBeJSON =
-    do putStrLn $ "sd: adding/modifying one or more roads using putative JSON [" ++ couldBeJSON ++ "]."
-       let mapToInsert = readMapFromString couldBeJSON
-       savedMap <- readMap
-       let newMap = insertOrModifyRoad mapToInsert savedMap
-       saveMap newMap
-
 shortest :: String -> IO ()
 shortest couldBeJSON =
     do result <- dijkstra (cs couldBeJSON)
-       let isItLeft = isLeft result
-       if isItLeft
-       then print $ encode (fromLeft result)
-       else print $ encode (fromRight result)
+       print $ case result of
+                  Left l -> encode l
+                  Right r -> encode r
 
-xRoad :: String -> IO ()
-xRoad couldBeJSON =
-    do putStrLn $ "sd: deleting one or more roads using putative JSON [" ++ couldBeJSON ++ "]."
-       let mapToDelete = readMapFromString couldBeJSON
-       savedMap <- readMap
-       let newMap = deleteRoad mapToDelete savedMap
-       saveMap newMap
+
+      -- do result <- dijkstra (cs couldBeJSON)
+      -- print $ case result of
+      --               Left l -> encode l
+      --               Right r -> encode r
+

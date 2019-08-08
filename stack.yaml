@@ -2,11 +2,12 @@ flags: {}
 packages:
 - .
 allow-newer: true
-extra-deps: [either-unwrap-1.1,
-             cabal-helper-0.7.3.0,
-             djinn-ghc-0.0.2.3,
-             djinn-lib-0.0.1.3,
-             ghc-syb-utils-0.2.3.3,
-             butcher-1.3.2.3,
-             multistate-0.8.0.2]
-resolver: lts-13.28
+extra-deps:
+- either-unwrap-1.1
+- cabal-helper-0.7.3.0
+- djinn-ghc-0.0.2.3
+- djinn-lib-0.0.1.3
+- ghc-syb-utils-0.2.3.3
+- butcher-1.3.2.3
+- multistate-0.8.0.2
+resolver: lts-14.0
