@@ -7,7 +7,7 @@ import Data.String.Conversions (cs)
 
 import qualified Data.Text as T
 import qualified Data.Text.IO as TIO
-import Lib (
+import MapOperations (
     aPlace
     , clear
     , xPlace

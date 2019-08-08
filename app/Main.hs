@@ -3,14 +3,15 @@ module Main where
 import System.Environment
 import System.Exit
      
-import Lib ( aPlace
-            , clear
-            , xPlace
-            , initialise
-            , aRoad
-            , shortest
-            , xRoad
-            )
+import MapOperations
+       ( aPlace
+       , clear
+       , xPlace
+       , initialise
+       , aRoad
+       , shortest
+       , xRoad
+       )
 
 main :: IO ()
 main = getArgs >>= operation >>= putStr
