@@ -25,6 +25,7 @@ dependencies:
 - bytestring
 - directory
 - either-unwrap
+- either
 - text
 - unique
 - text-show >= 3.8.2

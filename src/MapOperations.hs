@@ -12,6 +12,7 @@ module MapOperations
 
 import Data.Aeson (encode)
 import Data.Either.Unwrap (isLeft, fromLeft, fromRight)
+import Data.Either.Combinators (mapBoth)
 import Data.String.Conversions (cs)
 
 import MapDefinitions
@@ -50,40 +51,33 @@ xRoad :: String -> IO ()
 xRoad = mapOperation "sd: deleting one or more roads using putative JSON" deleteRoad
 
 clear :: IO ()
-clear = 
-    do putStrLn "sd: Removing the system file."
-       removeMap
+clear = do
+  putStrLn "sd: Removing the system file."
+  removeMap
 
 maybeSaveMap :: Either String Map -> IO()
-maybeSaveMap (Left e) =
-    do putStrLn $ "sd: ERROR: Getting map: " ++ e
-       return ()
-maybeSaveMap (Right m) =
-    do saveMap m
-       return ()
+maybeSaveMap (Left e) = do
+  putStrLn $ "sd: ERROR: Getting map: " ++ e
+  return ()
+maybeSaveMap (Right m) = do
+  saveMap m
+  return ()
         
 initialise :: String -> IO ()
-initialise filename = 
-    do putStrLn $ "sd: initialising a map using input from file [" ++ filename ++ "]."
-       m <- getMapFromFile filename
-       maybeSaveMap m
+initialise filename = do
+  putStrLn $ "sd: initialising a map using input from file [" ++ filename ++ "]."
+  m <- getMapFromFile filename
+  maybeSaveMap m
 
 initialiseJSON :: String -> IO ()
-initialiseJSON couldBeJSON = 
-    do putStrLn $ "sd: initialising a map using putative JSON [" ++ couldBeJSON ++ "]."
-       let mapToSave = readMapFromString couldBeJSON
-       saveMap mapToSave
+initialiseJSON couldBeJSON = do
+  putStrLn $ "sd: initialising a map using putative JSON [" ++ couldBeJSON ++ "]."
+  let mapToSave = readMapFromString couldBeJSON
+  saveMap mapToSave
 
 shortest :: String -> IO ()
-shortest couldBeJSON =
-    do result <- dijkstra (cs couldBeJSON)
-       print $ case result of
-                  Left l -> encode l
-                  Right r -> encode r
-
-
-      -- do result <- dijkstra (cs couldBeJSON)
-      -- print $ case result of
-      --               Left l -> encode l
-      --               Right r -> encode r
-
+shortest couldBeJSON = do
+  result <- dijkstra (cs couldBeJSON)
+  print $ case result of
+    Left l -> encode l
+    Right r -> encode r
