@@ -30,6 +30,7 @@ dependencies:
 - unique
 - text-show >= 3.8.2
 - string-conversions
+- ordered-containers
 
 library:
   source-dirs: src

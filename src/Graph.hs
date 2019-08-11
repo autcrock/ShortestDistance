@@ -20,11 +20,14 @@ module Graph (
     import Data.List (sortBy, sortOn, nub, find, deleteBy)
     import Data.Ord (comparing)
     import Data.Text (Text)
+    import qualified Data.Map.Ordered as DMO
     import Data.String.Conversions (cs)
     import qualified Data.Text.Lazy.Encoding as DTE
     import GHC.Generics hiding (from, to)
     import qualified MapDefinitions as MD
 
+
+    type Neighbours = [Neighbour]
 
     -- Intermediate data structure
     data Connection = Connection { from :: Text, to :: Text, dist :: Double } deriving (Show)
@@ -35,7 +38,7 @@ module Graph (
     instance FromJSON Neighbour
 
     data Vertex = Vertex {
-            vertex :: Text, accumulatedDistance :: Double, neighbours :: [Neighbour]
+            vertex :: Text, accumulatedDistance :: Double, neighbours :: Neighbours
         } deriving (Show, Generic)
     instance ToJSON Vertex
     instance FromJSON Vertex
@@ -44,7 +47,7 @@ module Graph (
     instance ToJSON Graph
     instance FromJSON Graph
 
-    sortNeighboursByDistance :: [Neighbour] -> [Neighbour]
+    sortNeighboursByDistance :: Neighbours -> Neighbours
     sortNeighboursByDistance = sortOn howFar
 
     sortVerticesByDistance :: [Vertex] -> [Vertex]
@@ -127,7 +130,7 @@ module Graph (
             Left _ -> error ( "readStartEndFromString: Input [" ++ (cs candidateStartEnd) ++ "] is not valid.")
             Right r -> r
 
-    graphGetVertexNeighbours :: Graph -> Text -> Maybe [Neighbour]
+    graphGetVertexNeighbours :: Graph -> Text -> Maybe Neighbours
     graphGetVertexNeighbours g v = 
         fmap neighbours (graphGetVertex g v)
         -- graphGetVertex g vertex >>= return . neighbours
@@ -136,21 +139,21 @@ module Graph (
         --     v <- graphGetVertex g vertex
         --     return $ neighbours v
     
-    deleteNeighbour :: [Neighbour] -> Neighbour -> [Neighbour]
+    deleteNeighbour :: Neighbours -> Neighbour -> Neighbours
     deleteNeighbour ns n =
         deleteBy (\x y -> neighbourName x == neighbourName y) n ns
 
-    deleteNeighbourByName :: [Neighbour] -> Text -> [Neighbour]
+    deleteNeighbourByName :: Neighbours -> Text -> Neighbours
     deleteNeighbourByName ns name =
         deleteNeighbour ns Neighbour {neighbourName = name, howFar = 0}
 
-    deleteNeighboursByName :: [Neighbour] -> [Text] -> [Neighbour]
+    deleteNeighboursByName :: Neighbours -> [Text] -> Neighbours
     deleteNeighboursByName [] _ = []
     deleteNeighboursByName ns [] = ns
     deleteNeighboursByName ns (name:names) =
         deleteNeighboursByName (deleteNeighbourByName ns name) names
 
-    neighbourHowFarByName :: [Neighbour] -> Text -> Double
+    neighbourHowFarByName :: Neighbours -> Text -> Double
     neighbourHowFarByName ns name =
         if null ns then 0
         else let n = getNeighbour ns name
@@ -159,7 +162,7 @@ module Graph (
     getVertex :: [Vertex] -> Text -> Maybe Vertex
     getVertex vs vName = find (\x -> vertex x == vName) vs
 
-    getNeighbour :: [Neighbour] -> Text -> Maybe Neighbour
+    getNeighbour :: Neighbours -> Text -> Maybe Neighbour
     getNeighbour ns nName = find (\x -> neighbourName x == nName) ns
         
     graphGetVertex :: Graph -> Text -> Maybe Vertex
