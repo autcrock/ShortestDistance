@@ -3,7 +3,6 @@ module Graph (
     mapToGraph
     , deleteNeighboursByName
     , readStartEndFromString
-    , sortVerticesByDistance
     , graphGetVertex
     , graphGetVertexNeighbours
     , neighbourHowFarByName
@@ -26,26 +25,31 @@ module Graph (
     import GHC.Generics hiding (from, to)
     import qualified MapDefinitions as MD
 
-
     type Neighbours = [Neighbour]
 
     -- Intermediate data structure
     data Connection = Connection { from :: Text, to :: Text, dist :: Double } deriving (Show)
 
     -- Manipulation in Dijkstra
-    data Neighbour = Neighbour { neighbourName :: Text, howFar :: Double} deriving (Show, Generic)
+    data Neighbour = Neighbour { neighbourName :: Text, howFar :: Double} deriving (Eq, Ord, Show, Generic)
     instance ToJSON Neighbour
     instance FromJSON Neighbour
 
     data Vertex = Vertex {
-            vertex :: Text, accumulatedDistance :: Double, neighbours :: Neighbours
-        } deriving (Show, Generic)
+            accumulatedDistance :: Double, vertex :: Text, neighbours :: Neighbours
+        } deriving ( Eq, Ord, Show, Generic)
     instance ToJSON Vertex
     instance FromJSON Vertex
 
     newtype Graph = Graph{vertices :: [Vertex]} deriving (Show, Generic)
     instance ToJSON Graph
     instance FromJSON Graph
+
+    listInsertIncreasing :: Ord a => a -> [a] -> [a]
+    listInsertIncreasing x l = let (lower, greater) = span (< x) l in lower ++ x : greater
+    
+    listInsertDecreasing :: Ord a => a -> [a] -> [a]
+    listInsertDecreasing x l = let (greater, lower) = span (> x) l in greater ++ x : lower
 
     sortNeighboursByDistance :: Neighbours -> Neighbours
     sortNeighboursByDistance = sortOn howFar
@@ -73,13 +77,12 @@ module Graph (
     connectionsToGraph :: [Connection] -> Graph
     connectionsToGraph cs =
         let infinity = makeInfinity
-            vs = getVertexNames cs
-        in Graph {vertices = [ pullVertex x cs infinity | x <- vs ]}
-    
+        in Graph {vertices = sortVerticesByDistance [ pullVertex x cs infinity | x <- getVertexNames cs ]}
+
     insertPlaceInConnections :: MD.Place -> [Connection] -> [Connection]
     insertPlaceInConnections place connections =
         connections ++ expandPlace place
-        
+
     expandPlace :: MD.Place -> [Connection]
     expandPlace p =
         expandPlace' (MD.place p) (MD.directConnections p) []
@@ -111,7 +114,7 @@ module Graph (
         let places = MD.map m
         in if null places then []
            else mapToConnections' places []
-    
+
     mapToConnections' :: [MD.Place] -> [Connection] -> [Connection]
     mapToConnections' [] done = done
     mapToConnections' [place] done  = insertPlaceInConnections place done
@@ -131,14 +134,14 @@ module Graph (
             Right r -> r
 
     graphGetVertexNeighbours :: Graph -> Text -> Maybe Neighbours
-    graphGetVertexNeighbours g v = 
+    graphGetVertexNeighbours g v =
         fmap neighbours (graphGetVertex g v)
         -- graphGetVertex g vertex >>= return . neighbours
 
         -- do
         --     v <- graphGetVertex g vertex
         --     return $ neighbours v
-    
+
     deleteNeighbour :: Neighbours -> Neighbour -> Neighbours
     deleteNeighbour ns n =
         deleteBy (\x y -> neighbourName x == neighbourName y) n ns
@@ -164,10 +167,10 @@ module Graph (
 
     getNeighbour :: Neighbours -> Text -> Maybe Neighbour
     getNeighbour ns nName = find (\x -> neighbourName x == nName) ns
-        
+
     graphGetVertex :: Graph -> Text -> Maybe Vertex
     graphGetVertex pg = getVertex (vertices pg)
-    
+
     deleteVertex :: [Vertex] -> Vertex -> [Vertex]
     deleteVertex vs v = deleteBy (\x y -> vertex x == vertex y) v vs
 
@@ -175,9 +178,6 @@ module Graph (
     graphDeleteVertex pg v =
         let vs = deleteVertex (vertices pg) v
         in Graph { vertices = vs }
-    
-    insertVertex :: [Vertex] -> Vertex -> [Vertex]
-    insertVertex vs v = sortVerticesByDistance (v:vs)
 
     graphInsertVertex  :: Graph -> Vertex -> Graph
-    graphInsertVertex pg v = Graph { vertices = insertVertex (vertices pg) v }
+    graphInsertVertex pg v = Graph { vertices = listInsertIncreasing v (vertices pg) }

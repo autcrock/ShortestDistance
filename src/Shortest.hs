@@ -121,11 +121,10 @@ module Shortest (
             if isNothing txVertex
             then (graph1, graph2)
             else
-                let 
+                let
                     txV = fromJust txVertex
                     newGraph1 = graphDeleteVertex graph1 txV
-                    newGraph2 = 
-                        graphInsertVertex graph2 txV
+                    newGraph2 = graphInsertVertex graph2 txV
                 in
                     (newGraph1, newGraph2) 
 
