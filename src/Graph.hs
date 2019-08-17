@@ -28,7 +28,7 @@ module Graph (
     type Neighbours = [Neighbour]
 
     -- Intermediate data structure
-    data Connection = Connection { from :: Text, to :: Text, dist :: Double } deriving (Show)
+    data Connection = Connection { from :: Text, to :: Text, distance :: Double } deriving (Show)
 
     -- Manipulation in Dijkstra
     data Neighbour = Neighbour { neighbourName :: Text, howFar :: Double} deriving (Eq, Ord, Show, Generic)
@@ -64,7 +64,7 @@ module Graph (
     pullVertex vertex_in cs accumulatedDistance_in =
         let rawVertices = filter (\x -> from x == vertex_in) cs
             ns = Prelude.map (\x -> Neighbour { neighbourName = to x
-                                              , howFar = dist x
+                                              , howFar = distance x
                                               })
                              rawVertices
         in Vertex { vertex = vertex_in
@@ -89,24 +89,15 @@ module Graph (
 
     expandPlace' :: Text -> [MD.Destination] -> [Connection] -> [Connection]
     expandPlace' _ [] connections = connections
-    expandPlace' placeName [destination] connections =
+    expandPlace' placeName (destination : destinations) connections =
         if MD.howFar destination < 0 then error "sd: ERROR: Distances between places must be 0 or positive numbers."
         else connections
             ++ [Connection { from = placeName,
                              to = MD.at destination,
-                             dist = MD.howFar destination }]
+                             distance = MD.howFar destination }]
             ++ [Connection { from = MD.at destination,
                              to = placeName,
-                             dist = MD.howFar destination }]
-    expandPlace' placeName (d : destinations) connections =
-        if MD.howFar d < 0 then error "sd: ERROR: Distances between places must be 0 or positive numbers."
-        else connections
-            ++ [Connection { from = placeName,
-                             to = MD.at d,
-                             dist = MD.howFar d }]
-            ++ [Connection { from = MD.at d,
-                             to = placeName,
-                             dist = MD.howFar d }]
+                             distance = MD.howFar destination }]
             ++ expandPlace' placeName destinations connections
 
     mapToConnections :: MD.Map -> [Connection]

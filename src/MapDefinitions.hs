@@ -37,14 +37,6 @@ where
     import System.Directory
     import System.IO.Error
 
-    data Destination = Destination {
-        at :: !Text,
-        howFar :: Double
-    } deriving (Generic, Show, Eq)
-
-    instance ToJSON Destination
-    instance FromJSON Destination
-
     -- Shortest distance query input
     data StartEnd = StartEnd {
         start :: !Text,
@@ -59,6 +51,13 @@ where
     instance ToJSON Distance
     instance FromJSON Distance
 
+    data Destination = Destination {
+        at :: !Text,
+        howFar :: Double
+    } deriving (Generic, Show, Eq)
+
+    instance ToJSON Destination
+    instance FromJSON Destination
     
     data Place = Place {
         place :: !Text,
