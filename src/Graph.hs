@@ -121,7 +121,7 @@ module Graph (
     readStartEndFromString candidateStartEnd =
         let eitherStartEnd = eitherDecode $ cs candidateStartEnd :: (Either String MD.StartEnd)
         in case eitherStartEnd of
-            Left _ -> error ( "readStartEndFromString: Input [" ++ (cs candidateStartEnd) ++ "] is not valid.")
+            Left _ -> error ( "readStartEndFromString: Input [" ++ cs candidateStartEnd ++ "] is not valid.")
             Right r -> r
 
     graphGetVertexNeighbours :: Graph -> Text -> Maybe Neighbours
