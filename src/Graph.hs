@@ -13,162 +13,162 @@ module Graph (
     , Neighbour(..)
 ) where
 
-    import Data.Aeson (eitherDecode, ToJSON, FromJSON)
-    import Data.Either (Either(..))
-    import Data.Either.Unwrap (isLeft, fromRight)
-    import Data.List (sortBy, sortOn, nub, find, deleteBy)
-    import Data.Ord (comparing)
-    import Data.Text (Text)
-    import qualified Data.Map.Ordered as DMO
-    import Data.String.Conversions (cs)
-    import qualified Data.Text.Lazy.Encoding as DTE
-    import GHC.Generics hiding (from, to)
-    import qualified MapDefinitions as MD
+import Data.Aeson (eitherDecode, ToJSON, FromJSON)
+import Data.Either (Either(..))
+import Data.Either.Unwrap (isLeft, fromRight)
+import Data.List (sortBy, sortOn, nub, find, deleteBy)
+import Data.Ord (comparing)
+import Data.Text (Text)
+import qualified Data.Map.Ordered as DMO
+import Data.String.Conversions (cs)
+import qualified Data.Text.Lazy.Encoding as DTE
+import GHC.Generics hiding (from, to)
+import qualified MapDefinitions as MD
 
-    type Neighbours = [Neighbour]
+type Neighbours = [Neighbour]
 
-    -- Intermediate data structure
-    data Connection = Connection { from :: Text, to :: Text, distance :: Double } deriving (Show)
+-- Intermediate data structure
+data Connection = Connection { from :: Text, to :: Text, distance :: Double } deriving (Show)
 
-    -- Manipulation in Dijkstra
-    data Neighbour = Neighbour { neighbourName :: Text, howFar :: Double} deriving (Eq, Ord, Show, Generic)
-    instance ToJSON Neighbour
-    instance FromJSON Neighbour
+-- Manipulation in Dijkstra
+data Neighbour = Neighbour { neighbourName :: Text, howFar :: Double} deriving (Eq, Ord, Show, Generic)
+instance ToJSON Neighbour
+instance FromJSON Neighbour
 
-    data Vertex = Vertex {
-            accumulatedDistance :: Double, vertex :: Text, neighbours :: Neighbours
-        } deriving ( Eq, Ord, Show, Generic)
-    instance ToJSON Vertex
-    instance FromJSON Vertex
+data Vertex = Vertex {
+        accumulatedDistance :: Double, vertex :: Text, neighbours :: Neighbours
+    } deriving ( Eq, Ord, Show, Generic)
+instance ToJSON Vertex
+instance FromJSON Vertex
 
-    newtype Graph = Graph{vertices :: [Vertex]} deriving (Show, Generic)
-    instance ToJSON Graph
-    instance FromJSON Graph
+newtype Graph = Graph{vertices :: [Vertex]} deriving (Show, Generic)
+instance ToJSON Graph
+instance FromJSON Graph
 
-    listInsertIncreasing :: Ord a => a -> [a] -> [a]
-    listInsertIncreasing x l = let (lower, greater) = span (< x) l in lower ++ x : greater
-    
-    listInsertDecreasing :: Ord a => a -> [a] -> [a]
-    listInsertDecreasing x l = let (greater, lower) = span (> x) l in greater ++ x : lower
+listInsertIncreasing :: Ord a => a -> [a] -> [a]
+listInsertIncreasing x l = let (lower, greater) = span (< x) l in lower ++ x : greater
 
-    sortNeighboursByDistance :: Neighbours -> Neighbours
-    sortNeighboursByDistance = sortOn howFar
+listInsertDecreasing :: Ord a => a -> [a] -> [a]
+listInsertDecreasing x l = let (greater, lower) = span (> x) l in greater ++ x : lower
 
-    sortVerticesByDistance :: [Vertex] -> [Vertex]
-    sortVerticesByDistance = sortOn accumulatedDistance
+sortNeighboursByDistance :: Neighbours -> Neighbours
+sortNeighboursByDistance = sortOn howFar
 
-    getVertexNames :: [Connection] -> [Text]
-    getVertexNames = nub . Prelude.map from
+sortVerticesByDistance :: [Vertex] -> [Vertex]
+sortVerticesByDistance = sortOn accumulatedDistance
 
-    pullVertex :: Text -> [Connection] -> Double -> Vertex
-    pullVertex vertex_in cs accumulatedDistance_in =
-        let rawVertices = filter (\x -> from x == vertex_in) cs
-            ns = Prelude.map (\x -> Neighbour { neighbourName = to x
-                                              , howFar = distance x
-                                              })
-                             rawVertices
-        in Vertex { vertex = vertex_in
-                  , accumulatedDistance = accumulatedDistance_in
-                  , neighbours = sortNeighboursByDistance ns }
+getVertexNames :: [Connection] -> [Text]
+getVertexNames = nub . Prelude.map from
 
-    makeInfinity :: Double
-    makeInfinity = read "Infinity" :: Double
+pullVertex :: Text -> [Connection] -> Double -> Vertex
+pullVertex vertex_in cs accumulatedDistance_in =
+    let rawVertices = filter (\x -> from x == vertex_in) cs
+        ns = Prelude.map (\x -> Neighbour { neighbourName = to x
+                                          , howFar = distance x
+                                          })
+                         rawVertices
+    in Vertex { vertex = vertex_in
+              , accumulatedDistance = accumulatedDistance_in
+              , neighbours = sortNeighboursByDistance ns }
 
-    connectionsToGraph :: [Connection] -> Graph
-    connectionsToGraph cs =
-        let infinity = makeInfinity
-        in Graph {vertices = sortVerticesByDistance [ pullVertex x cs infinity | x <- getVertexNames cs ]}
+makeInfinity :: Double
+makeInfinity = read "Infinity" :: Double
 
-    insertPlaceInConnections :: MD.Place -> [Connection] -> [Connection]
-    insertPlaceInConnections place connections =
-        connections ++ expandPlace place
+connectionsToGraph :: [Connection] -> Graph
+connectionsToGraph cs =
+    let infinity = makeInfinity
+    in Graph {vertices = sortVerticesByDistance [ pullVertex x cs infinity | x <- getVertexNames cs ]}
 
-    expandPlace :: MD.Place -> [Connection]
-    expandPlace p =
-        expandPlace' (MD.place p) (MD.directConnections p) []
+insertPlaceInConnections :: MD.Place -> [Connection] -> [Connection]
+insertPlaceInConnections place connections =
+    connections ++ expandPlace place
 
-    expandPlace' :: Text -> [MD.Destination] -> [Connection] -> [Connection]
-    expandPlace' _ [] connections = connections
-    expandPlace' placeName (destination : destinations) connections =
-        if MD.howFar destination < 0 then error "sd: ERROR: Distances between places must be 0 or positive numbers."
-        else connections
-            ++ [Connection { from = placeName,
-                             to = MD.at destination,
-                             distance = MD.howFar destination }]
-            ++ [Connection { from = MD.at destination,
-                             to = placeName,
-                             distance = MD.howFar destination }]
-            ++ expandPlace' placeName destinations connections
+expandPlace :: MD.Place -> [Connection]
+expandPlace p =
+    expandPlace' (MD.place p) (MD.directConnections p) []
 
-    mapToConnections :: MD.Map -> [Connection]
-    mapToConnections m =
-        let places = MD.map m
-        in if null places then []
-           else mapToConnections' places []
+expandPlace' :: Text -> [MD.Destination] -> [Connection] -> [Connection]
+expandPlace' _ [] connections = connections
+expandPlace' placeName (destination : destinations) connections =
+    if MD.howFar destination < 0 then error "sd: ERROR: Distances between places must be 0 or positive numbers."
+    else connections
+        ++ [Connection { from = placeName,
+                         to = MD.at destination,
+                         distance = MD.howFar destination }]
+        ++ [Connection { from = MD.at destination,
+                         to = placeName,
+                         distance = MD.howFar destination }]
+        ++ expandPlace' placeName destinations connections
 
-    mapToConnections' :: [MD.Place] -> [Connection] -> [Connection]
-    mapToConnections' [] done = done
-    mapToConnections' [place] done  = insertPlaceInConnections place done
-    mapToConnections' (place : places) done =
-        mapToConnections' [place] done ++ mapToConnections' places done
+mapToConnections :: MD.Map -> [Connection]
+mapToConnections m =
+    let places = MD.map m
+    in if null places then []
+       else mapToConnections' places []
 
-    mapToGraph :: MD.Map -> Graph
-    mapToGraph m =
-        let connections = mapToConnections m
-        in connectionsToGraph connections
+mapToConnections' :: [MD.Place] -> [Connection] -> [Connection]
+mapToConnections' [] done = done
+mapToConnections' [place] done  = insertPlaceInConnections place done
+mapToConnections' (place : places) done =
+    mapToConnections' [place] done ++ mapToConnections' places done
 
-    readStartEndFromString :: Text -> MD.StartEnd
-    readStartEndFromString candidateStartEnd =
-        let eitherStartEnd = eitherDecode $ cs candidateStartEnd :: (Either String MD.StartEnd)
-        in case eitherStartEnd of
-            Left _ -> error ( "readStartEndFromString: Input [" ++ cs candidateStartEnd ++ "] is not valid.")
-            Right r -> r
+mapToGraph :: MD.Map -> Graph
+mapToGraph m =
+    let connections = mapToConnections m
+    in connectionsToGraph connections
 
-    graphGetVertexNeighbours :: Graph -> Text -> Maybe Neighbours
-    graphGetVertexNeighbours g v =
-        fmap neighbours (graphGetVertex g v)
-        -- graphGetVertex g vertex >>= return . neighbours
+readStartEndFromString :: Text -> MD.StartEnd
+readStartEndFromString candidateStartEnd =
+    let eitherStartEnd = eitherDecode $ cs candidateStartEnd :: (Either String MD.StartEnd)
+    in case eitherStartEnd of
+        Left _ -> error ( "readStartEndFromString: Input [" ++ cs candidateStartEnd ++ "] is not valid.")
+        Right r -> r
 
-        -- do
-        --     v <- graphGetVertex g vertex
-        --     return $ neighbours v
+graphGetVertexNeighbours :: Graph -> Text -> Maybe Neighbours
+graphGetVertexNeighbours g v =
+    fmap neighbours (graphGetVertex g v)
+    -- graphGetVertex g vertex >>= return . neighbours
 
-    deleteNeighbour :: Neighbours -> Neighbour -> Neighbours
-    deleteNeighbour ns n =
-        deleteBy (\x y -> neighbourName x == neighbourName y) n ns
+    -- do
+    --     v <- graphGetVertex g vertex
+    --     return $ neighbours v
 
-    deleteNeighbourByName :: Neighbours -> Text -> Neighbours
-    deleteNeighbourByName ns name =
-        deleteNeighbour ns Neighbour {neighbourName = name, howFar = 0}
+deleteNeighbour :: Neighbours -> Neighbour -> Neighbours
+deleteNeighbour ns n =
+    deleteBy (\x y -> neighbourName x == neighbourName y) n ns
 
-    deleteNeighboursByName :: Neighbours -> [Text] -> Neighbours
-    deleteNeighboursByName [] _ = []
-    deleteNeighboursByName ns [] = ns
-    deleteNeighboursByName ns (name:names) =
-        deleteNeighboursByName (deleteNeighbourByName ns name) names
+deleteNeighbourByName :: Neighbours -> Text -> Neighbours
+deleteNeighbourByName ns name =
+    deleteNeighbour ns Neighbour {neighbourName = name, howFar = 0}
 
-    neighbourHowFarByName :: Neighbours -> Text -> Double
-    neighbourHowFarByName ns name =
-        if null ns then 0
-        else let n = getNeighbour ns name
-             in maybe (error "neighbourHowFarByName: Error: Unexpected Nothing returned by getNeighbour.") howFar n
+deleteNeighboursByName :: Neighbours -> [Text] -> Neighbours
+deleteNeighboursByName [] _ = []
+deleteNeighboursByName ns [] = ns
+deleteNeighboursByName ns (name:names) =
+    deleteNeighboursByName (deleteNeighbourByName ns name) names
 
-    getVertex :: [Vertex] -> Text -> Maybe Vertex
-    getVertex vs vName = find (\x -> vertex x == vName) vs
+neighbourHowFarByName :: Neighbours -> Text -> Double
+neighbourHowFarByName ns name =
+    if null ns then 0
+    else let n = getNeighbour ns name
+         in maybe (error "neighbourHowFarByName: Error: Unexpected Nothing returned by getNeighbour.") howFar n
 
-    getNeighbour :: Neighbours -> Text -> Maybe Neighbour
-    getNeighbour ns nName = find (\x -> neighbourName x == nName) ns
+getVertex :: [Vertex] -> Text -> Maybe Vertex
+getVertex vs vName = find (\x -> vertex x == vName) vs
 
-    graphGetVertex :: Graph -> Text -> Maybe Vertex
-    graphGetVertex pg = getVertex (vertices pg)
+getNeighbour :: Neighbours -> Text -> Maybe Neighbour
+getNeighbour ns nName = find (\x -> neighbourName x == nName) ns
 
-    deleteVertex :: [Vertex] -> Vertex -> [Vertex]
-    deleteVertex vs v = deleteBy (\x y -> vertex x == vertex y) v vs
+graphGetVertex :: Graph -> Text -> Maybe Vertex
+graphGetVertex pg = getVertex (vertices pg)
 
-    graphDeleteVertex :: Graph -> Vertex -> Graph
-    graphDeleteVertex pg v =
-        let vs = deleteVertex (vertices pg) v
-        in Graph { vertices = vs }
+deleteVertex :: [Vertex] -> Vertex -> [Vertex]
+deleteVertex vs v = deleteBy (\x y -> vertex x == vertex y) v vs
 
-    graphInsertVertex  :: Graph -> Vertex -> Graph
-    graphInsertVertex pg v = Graph { vertices = listInsertIncreasing v (vertices pg) }
+graphDeleteVertex :: Graph -> Vertex -> Graph
+graphDeleteVertex pg v =
+    let vs = deleteVertex (vertices pg) v
+    in Graph { vertices = vs }
+
+graphInsertVertex  :: Graph -> Vertex -> Graph
+graphInsertVertex pg v = Graph { vertices = listInsertIncreasing v (vertices pg) }
