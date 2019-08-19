@@ -25,15 +25,12 @@ import qualified Data.Text.Lazy.Encoding as DTE
 import GHC.Generics hiding (from, to)
 import qualified MapDefinitions as MD
 
-type Neighbours = [Neighbour]
-
--- Intermediate data structure
-data Connection = Connection { from :: Text, to :: Text, distance :: Double } deriving (Show)
-
 -- Manipulation in Dijkstra
 data Neighbour = Neighbour { neighbourName :: Text, howFar :: Double} deriving (Eq, Ord, Show, Generic)
 instance ToJSON Neighbour
 instance FromJSON Neighbour
+
+type Neighbours = [Neighbour]
 
 data Vertex = Vertex {
         accumulatedDistance :: Double, vertex :: Text, neighbours :: Neighbours
@@ -57,65 +54,67 @@ sortNeighboursByDistance = sortOn howFar
 sortVerticesByDistance :: [Vertex] -> [Vertex]
 sortVerticesByDistance = sortOn accumulatedDistance
 
-getVertexNames :: [Connection] -> [Text]
-getVertexNames = nub . Prelude.map from
+--getVertexNames :: [Connection] -> [Text]
+--getVertexNames = nub . Prelude.map from
 
-pullVertex :: Text -> [Connection] -> Double -> Vertex
-pullVertex vertex_in cs accumulatedDistance_in =
-    let rawVertices = filter (\x -> from x == vertex_in) cs
-        ns = Prelude.map (\x -> Neighbour { neighbourName = to x
-                                          , howFar = distance x
-                                          })
-                         rawVertices
-    in Vertex { vertex = vertex_in
+getVertexNames :: [Vertex] -> [Text]
+getVertexNames = nub . Prelude.map vertex
+
+pullVertex :: Text -> [Vertex] -> Double -> Vertex
+pullVertex vertexName_in vs accumulatedDistance_in =
+    let rawVertices = filter (\x -> vertex x == vertexName_in) vs
+        ns = Prelude.map (head. neighbours) rawVertices
+    in Vertex { vertex = vertexName_in
               , accumulatedDistance = accumulatedDistance_in
               , neighbours = sortNeighboursByDistance ns }
 
 makeInfinity :: Double
 makeInfinity = read "Infinity" :: Double
 
-connectionsToGraph :: [Connection] -> Graph
-connectionsToGraph cs =
+verticesToGraph :: [Vertex] -> Graph
+verticesToGraph vs =
     let infinity = makeInfinity
-    in Graph {vertices = sortVerticesByDistance [ pullVertex x cs infinity | x <- getVertexNames cs ]}
+    in Graph {vertices = sortVerticesByDistance [ pullVertex x vs infinity | x <- getVertexNames vs ]}
 
-insertPlaceInConnections :: MD.Place -> [Connection] -> [Connection]
-insertPlaceInConnections place connections =
-    connections ++ expandPlace place
+insertPlaceInVertices :: MD.Place -> [Vertex] -> [Vertex]
+insertPlaceInVertices place vertices =
+    vertices ++ placeToVertices place
 
-expandPlace :: MD.Place -> [Connection]
-expandPlace p =
-    expandPlace' (MD.place p) (MD.directConnections p) []
+placeToVertices :: MD.Place -> [Vertex]
+placeToVertices p =
+    placeToVertices1' (MD.place p) (MD.directConnections p) []
 
-expandPlace' :: Text -> [MD.Destination] -> [Connection] -> [Connection]
-expandPlace' _ [] connections = connections
-expandPlace' placeName (destination : destinations) connections =
+placeToVertices1' :: Text -> [MD.Destination] -> [Vertex] -> [Vertex]
+placeToVertices1' _ [] vertices = vertices
+placeToVertices1' placeName (destination : destinations) vertices =
     if MD.howFar destination < 0 then error "sd: ERROR: Distances between places must be 0 or positive numbers."
-    else connections
-        ++ [Connection { from = placeName,
-                         to = MD.at destination,
-                         distance = MD.howFar destination }]
-        ++ [Connection { from = MD.at destination,
-                         to = placeName,
-                         distance = MD.howFar destination }]
-        ++ expandPlace' placeName destinations connections
+    else 
+    let infinity = makeInfinity
+    in  vertices
+        ++ [Vertex { vertex = placeName,
+                    accumulatedDistance = infinity,
+                    neighbours = [Neighbour {neighbourName = MD.at destination, howFar = MD.howFar destination}]}]
+        ++ [Vertex { vertex = MD.at destination,
+                    accumulatedDistance = infinity,
+                    neighbours = [Neighbour {neighbourName = placeName, howFar = MD.howFar destination}]}]
+        ++ placeToVertices1' placeName destinations vertices
 
-mapToConnections :: MD.Map -> [Connection]
-mapToConnections m =
+mapToVertices :: MD.Map -> [Vertex]
+mapToVertices m =
     let places = MD.map m
     in if null places then []
-       else mapToConnections' places []
+       else mapToVertices1' places []
 
-mapToConnections' :: [MD.Place] -> [Connection] -> [Connection]
-mapToConnections' [] done = done
-mapToConnections' [place] done  = insertPlaceInConnections place done
-mapToConnections' (place : places) done =
-    mapToConnections' [place] done ++ mapToConnections' places done
+mapToVertices1' :: [MD.Place] -> [Vertex] -> [Vertex]
+mapToVertices1' [] done = done
+mapToVertices1' [place] done  = insertPlaceInVertices place done
+mapToVertices1' (place : places) done =
+    mapToVertices1' [place] done ++ mapToVertices1' places done
 
 mapToGraph :: MD.Map -> Graph
 mapToGraph m =
-    let connections = mapToConnections m
-    in connectionsToGraph connections
+    let vertices = mapToVertices m
+    in verticesToGraph vertices
 
 readStartEndFromString :: Text -> MD.StartEnd
 readStartEndFromString candidateStartEnd =
