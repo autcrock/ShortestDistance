@@ -8,16 +8,15 @@ module Shortest (
     , dijkstra
 ) where
 
-import Data.Aeson (ToJSON, FromJSON)
+import Data.Aeson (eitherDecode, ToJSON, FromJSON)
 import Data.Either.Unwrap (isLeft, fromLeft, fromRight)
 import Data.Maybe (fromJust, mapMaybe, isNothing)
 import Data.Ord (min)
 import Data.Text (Text, pack, unpack)
+import Data.String.Conversions (cs)
 import GHC.Generics hiding (from, to)
 import Graph (
-    mapToGraph
-    , deleteNeighboursByName
-    , readStartEndFromString
+    deleteNeighboursByName
     , graphGetVertex
     , graphGetVertexNeighbours
     , neighbourHowFarByName
@@ -28,7 +27,7 @@ import Graph (
     , Neighbour(), neighbourName
     )
 
-import MapDefinitions ( readMap, StartEnd(..) )
+import MapDefinitions ( readMap, mapToGraph, StartEnd(..) )
 
 newtype Distance = Distance{distance :: Double} deriving (Show, Generic, Eq)
 instance ToJSON Distance
@@ -40,6 +39,13 @@ data OptionalCompare = Compare | NoCompare deriving (Eq, Show)
 data UnusualResult = NegativeRoadLength | NotConnected Text Text deriving (Show, Generic, Eq)
 instance ToJSON UnusualResult
 instance FromJSON UnusualResult
+
+readStartEndFromString :: Text -> StartEnd
+readStartEndFromString candidateStartEnd =
+    let eitherStartEnd = eitherDecode $ cs candidateStartEnd :: (Either String StartEnd)
+    in case eitherStartEnd of
+        Left _ -> error ( "readStartEndFromString: Input [" ++ cs candidateStartEnd ++ "] is not valid.")
+        Right r -> r
 
 transferVerticesUpdatingAccumulatedDistance :: (Graph, Graph) -> [Neighbour] -> [Text] -> Double -> OptionalCompare -> (Graph, Graph)
 transferVerticesUpdatingAccumulatedDistance (graph1, graph2) _ [] _ _ =

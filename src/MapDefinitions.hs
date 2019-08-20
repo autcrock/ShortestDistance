@@ -7,7 +7,6 @@ module MapDefinitions (
     , StartEnd(..)
     , Destination
     , directConnections
-    , howFar
     , getMapFromFile
     , getPlacesFromFile
     , readMapFromString
@@ -20,6 +19,7 @@ module MapDefinitions (
     , deletePlaces
     , insertOrModifyRoad
     , deleteRoad
+    , mapToGraph
 )
 
 where
@@ -36,6 +36,12 @@ import qualified Data.ByteString.Lazy.Char8 as DBSLC8
 import GHC.Generics hiding (to)
 import System.Directory
 import System.IO.Error
+import Graph (Vertex(..)
+            , Graph(..)
+            , Neighbour(..)
+            , sortVerticesByDistance
+            , associateVertexWithNeighbours
+            , getVertexNames)
 
 -- Shortest distance query input
 data StartEnd = StartEnd {
@@ -167,7 +173,7 @@ insertOrModifyRoad mapToInsert previousMap =
                      destination = head ds
                  in if not $ isInfixOf insertionNames previousNames
                     then let newStartOfRoad = at destination
-                             newDestination = Destination {at = startOfRoad, howFar = howFar destination}
+                             newDestination = Destination {at = startOfRoad, howFar = MapDefinitions.howFar destination}
                          in insertOrReplaceRoad'' newStartOfRoad newDestination previousPs
                     else insertOrReplaceRoad startOfRoad destination previousPs
 
@@ -215,7 +221,7 @@ deleteRoad mapToDelete previousMap =
                                 destination = head ds
                             in if not $ isInfixOf deletionNames previousNames
                                then let newStartOfRoad = at destination
-                                        newDestination = Destination {at = startOfRoad, howFar = howFar destination}
+                                        newDestination = Destination {at = startOfRoad, howFar = MapDefinitions.howFar destination}
                                     in deleteRoad''' newStartOfRoad newDestination previousPlaces
                                     else deleteRoad' startOfRoad destination previousPlaces
 
@@ -266,3 +272,51 @@ readMap =
        then (do putStrLn $ "sd: readMap: " ++ fromLeft eitherMap
                 return Map { MapDefinitions.map = [] })
        else return (fromRight eitherMap)
+
+makeInfinity :: Double
+makeInfinity = read "Infinity" :: Double
+
+verticesToGraph :: [Vertex] -> Graph
+verticesToGraph vs =
+    let infinity = makeInfinity
+    in Graph {vertices = sortVerticesByDistance [ associateVertexWithNeighbours x vs infinity | x <- getVertexNames vs ]}
+
+insertPlaceInVertices :: Place -> [Vertex] -> [Vertex]
+insertPlaceInVertices place vertices =
+    vertices ++ placeToVertices place
+
+-- A place is a name with a list of direct connections, each of which connected pairs is converted to a pair of vertices
+placeToVertices :: Place -> [Vertex]
+placeToVertices p =
+    placeToVertices1' (place p) (directConnections p) []
+
+placeToVertices1' :: Text -> [Destination] -> [Vertex] -> [Vertex]
+placeToVertices1' _ [] vertices = vertices
+placeToVertices1' placeName (destination : destinations) vertices =
+    if MapDefinitions.howFar destination < 0 then error "sd: ERROR: Distances between places must be 0 or positive numbers."
+    else 
+    let infinity = makeInfinity
+    in  vertices
+        ++ [Vertex { vertex = placeName,
+                    accumulatedDistance = infinity,
+                    neighbours = [Neighbour {neighbourName = at destination, howFar = MapDefinitions.howFar destination}]}]
+        ++ [Vertex { vertex = at destination,
+                    accumulatedDistance = infinity,
+                    neighbours = [Neighbour {neighbourName = placeName, howFar = MapDefinitions.howFar destination}]}]
+        ++ placeToVertices1' placeName destinations vertices
+
+mapToVertices :: Map -> [Vertex]
+mapToVertices theMap =
+    let places = MapDefinitions.map theMap
+    in if null places then []
+       else mapToVertices1' places []
+
+mapToVertices1' :: [Place] -> [Vertex] -> [Vertex]
+mapToVertices1' [] done = done
+mapToVertices1' [place] done  = insertPlaceInVertices place done
+mapToVertices1' (place : places) done =
+    mapToVertices1' [place] done ++ mapToVertices1' places done
+
+mapToGraph :: Map -> Graph
+mapToGraph = verticesToGraph . mapToVertices
+
