@@ -80,40 +80,40 @@ main =
         let part1 = "{\"map\":[]}"
         putStrLn $ "Test suite initialising persistent map by additions. Part1: " ++ part1
         initialiseJSON part1
-        let part2 = "{\"map\":[{\"place\":\"A\", \"directConnections\": [ {\"at\": \"B\", \"howFar\": 100}, {\"at\": \"C\", \"howFar\": 30}]}]}"
+        let part2 = "{\"map\":[{\"place\":\"A\", \"isConnectedTo\": [ {\"at\": \"B\", \"howFar\": 100}, {\"at\": \"C\", \"howFar\": 30}]}]}"
         putStrLn $ "Test suite initialising persistent map by additions. Part2: " ++ part2
         aPlace part2
         let part3 = "{\"map\":[{ \
             \\"place\":\"B\",\
-            \\"directConnections\": [\
+            \\"isConnectedTo\": [\
             \    {\"at\": \"F\", \"howFar\": 300}]\
             \},\
             \{\
             \    \"place\":\"C\",\
-            \    \"directConnections\": [\
+            \    \"isConnectedTo\": [\
             \        {\"at\": \"D\", \"howFar\": 200}]\
             \},\
             \{\
             \    \"place\":\"D\",\
-            \    \"directConnections\": [\
+            \    \"isConnectedTo\": [\
             \        {\"at\": \"H\", \"howFar\": 90},\
             \        {\"at\": \"E\", \"howFar\": 80}]\
             \},\
             \{\
             \    \"place\":\"E\",\
-            \    \"directConnections\": [\
+            \    \"isConnectedTo\": [\
             \        {\"at\": \"H\", \"howFar\": 30},\
             \        {\"at\": \"G\", \"howFar\": 150},\
             \        {\"at\": \"F\", \"howFar\": 50}]\
             \},\
             \{\
             \    \"place\":\"F\",\
-            \    \"directConnections\": [\
+            \    \"isConnectedTo\": [\
             \        {\"at\": \"G\", \"howFar\": 70}]\
             \},\
             \{\
             \    \"place\":\"G\",\
-            \    \"directConnections\": [\
+            \    \"isConnectedTo\": [\
             \        {\"at\": \"H\", \"howFar\": 50}]\
             \}\
             \]}"
@@ -125,7 +125,7 @@ main =
 
         let part4 = "{\"map\":[{ \
             \\"place\":\"H\",\
-            \\"directConnections\": []\
+            \\"isConnectedTo\": []\
             \}\
             \]}"
         putStrLn $ "Test suite deleting location H from map " ++ part4
@@ -144,11 +144,11 @@ main =
 
         let part5 = "{\"map\":[{ \
             \\"place\":\"C\",\
-            \\"directConnections\": []\
+            \\"isConnectedTo\": []\
             \}\
             \,{ \
             \\"place\":\"A\",\
-            \\"directConnections\": []\
+            \\"isConnectedTo\": []\
             \}\
             \]}"
 
@@ -168,15 +168,15 @@ main =
 
         putStrLn $ "Test suite initialising persistent map by additions - road testing. Part1: " ++ part1
         initialiseJSON part1
-        let part6 = "{\"map\":[{\"place\":\"A\", \"directConnections\": []}]}"
+        let part6 = "{\"map\":[{\"place\":\"A\", \"isConnectedTo\": []}]}"
         putStrLn $ "Test suite initialising persistent map by additions - road testing. Part6: " ++ part6
         aPlace part6
 
-        let part7 = "{\"map\":[{\"place\":\"A\", \"directConnections\": [ {\"at\": \"B\", \"howFar\": 100}]}]}"
+        let part7 = "{\"map\":[{\"place\":\"A\", \"isConnectedTo\": [ {\"at\": \"B\", \"howFar\": 100}]}]}"
         putStrLn $ "Test suite initialising persistent map by additions. Part7: " ++ part7
         aRoad part7
 
-        let part8 = "{\"map\":[{\"place\":\"A\", \"directConnections\": [ {\"at\": \"C\", \"howFar\": 30}]}]}"
+        let part8 = "{\"map\":[{\"place\":\"A\", \"isConnectedTo\": [ {\"at\": \"C\", \"howFar\": 30}]}]}"
         putStrLn $ "Test suite initialising persistent map by additions. Part8: " ++ part8
         aRoad part8
 
@@ -189,7 +189,7 @@ main =
         putStrLn "Test suite running through permutations of road insertion test data."
         results4 <- mapM expected dijkstraTestDataRoadInsertion
 
-        let part9 = "{\"map\":[{\"place\":\"A\", \"directConnections\": [ {\"at\": \"B\", \"howFar\": 600}]}]}"
+        let part9 = "{\"map\":[{\"place\":\"A\", \"isConnectedTo\": [ {\"at\": \"B\", \"howFar\": 600}]}]}"
         putStrLn $ "Test suite updating road A to B map by additions. Part9: " ++ part9
         aRoad part9
 
@@ -202,7 +202,7 @@ main =
         putStrLn "Test suite running through permutations of road insertion test data."
         results5 <- mapM expected dijkstraTestDataRoadInsertionAfterUpdatingAtoB
 
-        let part10 = "{\"map\":[{\"place\":\"A\", \"directConnections\": [ {\"at\": \"C\", \"howFar\": 0}]}]}"
+        let part10 = "{\"map\":[{\"place\":\"A\", \"isConnectedTo\": [ {\"at\": \"C\", \"howFar\": 0}]}]}"
         putStrLn $ "Test suite updating road A to C map by additions as zero length road. Part10: " ++ part10
         aRoad part10
 
@@ -215,11 +215,11 @@ main =
         putStrLn "Test suite running through permutations of road insertion test data."
         results6 <- mapM expected dijkstraTestDataRoadInsertionAfterUpdatingAtoC
 
-        let part11 = "{\"map\":[{\"place\":\"C\", \"directConnections\": [ {\"at\": \"A\", \"howFar\": 999}]}]}"
+        let part11 = "{\"map\":[{\"place\":\"C\", \"isConnectedTo\": [ {\"at\": \"A\", \"howFar\": 999}]}]}"
         putStrLn $ "Test suite updating road A to C by additions in reverse. Part10: " ++ part11
         aRoad part11
 
-        let part12 = "{\"map\":[{\"place\":\"D\", \"directConnections\": [ {\"at\": \"A\", \"howFar\": 108}]}]}"
+        let part12 = "{\"map\":[{\"place\":\"D\", \"isConnectedTo\": [ {\"at\": \"A\", \"howFar\": 108}]}]}"
         putStrLn $ "Test suite inserting road A to D by additions in reverse. Part12: " ++ part12
         aRoad part12
 
@@ -236,14 +236,14 @@ main =
         putStrLn $ "Test suite deleting road A to C from persistent map. Part8: " ++ part8
         xRoad part8
 
-        let part13 = "{\"map\":[{\"place\":\"B\", \"directConnections\": [ {\"at\": \"A\", \"howFar\": 100}]}]}"
+        let part13 = "{\"map\":[{\"place\":\"B\", \"isConnectedTo\": [ {\"at\": \"A\", \"howFar\": 100}]}]}"
         putStrLn $ "Test suite deleting reversed road A to B from persistent map. Part11: " ++ part13
         xRoad part13
 
         putStrLn $ "Test suite deleting reversed road A to D from persistent map. Part12: " ++ part12
         xRoad part12
 
-        let part14 = "{\"map\":[{\"place\":\"A\", \"directConnections\": []}]}"
+        let part14 = "{\"map\":[{\"place\":\"A\", \"isConnectedTo\": []}]}"
         putStrLn $ "Test suite deleting place A from persistent map. Part14: " ++ part14
         xPlace part14
 

@@ -2,19 +2,19 @@
     "map":	[
                 {
                     "place":"I",
-                    "directConnections": [
+                    "isConnectedTo": [
                         {"at": "B", "howFar": 10},
                         {"at": "C", "howFar": 20},
                         {"at": "G", "howFar": 50}]
                 },
                 {
                     "place":"J",
-                    "directConnections": [
+                    "isConnectedTo": [
                         {"at": "K", "howFar": 10}]
                 },
                 {
                     "place":"K",
-                    "directConnections": [
+                    "isConnectedTo": [
                         {"at": "L", "howFar": 20},
                         {"at": "M", "howFar": 50},
                         {"at": "J", "howFar": 30}]

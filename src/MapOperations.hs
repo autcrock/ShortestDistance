@@ -17,14 +17,14 @@ import Data.String.Conversions (cs)
 
 import MapDefinitions
     ( Map
-    , getMapFromFile
+    , readMapFromFile
     , readMapFromString
     , readMap
     , saveMap
     , removeMap
     , insertPlaces
     , deletePlaces
-    , insertOrModifyRoad
+    , upsertRoad
     , deleteRoad
     )
 
@@ -45,7 +45,7 @@ xPlace :: String -> IO ()
 xPlace = mapOperation "sd: deleting a location using putative JSON" deletePlaces
 
 aRoad :: String -> IO ()
-aRoad = mapOperation "sd: adding/modifying one or more roads using putative JSON" insertOrModifyRoad
+aRoad = mapOperation "sd: adding/modifying one or more roads using putative JSON" upsertRoad
 
 xRoad :: String -> IO ()
 xRoad = mapOperation "sd: deleting one or more roads using putative JSON" deleteRoad
@@ -66,7 +66,7 @@ maybeSaveMap (Right m) = do
 initialise :: String -> IO ()
 initialise filename = do
   putStrLn $ "sd: initialising a map using input from file [" ++ filename ++ "]."
-  m <- getMapFromFile filename
+  m <- readMapFromFile filename
   maybeSaveMap m
 
 initialiseJSON :: String -> IO ()

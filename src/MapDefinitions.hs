@@ -6,9 +6,8 @@ module MapDefinitions (
     , Place
     , StartEnd(..)
     , Destination
-    , directConnections
-    , getMapFromFile
-    , getPlacesFromFile
+    , isConnectedTo
+    , readMapFromFile
     , readMapFromString
     , place
     , at
@@ -17,7 +16,7 @@ module MapDefinitions (
     , saveMap
     , insertPlaces
     , deletePlaces
-    , insertOrModifyRoad
+    , upsertRoad
     , deleteRoad
     , mapToGraph
 )
@@ -67,7 +66,7 @@ instance FromJSON Destination
 
 data Place = Place {
     place :: !Text,
-    directConnections :: [Destination]
+    isConnectedTo :: [Destination]
  } deriving (Generic, Show, Eq)
 instance ToJSON Place
 instance FromJSON Place
@@ -80,15 +79,15 @@ instance FromJSON Map
 systemMapFile :: String
 systemMapFile = "./SD_CumulativeSystemMapfile.json"
 
-getMapFromFile :: String -> IO (Either String Map)
-getMapFromFile inputFile =
+readMapFromFile :: String -> IO (Either String Map)
+readMapFromFile inputFile =
     do inputMapAsJSON <- DBSL.readFile inputFile
        let inputMap = eitherDecode inputMapAsJSON :: (Either String Map)
        return inputMap
 
 getPlacesFromFile :: String -> IO [Place]
 getPlacesFromFile inputFile =
-    do inputMapAST <- getMapFromFile inputFile
+    do inputMapAST <- readMapFromFile inputFile
        getPlacesAST inputMapAST
                 
 getPlacesAST :: Either String Map -> IO [Place]
@@ -132,7 +131,7 @@ deletePlaces mapToDelete previousMap =
 deletePlaces' :: [Text] -> [Place] -> [Place]
 deletePlaces' [] places = places
 deletePlaces' [placeName] places =
-    let dummyPlace = Place {place = placeName, directConnections = []}
+    let dummyPlace = Place {place = placeName, isConnectedTo = []}
     in deleteBy (\x y -> place x == place y) dummyPlace places
 deletePlaces' (placeName:moreNames) places =
     let nextPlaces = deletePlaces' [placeName] places
@@ -147,17 +146,17 @@ deleteDestinations (placeName:moreNames) places =
 
 deleteDestinations' :: Text -> [Place] -> [Place]
 deleteDestinations' placeName places =
-    filter (not . null . directConnections)
+    filter (not . null . isConnectedTo)
         (Prelude.map (deleteDestinations'' placeName) places)
 
 deleteDestinations'' :: Text -> Place -> Place
 deleteDestinations'' destinationName place_in =
     let destinationToDelete = Destination { at = destinationName, howFar = 0}
-        ds = deleteBy (\x y -> at x == at y) destinationToDelete $ directConnections place_in
-    in Place {place = place place_in, directConnections = ds}
+        ds = deleteBy (\x y -> at x == at y) destinationToDelete $ isConnectedTo place_in
+    in Place {place = place place_in, isConnectedTo = ds}
 
-insertOrModifyRoad :: Map -> Map -> Map
-insertOrModifyRoad mapToInsert previousMap =
+upsertRoad :: Map -> Map -> Map
+upsertRoad mapToInsert previousMap =
     let placesToDo = MapDefinitions.map mapToInsert
     in if null placesToDo || length placesToDo > 1
        then error ("sd: Insertion/modification of only one road at a time is allowed: " ++ show placesToDo)
@@ -166,7 +165,7 @@ insertOrModifyRoad mapToInsert previousMap =
              previousPs = MapDefinitions.map previousMap
              previousNames = getPlaceNames previousPs
              start = head placesToDo
-             ds = directConnections start
+             ds = isConnectedTo start
          in if null ds || length ds > 1
             then error ("sd: Insertion/modification of only one road at a time is allowed: " ++ show placesToDo)
             else let startOfRoad = place start
@@ -186,13 +185,13 @@ insertOrReplaceRoad start end previousPlaces =
 
 insertOrReplaceRoad' :: Destination -> Place -> Place
 insertOrReplaceRoad' end thePlace =
-    let ds = directConnections thePlace
+    let ds = isConnectedTo thePlace
         endD = at end
-        theEnd = find (\x -> endD == at x) (directConnections thePlace)
+        theEnd = find (\x -> endD == at x) (isConnectedTo thePlace)
     in if isNothing theEnd
-       then Place { place = place thePlace, directConnections = end:ds }
+       then Place { place = place thePlace, isConnectedTo = end:ds }
        else let newDs = deleteBy (\x y -> at x == at y ) end ds
-            in Place {place = place thePlace, directConnections = end:newDs}
+            in Place {place = place thePlace, isConnectedTo = end:newDs}
 
 insertOrReplaceRoad'' :: Text -> Destination -> [Place] -> Map
 insertOrReplaceRoad'' start end previousPlaces =
@@ -214,7 +213,7 @@ deleteRoad mapToDelete previousMap =
                then error ("sd: There are no places in the database: " ++ show placesToDo)
                else let previousNames = getPlaceNames previousPlaces
                         start = head placesToDo
-                        ds = directConnections start
+                        ds = isConnectedTo start
                     in if null ds || length ds > 1
                        then error ("sd: Deletion of only one road at a time is allowed: " ++ show placesToDo)
                        else let startOfRoad = place start
@@ -234,13 +233,13 @@ deleteRoad' start end previousPlaces =
 
 deleteRoad'' :: Destination -> Place -> Place
 deleteRoad'' end thePlace =
-    let ds = directConnections thePlace
+    let ds = isConnectedTo thePlace
         endD = at end
         theEnd = find (\x -> endD == at x) ds
     in if isNothing theEnd
        then thePlace
        else let newDs = deleteBy (\x y -> at x == at y ) end ds
-            in Place {place = place thePlace, directConnections = newDs}
+            in Place {place = place thePlace, isConnectedTo = newDs}
 
 
 deleteRoad''' :: Text -> Destination -> [Place] -> Map
@@ -267,7 +266,7 @@ readMapFromString candidateMap =
     
 readMap :: IO Map
 readMap =
-    do eitherMap <- getMapFromFile systemMapFile
+    do eitherMap <- readMapFromFile systemMapFile
        if isLeft eitherMap 
        then (do putStrLn $ "sd: readMap: " ++ fromLeft eitherMap
                 return Map { MapDefinitions.map = [] })
@@ -288,7 +287,7 @@ insertPlaceInVertices place vertices =
 -- A place is a name with a list of direct connections, each of which connected pairs is converted to a pair of vertices
 placeToVertices :: Place -> [Vertex]
 placeToVertices p =
-    placeToVertices1' (place p) (directConnections p) []
+    placeToVertices1' (place p) (isConnectedTo p) []
 
 placeToVertices1' :: Text -> [Destination] -> [Vertex] -> [Vertex]
 placeToVertices1' _ [] vertices = vertices

@@ -2,41 +2,41 @@
     "map":	[
                 {
                     "place":"A",
-                    "directConnections": [
+                    "isConnectedTo": [
                         {"at": "B", "howFar": 100},
                         {"at": "C", "howFar": 30}]
                 },
                 {
                     "place":"B",
-                    "directConnections": [
+                    "isConnectedTo": [
                         {"at": "F", "howFar": 300}]
                 },
                 {
                     "place":"C",
-                    "directConnections": [
+                    "isConnectedTo": [
                         {"at": "D", "howFar": 200}]
                 },
                 {
                     "place":"D",
-                    "directConnections": [
+                    "isConnectedTo": [
                         {"at": "H", "howFar": 90},
                         {"at": "E", "howFar": 80}]
                 },
                 {
                     "place":"E",
-                    "directConnections": [
+                    "isConnectedTo": [
                         {"at": "H", "howFar": 30},
                         {"at": "G", "howFar": 150},
                         {"at": "F", "howFar": 50}]
                 },
                 {
                     "place":"F",
-                    "directConnections": [
+                    "isConnectedTo": [
                         {"at": "G", "howFar": 70}]
                 },
                 {
                     "place":"G",
-                    "directConnections": [
+                    "isConnectedTo": [
                         {"at": "H", "howFar": 50}]
                 }
     		]
