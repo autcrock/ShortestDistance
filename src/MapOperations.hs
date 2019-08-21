@@ -78,6 +78,4 @@ initialiseJSON couldBeJSON = do
 shortest :: String -> IO ()
 shortest couldBeJSON = do
   result <- dijkstra (cs couldBeJSON)
-  print $ case result of
-    Left l -> encode l
-    Right r -> encode r
+  print $ fmap encode result

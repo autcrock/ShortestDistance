@@ -65,8 +65,7 @@ associateVertexWithNeighbours vertexName_in vs accumulatedDistance_in =
               , neighbours = sortNeighboursByDistance ns }
 
 graphGetVertexNeighbours :: Graph -> Text -> Maybe Neighbours
-graphGetVertexNeighbours g v =
-    fmap neighbours (graphGetVertex g v)
+graphGetVertexNeighbours g v = fmap neighbours (graphGetVertex g v)
 
 -- Two alternative ways to express graphGetVertexNeighbours
     -- graphGetVertex g vertex >>= return . neighbours
@@ -76,18 +75,15 @@ graphGetVertexNeighbours g v =
     --     return $ neighbours v
 
 deleteNeighbour :: Neighbours -> Neighbour -> Neighbours
-deleteNeighbour ns n =
-    deleteBy (\x y -> neighbourName x == neighbourName y) n ns
+deleteNeighbour ns n = deleteBy (\x y -> neighbourName x == neighbourName y) n ns
 
 deleteNeighbourByName :: Neighbours -> Text -> Neighbours
-deleteNeighbourByName ns name =
-    deleteNeighbour ns Neighbour {neighbourName = name, howFar = 0}
+deleteNeighbourByName ns name = deleteNeighbour ns Neighbour {neighbourName = name, howFar = 0}
 
 deleteNeighboursByName :: Neighbours -> [Text] -> Neighbours
 deleteNeighboursByName [] _ = []
 deleteNeighboursByName ns [] = ns
-deleteNeighboursByName ns (name:names) =
-    deleteNeighboursByName (deleteNeighbourByName ns name) names
+deleteNeighboursByName ns (name:names) = deleteNeighboursByName (deleteNeighbourByName ns name) names
 
 neighbourHowFarByName :: Neighbours -> Text -> Double
 neighbourHowFarByName ns name =

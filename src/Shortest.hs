@@ -102,17 +102,13 @@ transferVertexUpdatingAccumulatedDistance (graph1, graph2) neighboursIn currentV
             let 
                 txV = fromJust txVertex
                 accumulatedD = accumulatedDistance txV
-                neighbourDistance =
-                    neighbourHowFarByName neighboursIn currentVName
-                
-                accumulatedD' =
-                    pickMinimumAccumulatedDistance accumulatedD neighbourDistance currentDistance optCompare
+                neighbourDistance = neighbourHowFarByName neighboursIn currentVName
+                accumulatedD' = pickMinimumAccumulatedDistance accumulatedD neighbourDistance currentDistance optCompare
                 v =  Vertex {
                     vertex = vertex txV
                     , accumulatedDistance = accumulatedD'
                     , neighbours = neighbours txV
                 }
-                
                 graph2' = graphDeleteVertex graph2 txV
                 newGraph1 = graphDeleteVertex graph1 txV
                 newGraph2 = graphInsertVertex graph2' v
@@ -141,13 +137,11 @@ tellTheNeighbours (reds, yellows) ns currentDistance =
 
         redNeighbours = mapMaybe (graphGetVertex reds) nNames
         redNeighbourNames = Prelude.map vertex redNeighbours
-        (rs', ys') = 
-            transferVerticesUpdatingAccumulatedDistance (reds, yellows) ns redNeighbourNames currentDistance Compare
+        (rs', ys') = transferVerticesUpdatingAccumulatedDistance (reds, yellows) ns redNeighbourNames currentDistance Compare
 
         yellowNeighbours = mapMaybe (graphGetVertex ys') nNames
         yellowNeighbourNames = Prelude.map vertex yellowNeighbours
-        (_, ys'') = 
-            transferVerticesUpdatingAccumulatedDistance (ys', ys') ns yellowNeighbourNames currentDistance Compare
+        (_, ys'') = transferVerticesUpdatingAccumulatedDistance (ys', ys') ns yellowNeighbourNames currentDistance Compare
     in 
         (rs', ys'')
 
@@ -160,11 +154,9 @@ dijkstra couldBeStartEnd =
             from = start startEnd
             to = end startEnd
             currentDistance = 0
-            (reds, yellows) =
-                transferVertexUpdatingAccumulatedDistance (pg, Graph{vertices = []}) [] from currentDistance NoCompare
+            (reds, yellows) = transferVertexUpdatingAccumulatedDistance (pg, Graph{vertices = []}) [] from currentDistance NoCompare
             greens = Graph{vertices = []}
-            shortestDistanceByDijkstra = 
-                dijkstra' reds yellows greens from to from currentDistance
+            shortestDistanceByDijkstra = dijkstra' reds yellows greens from to from currentDistance
             theResult = if isLeft shortestDistanceByDijkstra
                         then Left $ fromLeft shortestDistanceByDijkstra
                         else Right Distance {distance = fromRight shortestDistanceByDijkstra}
@@ -193,11 +185,7 @@ dijkstra' reds yellows greens fromName toName currentVertexName currentDistance
                     currentVertex = fromRight eitherCurrentVertex
                     newCurrentDistance = accumulatedDistance currentVertex
                     newCurrentVertexName = vertex currentVertex
-                    (ys1, gs1) = 
-                            transferVertex (yellows, greens) newCurrentVertexName
-                    ns = 
-                            graphGetAdmissibleVertexNeighbours gs1 newCurrentVertexName gs1
-                    (rs2, ys2) =
-                        tellTheNeighbours (reds, ys1) (fromJust ns) newCurrentDistance
-                    in
-                        dijkstra' rs2 ys2 gs1 fromName toName newCurrentVertexName newCurrentDistance
+                    (ys1, gs1) = transferVertex (yellows, greens) newCurrentVertexName
+                    ns = graphGetAdmissibleVertexNeighbours gs1 newCurrentVertexName gs1
+                    (rs2, ys2) = tellTheNeighbours (reds, ys1) (fromJust ns) newCurrentDistance
+                in dijkstra' rs2 ys2 gs1 fromName toName newCurrentVertexName newCurrentDistance
