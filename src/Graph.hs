@@ -8,7 +8,7 @@ module Graph (
     , graphInsertVertex
     , sortVerticesByDistance
     , associateVertexWithNeighbours
-    , getVertexNames
+    , getUniqueVertexNames
     , Graph(..)
     , Vertex(..)
     , Neighbour(..)
@@ -53,8 +53,8 @@ sortNeighboursByDistance = sortOn howFar
 sortVerticesByDistance :: [Vertex] -> [Vertex]
 sortVerticesByDistance = sortOn accumulatedDistance
 
-getVertexNames :: [Vertex] -> [Text]
-getVertexNames = nub . Prelude.map vertex
+getUniqueVertexNames :: [Vertex] -> [Text]
+getUniqueVertexNames = nub . Prelude.map vertex
 
 associateVertexWithNeighbours :: Text -> [Vertex] -> Double -> Vertex
 associateVertexWithNeighbours vertexName_in vs accumulatedDistance_in =

@@ -40,7 +40,7 @@ import Graph (Vertex(..)
             , Neighbour(..)
             , sortVerticesByDistance
             , associateVertexWithNeighbours
-            , getVertexNames)
+            , getUniqueVertexNames)
 
 -- Shortest distance query input
 data StartEnd = StartEnd {
@@ -278,7 +278,7 @@ makeInfinity = read "Infinity" :: Double
 verticesToGraph :: [Vertex] -> Graph
 verticesToGraph vs =
     let infinity = makeInfinity
-    in Graph {vertices = sortVerticesByDistance [ associateVertexWithNeighbours x vs infinity | x <- getVertexNames vs ]}
+    in Graph {vertices = sortVerticesByDistance [ associateVertexWithNeighbours x vs infinity | x <- getUniqueVertexNames vs ]}
 
 insertPlaceInVertices :: Place -> [Vertex] -> [Vertex]
 insertPlaceInVertices place vertices =
