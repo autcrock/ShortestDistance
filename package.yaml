@@ -31,7 +31,6 @@ dependencies:
 - text-show >= 3.8.2
 - string-conversions
 - ordered-containers
-- transformers
 
 library:
   source-dirs: src
