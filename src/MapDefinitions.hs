@@ -56,6 +56,7 @@ newtype Distance = Distance{distance :: Double}
 instance ToJSON Distance
 instance FromJSON Distance
 
+-- Map data types
 data Destination = Destination {
     at :: !Text,
     howFar :: Double
@@ -75,6 +76,7 @@ newtype Map = Map{map :: [Place]}
                 deriving (Generic, Show, Eq)
 instance ToJSON Map
 instance FromJSON Map
+
 
 systemMapFile :: String
 systemMapFile = "./SD_CumulativeSystemMapfile.json"
@@ -110,23 +112,25 @@ getPlaceNames = Prelude.map place
         
 insertPlaces :: Map -> Map -> Map
 insertPlaces mapToInsert previousMap =
-    let placesToInsert = MapDefinitions.map mapToInsert
-        insertionNames = getPlaceNames placesToInsert
-        previousPlaces = MapDefinitions.map previousMap
-        previousNames = getPlaceNames previousPlaces
-        intersection = intersect insertionNames previousNames
-    in if intersection /= []
+    if intersection /= []
        then error ("Insertion of an already existing place is not allowed: " ++ show intersection ++ " - Maybe you meant to update instead.")
        else Map {MapDefinitions.map = placesToInsert ++ previousPlaces}
+    where
+      placesToInsert = MapDefinitions.map mapToInsert
+      insertionNames = getPlaceNames placesToInsert
+      previousPlaces = MapDefinitions.map previousMap
+      previousNames = getPlaceNames previousPlaces
+      intersection = intersect insertionNames previousNames
 
 deletePlaces :: Map -> Map -> Map
 deletePlaces mapToDelete previousMap =
-    let placesToDelete = MapDefinitions.map mapToDelete
-        deletionNames = getPlaceNames placesToDelete
-        previousPlaces = MapDefinitions.map previousMap
-        filteredPlaces = deletePlaces' deletionNames previousPlaces
-        filteredPlaces' = deleteDestinations deletionNames filteredPlaces
-    in Map {MapDefinitions.map = filteredPlaces'}
+     Map {MapDefinitions.map = filteredPlaces'}
+    where
+      placesToDelete = MapDefinitions.map mapToDelete
+      deletionNames = getPlaceNames placesToDelete
+      previousPlaces = MapDefinitions.map previousMap
+      filteredPlaces = deletePlaces' deletionNames previousPlaces
+      filteredPlaces' = deleteDestinations deletionNames filteredPlaces
 
 deletePlaces' :: [Text] -> [Place] -> [Place]
 deletePlaces' [] places = places
@@ -178,10 +182,11 @@ upsertRoad mapToInsert previousMap =
 
 insertOrReplaceRoad :: Text -> Destination -> [Place] -> Map
 insertOrReplaceRoad start end previousPlaces =
-    let thePlace = fromJust $ find (\x -> start == place x) previousPlaces
-        newPlaces = deleteBy (\x y -> place x == place y ) thePlace previousPlaces
-        theNewPlace = insertOrReplaceRoad' end thePlace 
-    in Map {MapDefinitions.map = theNewPlace:newPlaces}
+    Map {MapDefinitions.map = theNewPlace:newPlaces}
+    where
+      thePlace = fromJust $ find (\x -> start == place x) previousPlaces
+      newPlaces = deleteBy (\x y -> place x == place y ) thePlace previousPlaces
+      theNewPlace = insertOrReplaceRoad' end thePlace 
 
 insertOrReplaceRoad' :: Destination -> Place -> Place
 insertOrReplaceRoad' end thePlace =
@@ -287,35 +292,36 @@ insertPlaceInVertices place vertices =
 -- A place is a name with a list of direct connections, each of which connected pairs is converted to a pair of vertices
 placeToVertices :: Place -> [Vertex]
 placeToVertices p =
-    placeToVertices1' (place p) (isConnectedTo p) []
+    placeToVertices' (place p) (isConnectedTo p) []
 
-placeToVertices1' :: Text -> [Destination] -> [Vertex] -> [Vertex]
-placeToVertices1' _ [] vertices = vertices
-placeToVertices1' placeName (destination : destinations) vertices =
-    if MapDefinitions.howFar destination < 0 then error "sd: ERROR: Distances between places must be 0 or positive numbers."
+placeToVertices' :: Text -> [Destination] -> [Vertex] -> [Vertex]
+placeToVertices' _ [] vertices = vertices
+placeToVertices' placeName (destination : destinations) vertices =
+    if MapDefinitions.howFar destination < 0
+    then
+      error "sd: ERROR: Distances between places must be 0 or positive numbers."
     else 
-    let infinity = makeInfinity
-    in  vertices
-        ++ [Vertex { vertex = placeName,
-                    accumulatedDistance = infinity,
-                    neighbours = [Neighbour {neighbourName = at destination, howFar = MapDefinitions.howFar destination}]}]
-        ++ [Vertex { vertex = at destination,
-                    accumulatedDistance = infinity,
-                    neighbours = [Neighbour {neighbourName = placeName, howFar = MapDefinitions.howFar destination}]}]
-        ++ placeToVertices1' placeName destinations vertices
+      let infinity = makeInfinity
+      in  vertices
+          ++ [Vertex { vertex = placeName,
+                       accumulatedDistance = infinity,
+                       neighbours = [Neighbour {neighbourName = at destination, howFar = MapDefinitions.howFar destination}]}]
+          ++ [Vertex { vertex = at destination,
+                       accumulatedDistance = infinity,
+                       neighbours = [Neighbour {neighbourName = placeName, howFar = MapDefinitions.howFar destination}]}]
+          ++ placeToVertices' placeName destinations vertices
 
 mapToVertices :: Map -> [Vertex]
 mapToVertices theMap =
     let places = MapDefinitions.map theMap
     in if null places then []
-       else mapToVertices1' places []
+       else mapToVertices' places []
 
-mapToVertices1' :: [Place] -> [Vertex] -> [Vertex]
-mapToVertices1' [] done = done
-mapToVertices1' [place] done  = insertPlaceInVertices place done
-mapToVertices1' (place : places) done =
-    mapToVertices1' [place] done ++ mapToVertices1' places done
+mapToVertices' :: [Place] -> [Vertex] -> [Vertex]
+mapToVertices' [] done = done
+mapToVertices' [place] done  = insertPlaceInVertices place done
+mapToVertices' (place : places) done =
+    mapToVertices' [place] done ++ mapToVertices' places done
 
 mapToGraph :: Map -> Graph
 mapToGraph = verticesToGraph . mapToVertices
-
