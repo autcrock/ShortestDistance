@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 120bc706f4b23c2c2c8fede18f87ffe555353e263b794a7e7d5d91baccbe5588
+-- hash: d940dfa3c98900a5d6d6e530b6bca41ebb0ab31952e61451ddab18718574e915
 
 name:           ShortestDistance
 version:        0.1.0.0
@@ -39,7 +39,6 @@ library
     , string-conversions
     , text
     , text-show >=3.8.2
-    , transformers
     , unique
   exposed-modules:
       Graph
@@ -67,7 +66,6 @@ executable sd
     , string-conversions
     , text
     , text-show >=3.8.2
-    , transformers
     , unique
   other-modules:
       Paths_ShortestDistance
@@ -91,7 +89,6 @@ test-suite sd-test
     , string-conversions
     , text
     , text-show >=3.8.2
-    , transformers
     , unique
   other-modules:
       Paths_ShortestDistance

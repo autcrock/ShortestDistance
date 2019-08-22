@@ -33,8 +33,8 @@ import Shortest (dijkstra)
 mapOperation :: String -> (Map -> Map -> Map) -> String -> IO()
 mapOperation message operation couldBeJSON =
     do putStrLn $ message ++ " [" ++ couldBeJSON ++ "]."
-       amap <- readMap
-       saveMap $ operation (readMapFromString couldBeJSON) amap
+       aMap <- readMap
+       saveMap $ operation (readMapFromString couldBeJSON) aMap
 
 aPlace :: String -> IO ()
 aPlace = mapOperation "sd: adding one or more locations using putative JSON"  insertPlaces

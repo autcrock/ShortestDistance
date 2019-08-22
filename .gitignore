@@ -34,6 +34,8 @@ cabal.project.local~
 
 # Emacs related
 *~
+\#*\#
+.\#*
 
 # Jetbrains IDEA related
 .idea
