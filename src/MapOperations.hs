@@ -14,6 +14,7 @@ import Data.Aeson (encode)
 import Data.Either.Unwrap (isLeft, fromLeft, fromRight)
 import Data.Either.Combinators (mapBoth)
 import Data.String.Conversions (cs)
+import Control.Applicative
 
 import MapDefinitions
     ( Map
@@ -29,12 +30,11 @@ import MapDefinitions
     )
 
 import Shortest (dijkstra)
+import Control.Monad
 
 mapOperation :: String -> (Map -> Map -> Map) -> String -> IO()
 mapOperation message operation couldBeJSON =
-    do putStrLn $ message ++ " [" ++ couldBeJSON ++ "]."
-       aMap <- readMap
-       saveMap $ operation (readMapFromString couldBeJSON) aMap
+  putStrLn (message ++ " [" ++ couldBeJSON ++ "].") >> fmap (operation (readMapFromString couldBeJSON)) readMap >>= saveMap
 
 aPlace :: String -> IO ()
 aPlace = mapOperation "sd: adding one or more locations using putative JSON"  insertPlaces
