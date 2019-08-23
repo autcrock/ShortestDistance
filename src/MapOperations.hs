@@ -49,31 +49,19 @@ xRoad :: String -> IO ()
 xRoad = mapOperation "sd: deleting one or more roads using putative JSON" deleteRoad
 
 clear :: IO ()
-clear = do
-  putStrLn "sd: Removing the system file."
-  removeMap
+clear = putStrLn "sd: Removing the system file." >> removeMap
 
 maybeSaveMap :: Either String Map -> IO()
-maybeSaveMap (Left e) = do
-  putStrLn $ "sd: ERROR: Getting map: " ++ e
-  return ()
-maybeSaveMap (Right m) = do
-  saveMap m
-  return ()
+maybeSaveMap (Left e) = putStrLn $ "sd: ERROR: Getting map: " ++ e
+maybeSaveMap (Right m) = saveMap m
         
 initialise :: String -> IO ()
-initialise filename = do
-  putStrLn $ "sd: initialising a map using input from file [" ++ filename ++ "]."
-  m <- readMapFromFile filename
-  maybeSaveMap m
+initialise filename =
+  putStrLn ("sd: initialising a map using input from file [" ++ filename ++ "].") >> readMapFromFile filename >>= maybeSaveMap
 
 initialiseJSON :: String -> IO ()
-initialiseJSON couldBeJSON = do
-  putStrLn $ "sd: initialising a map using putative JSON [" ++ couldBeJSON ++ "]."
-  let mapToSave = readMapFromString couldBeJSON
-  saveMap mapToSave
+initialiseJSON couldBeJSON =
+  putStrLn ("sd: initialising a map using putative JSON [" ++ couldBeJSON ++ "].") >> saveMap (readMapFromString couldBeJSON)
 
 shortest :: String -> IO ()
-shortest couldBeJSON = do
-  result <- dijkstra (cs couldBeJSON)
-  print $ fmap encode result
+shortest couldBeJSON = fmap encode (dijkstra (cs couldBeJSON)) >>= print
