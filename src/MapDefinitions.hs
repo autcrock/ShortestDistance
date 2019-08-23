@@ -25,8 +25,9 @@ where
 
 import Control.Exception
 import Control.Monad ()
+import Control.Monad.Extra
 import Data.Aeson (eitherDecode, encode, ToJSON, FromJSON(..))
-import Data.Either.Unwrap (isLeft, fromLeft, fromRight)
+import Data.Either.Unwrap (isLeft, isRight, fromLeft, fromRight)
 import Data.Text (Text)
 import Data.Maybe (fromJust, isNothing)
 import Data.List (intersect, deleteBy, isInfixOf, find)
@@ -77,7 +78,6 @@ newtype Map = Map{map :: [Place]}
 instance ToJSON Map
 instance FromJSON Map
 
-
 systemMapFile :: String
 systemMapFile = "./SD_CumulativeSystemMapfile.json"
 
@@ -88,24 +88,14 @@ readMapFromFile inputFile =
        return inputMap
 
 getPlacesFromFile :: String -> IO [Place]
-getPlacesFromFile inputFile =
-    do inputMapAST <- readMapFromFile inputFile
-       getPlacesAST inputMapAST
-                
-getPlacesAST :: Either String Map -> IO [Place]
-getPlacesAST (Left s) =
-    do putStrLn $ "sd: getPlacesAST: Error decoding JSON map: " ++ s
-       return []
+getPlacesFromFile inputFile = readMapFromFile inputFile >>= getPlacesAST
 
-getPlacesAST (Right m) =
-    do putStrLn "sd: getPlacesAST: Extracting places AST: "
-       let placesAST = MapDefinitions.map m
-       return placesAST
-            
+getPlacesAST :: Either String Map -> IO [Place]
+getPlacesAST (Left s) = (putStrLn $ "sd: getPlacesAST: Error decoding JSON map: " ++ s) >> return []
+getPlacesAST (Right m) = (putStrLn "sd: getPlacesAST: Extracting places AST: ") >> return (MapDefinitions.map m)
+
 saveMap :: Map -> IO ()
-saveMap theMap =
-    do let encodedMap = encode theMap
-       DBSL.writeFile systemMapFile encodedMap
+saveMap theMap = DBSL.writeFile systemMapFile (encode theMap)
 
 getPlaceNames :: [Place] -> [Text]
 getPlaceNames = Prelude.map place 
@@ -150,8 +140,7 @@ deleteDestinations (placeName:moreNames) places =
 
 deleteDestinations' :: Text -> [Place] -> [Place]
 deleteDestinations' placeName places =
-    filter (not . null . isConnectedTo)
-        (Prelude.map (deleteDestinations'' placeName) places)
+    filter (not . null . isConnectedTo) (Prelude.map (deleteDestinations'' placeName) places)
 
 deleteDestinations'' :: Text -> Place -> Place
 deleteDestinations'' destinationName place_in =
@@ -160,25 +149,22 @@ deleteDestinations'' destinationName place_in =
     in Place {place = place place_in, isConnectedTo = ds}
 
 upsertRoad :: Map -> Map -> Map
-upsertRoad mapToInsert previousMap =
-    let placesToDo = MapDefinitions.map mapToInsert
-    in if null placesToDo || length placesToDo > 1
-       then error ("sd: Insertion/modification of only one road at a time is allowed: " ++ show placesToDo)
-       else 
-         let insertionNames = getPlaceNames placesToDo
-             previousPs = MapDefinitions.map previousMap
-             previousNames = getPlaceNames previousPs
-             start = head placesToDo
-             ds = isConnectedTo start
-         in if null ds || length ds > 1
-            then error ("sd: Insertion/modification of only one road at a time is allowed: " ++ show placesToDo)
-            else let startOfRoad = place start
-                     destination = head ds
-                 in if not $ isInfixOf insertionNames previousNames
-                    then let newStartOfRoad = at destination
-                             newDestination = Destination {at = startOfRoad, howFar = MapDefinitions.howFar destination}
-                         in insertOrReplaceRoad'' newStartOfRoad newDestination previousPs
-                    else insertOrReplaceRoad startOfRoad destination previousPs
+upsertRoad mapToInsert previousMap
+    | null placesToDo || length placesToDo > 1 = error ("sd: Insertion/modification of only one road at a time is allowed: " ++ show placesToDo)
+    | null ds || length ds > 1 = error ("sd: Insertion/modification of only one road at a time is allowed: " ++ show placesToDo)
+    | not $ isInfixOf insertionNames previousNames = insertOrReplaceRoad'' newStartOfRoad newDestination previousPs
+    | otherwise = insertOrReplaceRoad startOfRoad destination previousPs
+    where
+        placesToDo = MapDefinitions.map mapToInsert
+        insertionNames = getPlaceNames placesToDo
+        previousPs = MapDefinitions.map previousMap
+        previousNames = getPlaceNames previousPs
+        start = head placesToDo
+        ds = isConnectedTo start
+        startOfRoad = place start
+        destination = head ds
+        newStartOfRoad = at destination
+        newDestination = Destination {at = startOfRoad, howFar = MapDefinitions.howFar destination}
 
 insertOrReplaceRoad :: Text -> Destination -> [Place] -> Map
 insertOrReplaceRoad start end previousPlaces =
@@ -189,45 +175,40 @@ insertOrReplaceRoad start end previousPlaces =
       theNewPlace = insertOrReplaceRoad' end thePlace 
 
 insertOrReplaceRoad' :: Destination -> Place -> Place
-insertOrReplaceRoad' end thePlace =
-    let ds = isConnectedTo thePlace
+insertOrReplaceRoad' end thePlace
+    | isNothing theEnd = Place { place = place thePlace, isConnectedTo = end:ds }
+    | otherwise = Place {place = place thePlace, isConnectedTo = end:newDs}
+    where
+        ds = isConnectedTo thePlace
         endD = at end
         theEnd = find (\x -> endD == at x) (isConnectedTo thePlace)
-    in if isNothing theEnd
-       then Place { place = place thePlace, isConnectedTo = end:ds }
-       else let newDs = deleteBy (\x y -> at x == at y ) end ds
-            in Place {place = place thePlace, isConnectedTo = end:newDs}
+        newDs = deleteBy (\x y -> at x == at y ) end ds
 
 insertOrReplaceRoad'' :: Text -> Destination -> [Place] -> Map
-insertOrReplaceRoad'' start end previousPlaces =
-    let maybeThePlace = find (\x -> start == place x) previousPlaces
-    in if isNothing maybeThePlace
-       then error ("sd: Insertion/update of a road requires a known starting location. Tried: "
-                    ++ show start ++ " and " ++ show (at end))
-       else insertOrReplaceRoad start end previousPlaces
+insertOrReplaceRoad'' start end previousPlaces
+    | isNothing maybeThePlace = error ("sd: Insertion/update of a road requires a known starting location. Tried: " ++ show start ++ " and " ++ show (at end))
+    | otherwise = insertOrReplaceRoad start end previousPlaces
+    where maybeThePlace = find (\x -> start == place x) previousPlaces
             
     
 deleteRoad :: Map -> Map -> Map
-deleteRoad mapToDelete previousMap =
-    let placesToDo = MapDefinitions.map mapToDelete
-    in if null placesToDo || length placesToDo > 1
-       then error ("sd: Deletion of only one road at a time is allowed: " ++ show placesToDo)
-       else let deletionNames = getPlaceNames placesToDo
-                previousPlaces = MapDefinitions.map previousMap
-            in if null previousPlaces
-               then error ("sd: There are no places in the database: " ++ show placesToDo)
-               else let previousNames = getPlaceNames previousPlaces
-                        start = head placesToDo
-                        ds = isConnectedTo start
-                    in if null ds || length ds > 1
-                       then error ("sd: Deletion of only one road at a time is allowed: " ++ show placesToDo)
-                       else let startOfRoad = place start
-                                destination = head ds
-                            in if not $ isInfixOf deletionNames previousNames
-                               then let newStartOfRoad = at destination
-                                        newDestination = Destination {at = startOfRoad, howFar = MapDefinitions.howFar destination}
-                                    in deleteRoad''' newStartOfRoad newDestination previousPlaces
-                                    else deleteRoad' startOfRoad destination previousPlaces
+deleteRoad mapToDelete previousMap
+    | null placesToDo || length placesToDo > 1 = error ("sd: Deletion of only one road at a time is allowed: " ++ show placesToDo)
+    | null previousPlaces = error ("sd: There are no places in the database: " ++ show placesToDo)
+    | null ds || length ds > 1 = error ("sd: Deletion of only one road at a time is allowed: " ++ show placesToDo)
+    | not $ isInfixOf deletionNames previousNames = deleteRoad''' newStartOfRoad newDestination previousPlaces
+    | otherwise = deleteRoad' startOfRoad destination previousPlaces
+    where
+        placesToDo = MapDefinitions.map mapToDelete
+        deletionNames = getPlaceNames placesToDo
+        previousPlaces = MapDefinitions.map previousMap
+        previousNames = getPlaceNames previousPlaces
+        start = head placesToDo
+        ds = isConnectedTo start
+        startOfRoad = place start
+        destination = head ds
+        newStartOfRoad = at destination
+        newDestination = Destination {at = startOfRoad, howFar = MapDefinitions.howFar destination}
 
 deleteRoad' :: Text -> Destination -> [Place] -> Map
 deleteRoad' start end previousPlaces =
@@ -237,15 +218,14 @@ deleteRoad' start end previousPlaces =
     in Map {MapDefinitions.map = theNewPlace:newPlaces}
 
 deleteRoad'' :: Destination -> Place -> Place
-deleteRoad'' end thePlace =
-    let ds = isConnectedTo thePlace
+deleteRoad'' end thePlace
+    | isNothing theEnd = thePlace
+    | otherwise = Place {place = place thePlace, isConnectedTo = newDs}
+    where 
+        ds = isConnectedTo thePlace
         endD = at end
         theEnd = find (\x -> endD == at x) ds
-    in if isNothing theEnd
-       then thePlace
-       else let newDs = deleteBy (\x y -> at x == at y ) end ds
-            in Place {place = place thePlace, isConnectedTo = newDs}
-
+        newDs = deleteBy (\x y -> at x == at y ) end ds
 
 deleteRoad''' :: Text -> Destination -> [Place] -> Map
 deleteRoad''' start end previousPlaces =
@@ -272,27 +252,22 @@ readMapFromString candidateMap =
 readMap :: IO Map
 readMap =
     do eitherMap <- readMapFromFile systemMapFile
-       if isLeft eitherMap 
-       then (do putStrLn $ "sd: readMap: " ++ fromLeft eitherMap
-                return Map { MapDefinitions.map = [] })
-       else return (fromRight eitherMap)
+       when (isLeft eitherMap) (putStrLn $ "sd: readMap: " ++ fromLeft eitherMap) >> return Map { MapDefinitions.map = [] }
+       return $ fromRight eitherMap
 
 makeInfinity :: Double
 makeInfinity = read "Infinity" :: Double
 
 verticesToGraph :: [Vertex] -> Graph
 verticesToGraph vs =
-    let infinity = makeInfinity
-    in Graph {vertices = sortVerticesByDistance [ associateVertexWithNeighbours x vs infinity | x <- getUniqueVertexNames vs ]}
+    Graph {vertices = sortVerticesByDistance [ associateVertexWithNeighbours x vs makeInfinity | x <- getUniqueVertexNames vs ]}
 
 insertPlaceInVertices :: Place -> [Vertex] -> [Vertex]
-insertPlaceInVertices place vertices =
-    vertices ++ placeToVertices place
+insertPlaceInVertices place vertices = vertices ++ placeToVertices place
 
 -- A place is a name with a list of direct connections, each of which connected pairs is converted to a pair of vertices
 placeToVertices :: Place -> [Vertex]
-placeToVertices p =
-    placeToVertices' (place p) (isConnectedTo p) []
+placeToVertices p = placeToVertices' (place p) (isConnectedTo p) []
 
 placeToVertices' :: Text -> [Destination] -> [Vertex] -> [Vertex]
 placeToVertices' _ [] vertices = vertices
@@ -320,8 +295,7 @@ mapToVertices theMap =
 mapToVertices' :: [Place] -> [Vertex] -> [Vertex]
 mapToVertices' [] done = done
 mapToVertices' [place] done  = insertPlaceInVertices place done
-mapToVertices' (place : places) done =
-    mapToVertices' [place] done ++ mapToVertices' places done
+mapToVertices' (place : places) done = mapToVertices' [place] done ++ mapToVertices' places done
 
 mapToGraph :: Map -> Graph
 mapToGraph = verticesToGraph . mapToVertices

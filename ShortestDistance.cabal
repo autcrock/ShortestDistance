@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: d940dfa3c98900a5d6d6e530b6bca41ebb0ab31952e61451ddab18718574e915
+-- hash: 416ebe43610de890290d39607e2d0ee711a8c7b2263bd9c58afc09eda5b63a49
 
 name:           ShortestDistance
 version:        0.1.0.0
@@ -35,6 +35,7 @@ library
     , directory
     , either
     , either-unwrap
+    , extra
     , ordered-containers
     , string-conversions
     , text
@@ -62,6 +63,7 @@ executable sd
     , directory
     , either
     , either-unwrap
+    , extra
     , ordered-containers
     , string-conversions
     , text
@@ -85,6 +87,7 @@ test-suite sd-test
     , directory
     , either
     , either-unwrap
+    , extra
     , ordered-containers
     , string-conversions
     , text
