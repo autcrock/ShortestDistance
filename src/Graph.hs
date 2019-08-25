@@ -56,13 +56,16 @@ sortVerticesByDistance = sortOn accumulatedDistance
 getUniqueVertexNames :: [Vertex] -> [Text]
 getUniqueVertexNames = nub . Prelude.map vertex
 
+-- associateVertexWithNeighbours is only used during conversion of an map to a a fully developed
+-- Graph vertex.  It pulls all references to the paticular vertex in as neighbours for the instant vertex.
 associateVertexWithNeighbours :: Text -> [Vertex] -> Double -> Vertex
 associateVertexWithNeighbours vertexName_in vs accumulatedDistance_in =
-    let rawVertices = filter (\x -> vertex x == vertexName_in) vs
+    Vertex { vertex = vertexName_in
+            , accumulatedDistance = accumulatedDistance_in
+            , neighbours = sortNeighboursByDistance ns }
+    where
+        rawVertices = filter (\x -> vertex x == vertexName_in) vs
         ns = Prelude.map (head . neighbours) rawVertices
-    in Vertex { vertex = vertexName_in
-              , accumulatedDistance = accumulatedDistance_in
-              , neighbours = sortNeighboursByDistance ns }
 
 graphGetVertexNeighbours :: Graph -> Text -> Maybe Neighbours
 graphGetVertexNeighbours g v = fmap neighbours (graphGetVertex g v)
