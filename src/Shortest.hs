@@ -47,17 +47,16 @@ readStartEndFromString candidateStartEnd =
         Left _ -> error ( "readStartEndFromString: Input [" ++ cs candidateStartEnd ++ "] is not valid.")
         Right r -> r
 
-transferVerticesUpdatingAccumulatedDistance :: (Graph, Graph) -> [Neighbour] -> [Text] -> Double -> OptionalCompare -> (Graph, Graph)
-transferVerticesUpdatingAccumulatedDistance (graph1, graph2) _ [] _ _ =
-    (graph1, graph2)
-transferVerticesUpdatingAccumulatedDistance (graph1, graph2) ns [vName] currentDistance optCompare =
-       transferVertexUpdatingAccumulatedDistance (graph1, graph2) ns vName currentDistance optCompare
-transferVerticesUpdatingAccumulatedDistance (graph1, graph2) ns (vName:vNames) currentDistance optCompare =
+transferVerticesUpdatingAccumulatedDistance :: [Neighbour] -> [Text] -> Double -> OptionalCompare -> (Graph, Graph) -> (Graph, Graph)
+transferVerticesUpdatingAccumulatedDistance _ [] _ _ (graph1, graph2) = (graph1, graph2)
+transferVerticesUpdatingAccumulatedDistance ns [vName] currentDistance optCompare (graph1, graph2) =
+       transferVertexUpdatingAccumulatedDistance ns vName currentDistance optCompare (graph1, graph2)
+transferVerticesUpdatingAccumulatedDistance ns (vName:vNames) currentDistance optCompare (graph1, graph2) =
     let 
         (graph1', graph2') =
-            transferVertexUpdatingAccumulatedDistance (graph1, graph2) ns vName currentDistance optCompare
+            transferVertexUpdatingAccumulatedDistance ns vName currentDistance optCompare (graph1, graph2)
     in
-        transferVerticesUpdatingAccumulatedDistance (graph1', graph2') ns vNames currentDistance optCompare
+        transferVerticesUpdatingAccumulatedDistance ns vNames currentDistance optCompare (graph1', graph2')
 
 -- when accumulating we need the minimum current distance for this neighbour
 pickMinimumAccumulatedDistance :: Double -> Double -> Double -> OptionalCompare -> Double
@@ -91,8 +90,8 @@ graphGetAdmissibleVertexNeighbours g currentVertexName greens =
                     ns <- graphGetVertexNeighbours g currentVertexName
                     return $ deleteNeighboursByName ns greenNames
 
-transferVertexUpdatingAccumulatedDistance :: (Graph, Graph) -> [Neighbour] -> Text -> Double -> OptionalCompare -> (Graph, Graph)
-transferVertexUpdatingAccumulatedDistance (graph1, graph2) neighboursIn currentVName currentDistance optCompare =
+transferVertexUpdatingAccumulatedDistance :: [Neighbour] -> Text -> Double -> OptionalCompare -> (Graph, Graph) -> (Graph, Graph)
+transferVertexUpdatingAccumulatedDistance neighboursIn currentVName currentDistance optCompare (graph1, graph2) =
     let
         txVertex = graphGetVertex graph1 currentVName
     in
@@ -115,8 +114,8 @@ transferVertexUpdatingAccumulatedDistance (graph1, graph2) neighboursIn currentV
             in
                 (newGraph1, newGraph2) 
 
-transferVertex :: (Graph, Graph) -> Text -> (Graph, Graph)
-transferVertex (graph1, graph2) vName =
+transferVertex :: Text -> (Graph, Graph) -> (Graph, Graph)
+transferVertex vName (graph1, graph2) =
     let
         txVertex = graphGetVertex graph1 vName
     in
@@ -130,18 +129,18 @@ transferVertex (graph1, graph2) vName =
             in
                 (newGraph1, newGraph2) 
 
-tellTheNeighbours :: (Graph, Graph) -> [Neighbour] -> Double -> (Graph, Graph)
-tellTheNeighbours (reds, yellows) ns currentDistance =
+tellTheNeighbours :: [Neighbour] -> Double -> (Graph, Graph) -> (Graph, Graph)
+tellTheNeighbours ns currentDistance (reds, yellows) =
     let
         nNames = Prelude.map neighbourName ns
 
         redNeighbours = mapMaybe (graphGetVertex reds) nNames
         redNeighbourNames = Prelude.map vertex redNeighbours
-        (rs', ys') = transferVerticesUpdatingAccumulatedDistance (reds, yellows) ns redNeighbourNames currentDistance Compare
+        (rs', ys') = transferVerticesUpdatingAccumulatedDistance ns redNeighbourNames currentDistance Compare  (reds, yellows)
 
         yellowNeighbours = mapMaybe (graphGetVertex ys') nNames
         yellowNeighbourNames = Prelude.map vertex yellowNeighbours
-        (_, ys'') = transferVerticesUpdatingAccumulatedDistance (ys', ys') ns yellowNeighbourNames currentDistance Compare
+        (_, ys'') = transferVerticesUpdatingAccumulatedDistance ns yellowNeighbourNames currentDistance Compare (ys', ys')
     in 
         (rs', ys'')
 
@@ -154,7 +153,7 @@ dijkstra couldBeStartEnd =
             from = start startEnd
             to = end startEnd
             currentDistance = 0
-            (reds, yellows) = transferVertexUpdatingAccumulatedDistance (pg, Graph{vertices = []}) [] from currentDistance NoCompare
+            (reds, yellows) = transferVertexUpdatingAccumulatedDistance [] from currentDistance NoCompare (pg, Graph{vertices = []})
             greens = Graph{vertices = []}
             shortestDistanceByDijkstra = dijkstra' reds yellows greens from to from currentDistance
             theResult = if isLeft shortestDistanceByDijkstra
@@ -185,7 +184,7 @@ dijkstra' reds yellows greens fromName toName currentVertexName currentDistance
                     currentVertex = fromRight eitherCurrentVertex
                     newCurrentDistance = accumulatedDistance currentVertex
                     newCurrentVertexName = vertex currentVertex
-                    (ys1, gs1) = transferVertex (yellows, greens) newCurrentVertexName
+                    (ys1, gs1) = transferVertex newCurrentVertexName (yellows, greens)
                     ns = graphGetAdmissibleVertexNeighbours gs1 newCurrentVertexName gs1
-                    (rs2, ys2) = tellTheNeighbours (reds, ys1) (fromJust ns) newCurrentDistance
+                    (rs2, ys2) = tellTheNeighbours (fromJust ns) newCurrentDistance (reds, ys1)
                 in dijkstra' rs2 ys2 gs1 fromName toName newCurrentVertexName newCurrentDistance

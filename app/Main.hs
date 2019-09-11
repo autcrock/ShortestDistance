@@ -63,7 +63,7 @@ usage   = do
             putStrLn "   sd [-ap, --addplace] Place - Add this place as JSON to the system file."
             putStrLn "   sd [-c, --clear] - Remove the system file."
             putStrLn "   sd [-xd, --xplace] Place - Delete this place as JSON from the system file."
-            putStrLn "   sd [-h, --help] - This message.  A persisistent road network is stored in a file for distance between locations."
+            putStrLn "   sd [-h, --help] - This message.  A persistent road network is stored in a file for distance between locations."
             putStrLn "   sd [-i, --initialise] filename - Initialise from a map definition in filename as JSON.  Remove system file first."
             putStrLn "   sd [-ar, --addroad] Place - Add or modify a road from this place as JSON to the system file."
             putStrLn "   sd [-s, --shortest] StartEnd - Find shortest path from place A to place B which are stored in a road network file."
