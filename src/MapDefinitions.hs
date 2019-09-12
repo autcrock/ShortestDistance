@@ -265,6 +265,16 @@ verticesToGraph vs =
 insertPlaceInVertices :: Place -> [Vertex] -> [Vertex]
 insertPlaceInVertices place vertices = vertices ++ placeToVertices place
 
+destinationToVertices :: Text -> Destination -> [Vertex]
+destinationToVertices placeName destination =
+    [ Vertex { vertex = placeName
+            , accumulatedDistance = infinity
+            , neighbours = [Neighbour {neighbourName = at destination, howFar = MapDefinitions.howFar destination}]}
+    , Vertex { vertex = at destination
+                , accumulatedDistance = infinity
+                , neighbours = [Neighbour {neighbourName = placeName, howFar = MapDefinitions.howFar destination}]}
+    ] where infinity = makeInfinity
+
 -- A place is a name with a list of direct connections, each of which connected pairs is converted to a pair of vertices
 placeToVertices :: Place -> [Vertex]
 placeToVertices p = placeToVertices' (place p) (isConnectedTo p) []
@@ -276,26 +286,12 @@ placeToVertices' placeName (destination : destinations) vertices =
     then
       error "sd: ERROR: Distances between places must be 0 or positive numbers."
     else 
-      let infinity = makeInfinity
-      in  vertices
-          ++ [Vertex { vertex = placeName,
-                       accumulatedDistance = infinity,
-                       neighbours = [Neighbour {neighbourName = at destination, howFar = MapDefinitions.howFar destination}]}]
-          ++ [Vertex { vertex = at destination,
-                       accumulatedDistance = infinity,
-                       neighbours = [Neighbour {neighbourName = placeName, howFar = MapDefinitions.howFar destination}]}]
-          ++ placeToVertices' placeName destinations vertices
+      vertices
+        ++ destinationToVertices placeName destination
+        ++ placeToVertices' placeName destinations vertices
 
 mapToVertices :: Map -> [Vertex]
-mapToVertices theMap =
-    let places = MapDefinitions.map theMap
-    in if null places then []
-       else mapToVertices' places []
-
-mapToVertices' :: [Place] -> [Vertex] -> [Vertex]
-mapToVertices' [] done = done
-mapToVertices' [place] done  = insertPlaceInVertices place done
-mapToVertices' (place : places) done = mapToVertices' [place] done ++ mapToVertices' places done
+mapToVertices theMap =  foldr insertPlaceInVertices [] (MapDefinitions.map theMap) -- mapToVertices' []  (MapDefinitions.map theMap)
 
 mapToGraph :: Map -> Graph
 mapToGraph = verticesToGraph . mapToVertices
