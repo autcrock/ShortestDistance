@@ -59,13 +59,13 @@ getUniqueVertexNames = nub . Prelude.map vertex
 -- associateVertexWithNeighbours is only used during conversion of an map to a a fully developed
 -- Graph vertex.  It pulls all references to the paticular vertex in as neighbours for the instant vertex.
 associateVertexWithNeighbours :: Text -> [Vertex] -> Double -> Vertex
-associateVertexWithNeighbours vertexName_in vs accumulatedDistance_in =
+associateVertexWithNeighbours vertexName_in vertices accumulatedDistance_in =
     Vertex { vertex = vertexName_in
             , accumulatedDistance = accumulatedDistance_in
-            , neighbours = sortNeighboursByDistance ns }
+            , neighbours = sortNeighboursByDistance newNeighbours }
     where
-        rawVertices = filter (\x -> vertex x == vertexName_in) vs
-        ns = Prelude.map (head . neighbours) rawVertices
+        rawVertices = filter (\x -> vertex x == vertexName_in) vertices
+        newNeighbours = Prelude.map (head . neighbours) rawVertices
 
 graphGetVertexNeighbours :: Graph -> Text -> Maybe Neighbours
 graphGetVertexNeighbours g v = fmap neighbours (graphGetVertex g v)
@@ -77,39 +77,39 @@ graphGetVertexNeighbours g v = fmap neighbours (graphGetVertex g v)
     --     v <- graphGetVertex g vertex
     --     return $ neighbours v
 
-deleteNeighbour :: Neighbours -> Neighbour -> Neighbours
-deleteNeighbour ns n = deleteBy (\x y -> neighbourName x == neighbourName y) n ns
+deleteNeighbour :: Neighbour -> Neighbours -> Neighbours
+deleteNeighbour n neighbours = deleteBy (\x y -> neighbourName x == neighbourName y) n neighbours
 
-deleteNeighbourByName :: Neighbours -> Text -> Neighbours
-deleteNeighbourByName ns name = deleteNeighbour ns Neighbour {neighbourName = name, howFar = 0}
+deleteNeighbourByName :: Text -> Neighbours -> Neighbours
+deleteNeighbourByName name neighbours = deleteNeighbour Neighbour {neighbourName = name, howFar = 0} neighbours
 
-deleteNeighboursByName :: Neighbours -> [Text] -> Neighbours
-deleteNeighboursByName [] _ = []
-deleteNeighboursByName ns [] = ns
-deleteNeighboursByName ns (name:names) = deleteNeighboursByName (deleteNeighbourByName ns name) names
+deleteNeighboursByName :: [Text] -> Neighbours -> Neighbours
+deleteNeighboursByName _ [] = []
+deleteNeighboursByName [] neighbours = neighbours
+deleteNeighboursByName (name:names) neighbours = deleteNeighboursByName names (deleteNeighbourByName name neighbours)
 
 neighbourHowFarByName :: Neighbours -> Text -> Double
-neighbourHowFarByName ns name =
-    if null ns then 0
-    else let n = getNeighbour ns name
+neighbourHowFarByName neighbours name =
+    if null neighbours then 0
+    else let n = getNeighbour neighbours name
          in maybe (error "neighbourHowFarByName: Error: Unexpected Nothing returned by getNeighbour.") howFar n
 
 getVertex :: [Vertex] -> Text -> Maybe Vertex
-getVertex vs vName = find (\x -> vertex x == vName) vs
+getVertex vertices vName = find (\x -> vertex x == vName) vertices
 
 getNeighbour :: Neighbours -> Text -> Maybe Neighbour
-getNeighbour ns nName = find (\x -> neighbourName x == nName) ns
+getNeighbour neighbours nName = find (\x -> neighbourName x == nName) neighbours
 
 graphGetVertex :: Graph -> Text -> Maybe Vertex
 graphGetVertex pg = getVertex (vertices pg)
 
 deleteVertex :: [Vertex] -> Vertex -> [Vertex]
-deleteVertex vs v = deleteBy (\x y -> vertex x == vertex y) v vs
+deleteVertex vertices v = deleteBy (\x y -> vertex x == vertex y) v vertices
 
 graphDeleteVertex :: Graph -> Vertex -> Graph
 graphDeleteVertex pg v =
-    let vs = deleteVertex (vertices pg) v
-    in Graph { vertices = vs }
+    let newVertices = deleteVertex (vertices pg) v
+    in Graph { vertices = newVertices }
 
 graphInsertVertex  :: Graph -> Vertex -> Graph
 graphInsertVertex pg v = Graph { vertices = listInsertIncreasing v (vertices pg) }

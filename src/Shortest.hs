@@ -88,7 +88,7 @@ graphGetAdmissibleVertexNeighbours g currentVertexName greens =
             in
                 do
                     ns <- graphGetVertexNeighbours g currentVertexName
-                    return $ deleteNeighboursByName ns greenNames
+                    return $ deleteNeighboursByName greenNames ns
 
 transferVertexUpdatingAccumulatedDistance :: [Neighbour] -> Text -> Double -> OptionalCompare -> (Graph, Graph) -> (Graph, Graph)
 transferVertexUpdatingAccumulatedDistance neighboursIn currentVName currentDistance optCompare (graph1, graph2) =
