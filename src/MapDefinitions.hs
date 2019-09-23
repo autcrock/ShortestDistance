@@ -91,8 +91,8 @@ getPlacesFromFile :: String -> IO [Place]
 getPlacesFromFile inputFile = readMapFromFile inputFile >>= getPlacesAST
 
 getPlacesAST :: Either String Map -> IO [Place]
-getPlacesAST (Left s) = (putStrLn $ "sd: getPlacesAST: Error decoding JSON map: " ++ s) >> return []
-getPlacesAST (Right m) = (putStrLn "sd: getPlacesAST: Extracting places AST: ") >> return (MapDefinitions.map m)
+getPlacesAST (Left s) = putStrLn ("sd: getPlacesAST: Error decoding JSON map: " ++ s) >> return []
+getPlacesAST (Right m) = putStrLn "sd: getPlacesAST: Extracting places AST: " >> return (MapDefinitions.map m)
 
 saveMap :: Map -> IO ()
 saveMap theMap = DBSL.writeFile systemMapFile (encode theMap)
@@ -110,7 +110,7 @@ insertPlaces mapToInsert previousMap =
       insertionNames = getPlaceNames placesToInsert
       previousPlaces = MapDefinitions.map previousMap
       previousNames = getPlaceNames previousPlaces
-      intersection = intersect insertionNames previousNames
+      intersection = insertionNames `intersect` previousNames
 
 deletePlaces :: Map -> Map -> Map
 deletePlaces mapToDelete previousMap =

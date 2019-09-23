@@ -7,7 +7,7 @@ module Shortest (
     , Distance(..)
     , dijkstra
 ) where
-
+    
 import Data.Aeson (eitherDecode, ToJSON, FromJSON)
 import Data.Either.Unwrap (isLeft, fromLeft, fromRight)
 import Data.Maybe (fromJust, mapMaybe, isNothing)
@@ -116,33 +116,26 @@ transferVertexUpdatingAccumulatedDistance neighboursIn currentVName currentDista
 
 transferVertex :: Text -> (Graph, Graph) -> (Graph, Graph)
 transferVertex vName (graph1, graph2) =
-    let
+    if isNothing txVertex
+    then (graph1, graph2)
+    else (newGraph1, newGraph2)
+    where
         txVertex = graphGetVertex graph1 vName
-    in
-        if isNothing txVertex
-        then (graph1, graph2)
-        else
-            let
-                txV = fromJust txVertex
-                newGraph1 = graphDeleteVertex graph1 txV
-                newGraph2 = graphInsertVertex graph2 txV
-            in
-                (newGraph1, newGraph2) 
+        txV = fromJust txVertex
+        newGraph1 = graphDeleteVertex graph1 txV
+        newGraph2 = graphInsertVertex graph2 txV
 
 tellTheNeighbours :: [Neighbour] -> Double -> (Graph, Graph) -> (Graph, Graph)
 tellTheNeighbours ns currentDistance (reds, yellows) =
-    let
+    (rs', ys'')
+    where
         nNames = Prelude.map neighbourName ns
-
         redNeighbours = mapMaybe (graphGetVertex reds) nNames
         redNeighbourNames = Prelude.map vertex redNeighbours
         (rs', ys') = transferVerticesUpdatingAccumulatedDistance ns redNeighbourNames currentDistance Compare  (reds, yellows)
-
         yellowNeighbours = mapMaybe (graphGetVertex ys') nNames
         yellowNeighbourNames = Prelude.map vertex yellowNeighbours
         (_, ys'') = transferVerticesUpdatingAccumulatedDistance ns yellowNeighbourNames currentDistance Compare (ys', ys')
-    in 
-        (rs', ys'')
 
 dijkstra :: Text -> IO (Either UnusualResult Distance)
 dijkstra couldBeStartEnd =
@@ -162,29 +155,26 @@ dijkstra couldBeStartEnd =
         return theResult
 
 dijkstra' :: Graph -> Graph -> Graph -> Text -> Text -> Text -> Double -> Either UnusualResult Double
-dijkstra' reds yellows greens fromName toName currentVertexName currentDistance 
+dijkstra' reds yellows greens fromName toName currentVertexName currentDistance
     | currentVertexName == toName =
-        let
-            vy = graphGetVertex yellows toName
-        in
-            if isNothing vy
-            then 
-                let vg = graphGetVertex greens toName
-                in if isNothing vg
-                    then error "dijkstra': Error: Destination vertex was not found in either yellows or greens unexpectedly."
-                    else Right (min currentDistance (accumulatedDistance $ fromJust vg))
-            else Right (min currentDistance (accumulatedDistance $ fromJust vy))
+        if isNothing vy
+        then 
+            if isNothing vg
+            then error "dijkstra': Error: Destination vertex was not found in either yellows or greens unexpectedly."
+            else Right (min currentDistance (accumulatedDistance $ fromJust vg))
+        else Right (min currentDistance (accumulatedDistance $ fromJust vy))
     | otherwise =
-        let eitherCurrentVertex = graphGetMinimumYellowByDistance yellows fromName toName
-        in
-            if isLeft eitherCurrentVertex
-            then Left (fromLeft eitherCurrentVertex)
-            else
-                let
-                    currentVertex = fromRight eitherCurrentVertex
-                    newCurrentDistance = accumulatedDistance currentVertex
-                    newCurrentVertexName = vertex currentVertex
-                    (ys1, gs1) = transferVertex newCurrentVertexName (yellows, greens)
-                    ns = graphGetAdmissibleVertexNeighbours gs1 newCurrentVertexName gs1
-                    (rs2, ys2) = tellTheNeighbours (fromJust ns) newCurrentDistance (reds, ys1)
-                in dijkstra' rs2 ys2 gs1 fromName toName newCurrentVertexName newCurrentDistance
+        if isLeft eitherCurrentVertex
+        then Left (fromLeft eitherCurrentVertex)
+        else
+            dijkstra' rs2 ys2 gs1 fromName toName newCurrentVertexName newCurrentDistance
+    where
+        vy = graphGetVertex yellows toName
+        vg = graphGetVertex greens toName
+        eitherCurrentVertex = graphGetMinimumYellowByDistance yellows fromName toName
+        currentVertex = fromRight eitherCurrentVertex
+        newCurrentDistance = accumulatedDistance currentVertex
+        newCurrentVertexName = vertex currentVertex
+        (ys1, gs1) = transferVertex newCurrentVertexName (yellows, greens)
+        ns = graphGetAdmissibleVertexNeighbours gs1 newCurrentVertexName gs1
+        (rs2, ys2) = tellTheNeighbours (fromJust ns) newCurrentDistance (reds, ys1)
