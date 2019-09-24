@@ -12,8 +12,8 @@ import Data.Aeson (eitherDecode, ToJSON, FromJSON)
 import Data.Either.Unwrap (isLeft, fromLeft, fromRight)
 import Data.Maybe (fromJust, mapMaybe, isNothing)
 import Data.Ord (min)
-import Data.Text (Text, pack, unpack)
 import Data.String.Conversions (cs)
+import Data.Text (Text, pack, unpack)
 import GHC.Generics hiding (from, to)
 import Graph (
     deleteNeighboursByName
@@ -62,57 +62,47 @@ transferVerticesUpdatingAccumulatedDistance ns (vName:vNames) currentDistance op
 pickMinimumAccumulatedDistance :: Double -> Double -> Double -> OptionalCompare -> Double
 pickMinimumAccumulatedDistance accumulatedD neighbourDistance currentDistance optCompare =
     if optCompare == Compare
-        then
-            min accumulatedD (currentDistance + neighbourDistance)
-        else
-            currentDistance
+    then
+        min accumulatedD (currentDistance + neighbourDistance)
+    else
+        currentDistance
 
 graphGetMinimumYellowByDistance :: Graph -> Text -> Text -> Either UnusualResult Vertex
 graphGetMinimumYellowByDistance g from to=
     if null $ vertices g
-        then Left $ NotConnected from to
-        else Right $ head (vertices g)
-    
+    then Left $ NotConnected from to
+    else Right $ head (vertices g)
+
 graphGetAdmissibleVertexNeighbours :: Graph -> Text -> Graph -> Maybe [Neighbour]
 graphGetAdmissibleVertexNeighbours g currentVertexName greens =
-    let
+    if null gvs
+    then  graphGetVertexNeighbours g currentVertexName
+    else do
+            ns <- graphGetVertexNeighbours g currentVertexName
+            return $ deleteNeighboursByName greenNames ns
+    where
         gvs = vertices greens
-    in
-        if
-            null gvs
-        then 
-            graphGetVertexNeighbours g currentVertexName
-        else
-            let
-                greenNames = Prelude.map vertex gvs
-            in
-                do
-                    ns <- graphGetVertexNeighbours g currentVertexName
-                    return $ deleteNeighboursByName greenNames ns
+        greenNames = Prelude.map vertex gvs
 
 transferVertexUpdatingAccumulatedDistance :: [Neighbour] -> Text -> Double -> OptionalCompare -> (Graph, Graph) -> (Graph, Graph)
 transferVertexUpdatingAccumulatedDistance neighboursIn currentVName currentDistance optCompare (graph1, graph2) =
-    let
+    if isNothing txVertex
+    then (graph1, graph2)
+    else (newGraph1, newGraph2) 
+    where
         txVertex = graphGetVertex graph1 currentVName
-    in
-        if isNothing txVertex
-        then (graph1, graph2)
-        else
-            let 
-                txV = fromJust txVertex
-                accumulatedD = accumulatedDistance txV
-                neighbourDistance = neighbourHowFarByName neighboursIn currentVName
-                accumulatedD' = pickMinimumAccumulatedDistance accumulatedD neighbourDistance currentDistance optCompare
-                v =  Vertex {
-                    vertex = vertex txV
-                    , accumulatedDistance = accumulatedD'
-                    , neighbours = neighbours txV
-                }
-                graph2' = graphDeleteVertex graph2 txV
-                newGraph1 = graphDeleteVertex graph1 txV
-                newGraph2 = graphInsertVertex graph2' v
-            in
-                (newGraph1, newGraph2) 
+        txV = fromJust txVertex
+        accumulatedD = accumulatedDistance txV
+        neighbourDistance = neighbourHowFarByName neighboursIn currentVName
+        accumulatedD' = pickMinimumAccumulatedDistance accumulatedD neighbourDistance currentDistance optCompare
+        v =  Vertex {
+            vertex = vertex txV
+            , accumulatedDistance = accumulatedD'
+            , neighbours = neighbours txV
+        }
+        graph2' = graphDeleteVertex graph2 txV
+        newGraph1 = graphDeleteVertex graph1 txV
+        newGraph2 = graphInsertVertex graph2' v
 
 transferVertex :: Text -> (Graph, Graph) -> (Graph, Graph)
 transferVertex vName (graph1, graph2) =
