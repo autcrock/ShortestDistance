@@ -15,18 +15,7 @@ import Data.Ord (min)
 import Data.String.Conversions (cs)
 import Data.Text (Text, pack, unpack)
 import GHC.Generics hiding (from, to)
-import Graph (
-    deleteNeighboursByName
-    , graphGetVertex
-    , graphGetVertexNeighbours
-    , neighbourHowFarByName
-    , graphDeleteVertex
-    , graphInsertVertex
-    , Graph(Graph), vertices
-    , Vertex(Vertex), vertex, accumulatedDistance, neighbours
-    , Neighbour(), neighbourName
-    )
-
+import Graph
 import MapDefinitions ( readMap, mapToGraph, StartEnd(..) )
 
 newtype Distance = Distance{distance :: Double} deriving (Show, Generic, Eq)

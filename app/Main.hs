@@ -1,17 +1,16 @@
 module Main where
 
+import MapOperations
+    ( aPlace
+    , clear
+    , xPlace
+    , initialise
+    , aRoad
+    , shortest
+    , xRoad
+    )
 import System.Environment
 import System.Exit
-     
-import MapOperations
-       ( aPlace
-       , clear
-       , xPlace
-       , initialise
-       , aRoad
-       , shortest
-       , xRoad
-       )
 
 main :: IO ()
 main = getArgs >>= operation >>= putStr

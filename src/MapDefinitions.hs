@@ -21,9 +21,7 @@ module MapDefinitions (
     , upsertRoad
     , deleteRoad
     , mapToGraph
-)
-
-where
+) where
 
 import           Control.Exception
 import           Control.Monad ()
@@ -36,11 +34,7 @@ import           Data.List (intersect, deleteBy, isInfixOf, find)
 import           Data.Maybe (fromJust, isNothing)
 import           Data.Text (Text)
 import           GHC.Generics hiding (to)
-import           Graph (Vertex(..), Graph(..)
-                        , Neighbour(..)
-                        , sortVerticesByDistance
-                        , associateVertexWithNeighbours
-                        , getUniqueVertexNames)
+import           Graph
 import           System.Directory
 import           System.IO.Error
 

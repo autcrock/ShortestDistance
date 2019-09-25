@@ -1,24 +1,14 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-import Data.Aeson (encode)
-import Data.Text (Text)
-import Data.Either.Unwrap (isLeft, fromLeft, fromRight)
-import Data.String.Conversions (cs)
-
+import           Data.Aeson (encode)
+import           Data.Either.Unwrap (isLeft, fromLeft, fromRight)
+import           Data.String.Conversions (cs)
 import qualified Data.Text as T
+import           Data.Text (Text)
 import qualified Data.Text.IO as TIO
-import MapOperations (
-    aPlace
-    , clear
-    , xPlace
-    , initialise
-    , initialiseJSON
-    , aRoad
-    , xRoad
-    )
-
-import MapDefinitions (Map(..), StartEnd(..), readMap)
-import Shortest (dijkstra, UnusualResult(..), Distance(..))
+import           MapDefinitions (Map(..), StartEnd(..), readMap)
+import           MapOperations (aPlace, clear, xPlace, initialise, initialiseJSON, aRoad, xRoad)
+import           Shortest (dijkstra, UnusualResult(..), Distance(..))
 
 mapInputDataFile :: String
 mapInputDataFile = "./test/testmap2.json"

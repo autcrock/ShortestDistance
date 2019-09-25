@@ -1,14 +1,13 @@
-module MapOperations
-    (
-        aPlace
-        , clear
-        , xPlace
-        , initialise
-        , initialiseJSON
-        , aRoad
-        , shortest
-        , xRoad
-    ) where
+module MapOperations (
+    aPlace
+    , clear
+    , xPlace
+    , initialise
+    , initialiseJSON
+    , aRoad
+    , shortest
+    , xRoad
+) where
 
 import Control.Applicative
 import Control.Monad
