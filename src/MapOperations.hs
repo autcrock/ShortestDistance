@@ -10,27 +10,15 @@ module MapOperations
         , xRoad
     ) where
 
-import Data.Aeson (encode)
-import Data.Either.Unwrap (isLeft, fromLeft, fromRight)
-import Data.Either.Combinators (mapBoth)
-import Data.String.Conversions (cs)
 import Control.Applicative
+import Control.Monad
+import Data.Aeson (encode)
+import Data.Either.Combinators (mapBoth)
+import Data.Either.Unwrap (isLeft, fromLeft, fromRight)
+import Data.String.Conversions (cs)
 
 import MapDefinitions
-    ( Map
-    , readMapFromFile
-    , readMapFromString
-    , readMap
-    , saveMap
-    , removeMap
-    , insertPlaces
-    , deletePlaces
-    , upsertRoad
-    , deleteRoad
-    )
-
 import Shortest (dijkstra)
-import Control.Monad
 
 mapOperation :: String -> (Map -> Map -> Map) -> String -> IO()
 mapOperation message operation couldBeJSON =

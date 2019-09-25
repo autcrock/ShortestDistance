@@ -42,21 +42,21 @@ instance FromJSON UnusualResult
 
 readStartEndFromString :: Text -> StartEnd
 readStartEndFromString candidateStartEnd =
-    let eitherStartEnd = eitherDecode $ cs candidateStartEnd :: (Either String StartEnd)
-    in case eitherStartEnd of
-        Left _ -> error ( "readStartEndFromString: Input [" ++ cs candidateStartEnd ++ "] is not valid.")
-        Right r -> r
-
+    case eitherStartEnd of
+    Left _ -> error ( "readStartEndFromString: Input [" ++ cs candidateStartEnd ++ "] is not valid.")
+    Right r -> r
+    where
+        eitherStartEnd = eitherDecode $ cs candidateStartEnd :: (Either String StartEnd)
+         
 transferVerticesUpdatingAccumulatedDistance :: [Neighbour] -> [Text] -> Double -> OptionalCompare -> (Graph, Graph) -> (Graph, Graph)
 transferVerticesUpdatingAccumulatedDistance _ [] _ _ (graph1, graph2) = (graph1, graph2)
 transferVerticesUpdatingAccumulatedDistance ns [vName] currentDistance optCompare (graph1, graph2) =
        transferVertexUpdatingAccumulatedDistance ns vName currentDistance optCompare (graph1, graph2)
 transferVerticesUpdatingAccumulatedDistance ns (vName:vNames) currentDistance optCompare (graph1, graph2) =
-    let 
+    transferVerticesUpdatingAccumulatedDistance ns vNames currentDistance optCompare (graph1', graph2')
+    where
         (graph1', graph2') =
             transferVertexUpdatingAccumulatedDistance ns vName currentDistance optCompare (graph1, graph2)
-    in
-        transferVerticesUpdatingAccumulatedDistance ns vNames currentDistance optCompare (graph1', graph2')
 
 -- when accumulating we need the minimum current distance for this neighbour
 pickMinimumAccumulatedDistance :: Double -> Double -> Double -> OptionalCompare -> Double

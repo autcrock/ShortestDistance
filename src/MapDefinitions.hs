@@ -1,5 +1,7 @@
-{-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE FlexibleInstances, OverloadedStrings, DisambiguateRecordFields #-}
+{-# LANGUAGE DeriveGeneric            #-}
+{-# LANGUAGE DisambiguateRecordFields #-}
+{-# LANGUAGE FlexibleInstances        #-}
+{-# LANGUAGE OverloadedStrings        #-}
 
 module MapDefinitions (
       Map(..)
@@ -23,25 +25,24 @@ module MapDefinitions (
 
 where
 
-import Control.Exception
-import Control.Monad ()
-import Control.Monad.Extra
-import Data.Aeson (eitherDecode, encode, ToJSON, FromJSON(..))
-import Data.Either.Unwrap (isLeft, isRight, fromLeft, fromRight)
-import Data.Text (Text)
-import Data.Maybe (fromJust, isNothing)
-import Data.List (intersect, deleteBy, isInfixOf, find)
+import           Control.Exception
+import           Control.Monad ()
+import           Control.Monad.Extra
+import           Data.Aeson (eitherDecode, encode, ToJSON, FromJSON(..))
 import qualified Data.ByteString.Lazy as DBSL
 import qualified Data.ByteString.Lazy.Char8 as DBSLC8
-import GHC.Generics hiding (to)
-import System.Directory
-import System.IO.Error
-import Graph (Vertex(..)
-            , Graph(..)
-            , Neighbour(..)
-            , sortVerticesByDistance
-            , associateVertexWithNeighbours
-            , getUniqueVertexNames)
+import           Data.Either.Unwrap (isLeft, isRight, fromLeft, fromRight)
+import           Data.List (intersect, deleteBy, isInfixOf, find)
+import           Data.Maybe (fromJust, isNothing)
+import           Data.Text (Text)
+import           GHC.Generics hiding (to)
+import           Graph (Vertex(..), Graph(..)
+                        , Neighbour(..)
+                        , sortVerticesByDistance
+                        , associateVertexWithNeighbours
+                        , getUniqueVertexNames)
+import           System.Directory
+import           System.IO.Error
 
 -- Shortest distance query input
 data StartEnd = StartEnd {
