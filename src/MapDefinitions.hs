@@ -24,7 +24,6 @@ module MapDefinitions (
 ) where
 
 import           Control.Exception
-import           Control.Monad ()
 import           Control.Monad.Extra
 import           Data.Aeson (eitherDecode, encode, ToJSON, FromJSON(..))
 import qualified Data.ByteString.Lazy as DBSL
@@ -138,10 +137,11 @@ deleteDestinations' placeName places =
     filter (not . null . isConnectedTo) (Prelude.map (deleteDestinations'' placeName) places)
 
 deleteDestinations'' :: Text -> Place -> Place
-deleteDestinations'' destinationName place_in =
-    let destinationToDelete = Destination { at = destinationName, howFar = 0}
-        ds = deleteBy (\x y -> at x == at y) destinationToDelete $ isConnectedTo place_in
-    in Place {place = place place_in, isConnectedTo = ds}
+deleteDestinations'' destinationName placeIn =
+    Place { place = place placeIn,
+            isConnectedTo = deleteBy (\x y -> at x == at y)
+                                     (Destination { at = destinationName, howFar = 0})
+                                     (isConnectedTo placeIn) }
 
 upsertRoad :: Map -> Map -> Map
 upsertRoad mapToInsert previousMap
@@ -280,7 +280,7 @@ placeToVertices' placeName (destination : destinations) vertices =
     if MapDefinitions.howFar destination < 0
     then
       error "sd: ERROR: Distances between places must be 0 or positive numbers."
-    else 
+    else
       vertices
         ++ destinationToVertices placeName destination
         ++ placeToVertices' placeName destinations vertices
