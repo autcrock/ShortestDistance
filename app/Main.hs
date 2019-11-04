@@ -1,5 +1,4 @@
-module Main where
-
+{-# LANGUAGE OverloadedStrings        #-}
 import MapOperations
     ( aPlace
     , clear
@@ -11,8 +10,10 @@ import MapOperations
     )
 import System.Environment
 import System.Exit
+import PostgresMapDefinitions(test)
 
 main :: IO ()
+--main = test >>= print
 main = getArgs >>= operation >>= putStr
  
 operation :: [String] -> IO b

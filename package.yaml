@@ -20,18 +20,20 @@ extra-source-files:
 description:         Please see the README on Github at <https://github.com/githubuser/ShortestDistance#readme>
 
 dependencies:
-- base >= 4.7 && < 5
-- aeson >= 1.4.2.0
+- base
+- aeson
 - bytestring
 - directory
 - either-unwrap
 - either
 - text
 - unique
-- text-show >= 3.8.2
+- text-show
 - string-conversions
 - ordered-containers
 - extra
+- postgresql-simple
+- bytestring
 
 library:
   source-dirs: src
@@ -47,6 +49,7 @@ executables:
     dependencies:
     - ShortestDistance
     - string-conversions
+    - postgresql-simple
 
 tests:
   sd-test:
@@ -59,3 +62,4 @@ tests:
     dependencies:
     - ShortestDistance
     - string-conversions
+    - postgresql-simple
