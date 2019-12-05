@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 416ebe43610de890290d39607e2d0ee711a8c7b2263bd9c58afc09eda5b63a49
+-- hash: 989b2e0b9e12bb55478ebc771e58b0cfeee654bfb1682e4784228da874a4ebba
 
 name:           ShortestDistance
 version:        0.1.0.0
@@ -42,10 +42,18 @@ library
     , text-show >=3.8.2
     , unique
   exposed-modules:
+      Destination
+      Distance
       Graph
+      GraphOperations
+      Map
       MapDefinitions
       MapOperations
+      Neighbour
+      Place
       Shortest
+      StartEnd
+      Vertex
   other-modules:
       Paths_ShortestDistance
   default-language: Haskell2010

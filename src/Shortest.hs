@@ -15,12 +15,13 @@ import Data.Ord (min)
 import Data.String.Conversions (cs)
 import Data.Text (Text, pack, unpack)
 import GHC.Generics hiding (from, to)
+import Distance
 import Graph
-import MapDefinitions ( readMap, mapToGraph, StartEnd(..) )
-
-newtype Distance = Distance{distance :: Double} deriving (Show, Generic, Eq)
-instance ToJSON Distance
-instance FromJSON Distance
+import GraphOperations
+import MapDefinitions ( readMap, mapToGraph )
+import StartEnd
+import Neighbour
+import Vertex
 
 -- When updating vertex data
 data OptionalCompare = Compare | NoCompare deriving (Eq, Show)

@@ -6,9 +6,12 @@ import           Data.String.Conversions (cs)
 import qualified Data.Text as T
 import           Data.Text (Text)
 import qualified Data.Text.IO as TIO
-import           MapDefinitions (Map(..), StartEnd(..), readMap)
+import           Map
+import           MapDefinitions (readMap)
 import           MapOperations (aPlace, clear, xPlace, initialise, initialiseJSON, aRoad, xRoad)
-import           Shortest (dijkstra, UnusualResult(..), Distance(..))
+import           Shortest (dijkstra, UnusualResult(..))
+import           Distance
+import           StartEnd
 
 mapInputDataFile :: String
 mapInputDataFile = "./test/testmap2.json"
@@ -239,7 +242,7 @@ main =
 
         putStrLn $ "Test suite checking that the persistent map is now empty: " ++ mapInputDataFile
         m <- readMap
-        let results8 = [m == MapDefinitions.Map {MapDefinitions.map=[]}]
+        let results8 = [m == Map.Map {Map.map=[]}]
 
         putStrLn $ "Test suite removing persistent map : " ++ mapInputDataFile
         clear

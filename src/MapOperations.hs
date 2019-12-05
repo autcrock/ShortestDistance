@@ -16,6 +16,7 @@ import Data.Either.Combinators (mapBoth)
 import Data.Either.Unwrap (isLeft, fromLeft, fromRight)
 import Data.String.Conversions (cs)
 
+import Map
 import MapDefinitions
 import Shortest (dijkstra)
 
