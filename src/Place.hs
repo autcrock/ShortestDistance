@@ -10,7 +10,7 @@ import Destination
 
 data Place = Place {
     place :: !Text,
-    isConnectedTo :: [Destination]
+    isConnectedTo :: Destinations
  } deriving (Generic, Show, Eq)
 instance ToJSON Place
 instance FromJSON Place

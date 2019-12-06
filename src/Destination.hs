@@ -1,6 +1,6 @@
 {-# LANGUAGE DeriveGeneric #-}
 
-module Destination ( Destination(..) )
+module Destination ( Destination(..), Destinations )
 
 where
 
@@ -15,3 +15,5 @@ data Destination = Destination {
 
 instance ToJSON Destination
 instance FromJSON Destination
+
+type Destinations = [Destination]

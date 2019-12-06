@@ -219,14 +219,14 @@ readMap =
 makeInfinity :: Double
 makeInfinity = read "Infinity" :: Double
 
-verticesToGraph :: [Vertex] -> Graph
+verticesToGraph :: Vertices -> Graph
 verticesToGraph vs =
     Graph {vertices = sortVerticesByDistance [ associateVertexWithNeighbours x vs makeInfinity | x <- getUniqueVertexNames vs ]}
 
-insertPlaceInVertices :: Place -> [Vertex] -> [Vertex]
+insertPlaceInVertices :: Place -> Vertices -> Vertices
 insertPlaceInVertices place vertices = vertices ++ placeToVertices place
 
-destinationToVertices :: Text -> Destination -> [Vertex]
+destinationToVertices :: Text -> Destination -> Vertices
 destinationToVertices placeName destination =
     [ Vertex { vertex = placeName
             , accumulatedDistance = infinity
@@ -237,10 +237,10 @@ destinationToVertices placeName destination =
     ] where infinity = makeInfinity
 
 -- A place is a name with a list of direct connections, each of which connected pairs is converted to a pair of vertices
-placeToVertices :: Place -> [Vertex]
+placeToVertices :: Place -> Vertices
 placeToVertices p = placeToVertices' (place p) (isConnectedTo p) []
 
-placeToVertices' :: Text -> [Destination] -> [Vertex] -> [Vertex]
+placeToVertices' :: Text -> Destinations -> Vertices -> Vertices
 placeToVertices' _ [] vertices = vertices
 placeToVertices' placeName (destination : destinations) vertices =
     if Destination.howFar destination < 0
@@ -251,7 +251,7 @@ placeToVertices' placeName (destination : destinations) vertices =
         ++ destinationToVertices placeName destination
         ++ placeToVertices' placeName destinations vertices
 
-mapToVertices :: Map -> [Vertex]
+mapToVertices :: Map -> Vertices
 mapToVertices theMap =  foldr insertPlaceInVertices [] (Map.map theMap) -- mapToVertices' []  (Map.map theMap)
 
 mapToGraph :: Map -> Graph
