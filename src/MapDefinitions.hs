@@ -23,7 +23,7 @@ import qualified Data.ByteString.Lazy as DBSL
 import qualified Data.ByteString.Lazy.Char8 as DBSLC8
 import           Data.Either.Unwrap (isLeft, isRight, fromLeft, fromRight)
 import           Data.List (intersect, deleteBy, isInfixOf, find)
-import           Data.Maybe (fromJust, isNothing)
+import           Data.Maybe (isNothing)
 import           Data.Text (Text)
 import           GHC.Generics hiding (to)
 import           System.Directory
@@ -113,7 +113,7 @@ upsertRoad :: Map -> Map -> Map
 upsertRoad mapToInsert previousMap
     | null placesToDo || length placesToDo > 1 = error ("sd: Insertion/modification of only one road at a time is allowed: " ++ show placesToDo)
     | null ds || length ds > 1 = error ("sd: Insertion/modification of only one road at a time is allowed: " ++ show placesToDo)
-    | not $ isInfixOf insertionNames previousNames = insertOrReplaceRoad'' newStartOfRoad newDestination previousPs
+    | not $ isInfixOf insertionNames previousNames = insertOrReplaceRoad newStartOfRoad newDestination previousPs
     | otherwise = insertOrReplaceRoad startOfRoad destination previousPs
     where
         placesToDo = Map.map mapToInsert
@@ -129,14 +129,18 @@ upsertRoad mapToInsert previousMap
 
 insertOrReplaceRoad :: Text -> Destination -> Places -> Map
 insertOrReplaceRoad start end previousPlaces =
+    insertOrReplaceRoad' thePlace end previousPlaces
+    where thePlace = verifyPlace start end $ find (\x -> start == place x) previousPlaces
+          
+insertOrReplaceRoad' :: Place -> Destination -> Places -> Map
+insertOrReplaceRoad' thePlace end previousPlaces =
     Map {map = theNewPlace:newPlaces}
     where
-      thePlace = fromJust $ find (\x -> start == place x) previousPlaces
       newPlaces = deleteBy (\x y -> place x == place y ) thePlace previousPlaces
-      theNewPlace = insertOrReplaceRoad' end thePlace 
+      theNewPlace = insertOrReplaceRoad'' end thePlace 
 
-insertOrReplaceRoad' :: Destination -> Place -> Place
-insertOrReplaceRoad' end thePlace
+insertOrReplaceRoad'' :: Destination -> Place -> Place
+insertOrReplaceRoad'' end thePlace
     | isNothing theEnd = Place { place = place thePlace, isConnectedTo = end:ds }
     | otherwise = Place {place = place thePlace, isConnectedTo = end:newDs}
     where
@@ -145,13 +149,10 @@ insertOrReplaceRoad' end thePlace
         theEnd = find (\x -> endD == at x) (isConnectedTo thePlace)
         newDs = deleteBy (\x y -> at x == at y ) end ds
 
-insertOrReplaceRoad'' :: Text -> Destination -> Places -> Map
-insertOrReplaceRoad'' start end previousPlaces
-    | isNothing maybeThePlace = error ("sd: Insertion/update of a road requires a known starting location. Tried: " ++ show start ++ " and " ++ show (at end))
-    | otherwise = insertOrReplaceRoad start end previousPlaces
-    where maybeThePlace = find (\x -> start == place x) previousPlaces
-            
-    
+verifyPlace :: Text -> Destination -> Maybe Place -> Place
+verifyPlace start end Nothing = error ("sd: Insertion/deletion/update of a road requires a known starting location. Tried: " ++ show start ++ " and " ++ show (at end))
+verifyPlace start end (Just place) = place
+
 deleteRoad :: Map -> Map -> Map
 deleteRoad mapToDelete previousMap
     | null placesToDo || length placesToDo > 1 = error ("sd: Deletion of only one road at a time is allowed: " ++ show placesToDo)
@@ -173,7 +174,7 @@ deleteRoad mapToDelete previousMap
 
 deleteRoad' :: Text -> Destination -> Places -> Map
 deleteRoad' start end previousPlaces =
-    let thePlace = fromJust $ find (\x -> start == place x) previousPlaces
+    let thePlace = verifyPlace start end $ find (\x -> start == place x) previousPlaces
         newPlaces = deleteBy (\x y -> place x == place y ) thePlace previousPlaces
         theNewPlace = deleteRoad'' end thePlace 
     in Map {map = theNewPlace:newPlaces}
