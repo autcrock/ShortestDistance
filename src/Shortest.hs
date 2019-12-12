@@ -76,34 +76,26 @@ graphGetAdmissibleVertexNeighbours g currentVertexName greens =
 
 transferVertexUpdatingAccumulatedDistance :: [Neighbour] -> Text -> Double -> OptionalCompare -> (Graph, Graph) -> (Graph, Graph)
 transferVertexUpdatingAccumulatedDistance neighboursIn currentVName currentDistance optCompare (graph1, graph2) =
-    if isNothing txVertex
-    then (graph1, graph2)
-    else (newGraph1, newGraph2) 
-    where
-        txVertex = graphGetVertex graph1 currentVName
-        txV = fromJust txVertex
-        accumulatedD = accumulatedDistance txV
-        neighbourDistance = neighbourHowFarByName neighboursIn currentVName
-        accumulatedD' = pickMinimumAccumulatedDistance accumulatedD neighbourDistance currentDistance optCompare
-        v =  Vertex {
-            vertex = vertex txV
-            , accumulatedDistance = accumulatedD'
-            , neighbours = neighbours txV
-        }
-        graph2' = graphDeleteVertex graph2 txV
-        newGraph1 = graphDeleteVertex graph1 txV
-        newGraph2 = graphInsertVertex graph2' v
+  case graphGetVertex graph1 currentVName of
+    Nothing -> (graph1, graph2)
+    Just txV -> (graphDeleteVertex graph1 txV, graphInsertVertex graph2' v) 
+        where
+            accumulatedD = accumulatedDistance txV
+            neighbourDistance = neighbourHowFarByName neighboursIn currentVName
+            accumulatedD' = pickMinimumAccumulatedDistance accumulatedD neighbourDistance currentDistance optCompare
+            v =  Vertex {
+                vertex = vertex txV
+                , accumulatedDistance = accumulatedD'
+                , neighbours = neighbours txV
+            }
+            graph2' = graphDeleteVertex graph2 txV
 
 transferVertex :: Text -> (Graph, Graph) -> (Graph, Graph)
 transferVertex vName (graph1, graph2) =
-    if isNothing txVertex
-    then (graph1, graph2)
-    else (newGraph1, newGraph2)
-    where
-        txVertex = graphGetVertex graph1 vName
-        txV = fromJust txVertex
-        newGraph1 = graphDeleteVertex graph1 txV
-        newGraph2 = graphInsertVertex graph2 txV
+  case graphGetVertex graph1 vName of
+    Nothing -> (graph1, graph2)
+    Just vertex -> (graphDeleteVertex graph1 vertex
+                    , graphInsertVertex graph2 vertex)
 
 tellTheNeighbours :: [Neighbour] -> Double -> (Graph, Graph) -> (Graph, Graph)
 tellTheNeighbours ns currentDistance (reds, yellows) =
