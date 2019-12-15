@@ -129,17 +129,21 @@ dijkstra couldBeStartEnd =
 dijkstra' :: Graph -> Graph -> Graph -> Text -> Text -> Text -> Double -> Either UnusualResult Double
 dijkstra' reds yellows greens fromName toName currentVertexName currentDistance
     | currentVertexName == toName =
-        if isNothing vy
-        then 
-            if isNothing vg
-            then error "dijkstra': Error: Destination vertex was not found in either yellows or greens unexpectedly."
-            else Right (min currentDistance (accumulatedDistance $ fromJust vg))
-        else Right (min currentDistance (accumulatedDistance $ fromJust vy))
+      case vy of
+        Nothing ->
+          case vg of
+            Nothing -> error "dijkstra': Error: Destination vertex was not found in either yellows or greens unexpectedly."
+            Just greenVertex -> Right (min currentDistance (accumulatedDistance greenVertex))
+        Just yellowVertex -> Right (min currentDistance (accumulatedDistance yellowVertex))
     | otherwise =
-        if isLeft eitherCurrentVertex
-        then Left (fromLeft eitherCurrentVertex)
-        else
-            dijkstra' rs2 ys2 gs1 fromName toName newCurrentVertexName newCurrentDistance
+        case ns of
+              Nothing -> error "dijkstra': Error: No neighghbours found."
+              Just ns' ->
+                  let (rs2, ys2) = tellTheNeighbours ns' newCurrentDistance (reds, ys1)
+                  in 
+                    if isLeft eitherCurrentVertex
+                    then Left (fromLeft eitherCurrentVertex)
+                    else dijkstra' rs2 ys2 gs1 fromName toName newCurrentVertexName newCurrentDistance
     where
         vy = graphGetVertex yellows toName
         vg = graphGetVertex greens toName
@@ -149,4 +153,3 @@ dijkstra' reds yellows greens fromName toName currentVertexName currentDistance
         newCurrentVertexName = vertex currentVertex
         (ys1, gs1) = transferVertex newCurrentVertexName (yellows, greens)
         ns = graphGetAdmissibleVertexNeighbours gs1 newCurrentVertexName gs1
-        (rs2, ys2) = tellTheNeighbours (fromJust ns) newCurrentDistance (reds, ys1)
