@@ -25,14 +25,12 @@ import           Data.Either.Unwrap (isLeft, isRight, fromLeft, fromRight)
 import           Data.List (intersect, deleteBy, isInfixOf, find)
 import           Data.Maybe (isNothing)
 import           Data.Text (Text)
-import           GHC.Generics hiding (to)
 import           System.Directory
 import           System.IO.Error
 import           Graph
 import           Map
 import           Destination
 import           Place
-import           StartEnd
 import           Vertex
 import           Neighbour
 import           GraphOperations

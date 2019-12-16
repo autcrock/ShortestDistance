@@ -3,7 +3,6 @@
 module Graph ( Graph (..) ) where
 
 import Data.Aeson (ToJSON, FromJSON)
-import Data.Text (Text)
 import GHC.Generics (Generic)
 import Vertex
 

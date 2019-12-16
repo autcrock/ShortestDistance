@@ -9,11 +9,7 @@ module MapOperations (
     , xRoad
 ) where
 
-import Control.Applicative
-import Control.Monad
 import Data.Aeson (encode)
-import Data.Either.Combinators (mapBoth)
-import Data.Either.Unwrap (isLeft, fromLeft, fromRight)
 import Data.String.Conversions (cs)
 
 import Map

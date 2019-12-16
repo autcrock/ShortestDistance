@@ -2,17 +2,14 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 module Shortest (
-    Distance(..)
-    , dijkstra
+    dijkstra
 ) where
     
 import Data.Aeson (eitherDecode, ToJSON, FromJSON)
 import Data.Either.Unwrap (isLeft, fromLeft, fromRight)
 import Data.Maybe (mapMaybe, isNothing)
-import Data.Ord (min)
 import Data.String.Conversions (cs)
-import Data.Text (Text, pack, unpack)
-import GHC.Generics hiding (from, to)
+import Data.Text (Text)
 import Distance
 import Graph
 import GraphOperations

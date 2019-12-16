@@ -10,15 +10,8 @@ module GraphOperations (
     , getUniqueVertexNames
 ) where
 
-import           Data.Aeson (eitherDecode, ToJSON, FromJSON)
-import           Data.Either (Either(..))
-import           Data.Either.Unwrap (isLeft, fromRight)
 import           Data.List (sortBy, sortOn, nub, find, deleteBy)
-import qualified Data.Map.Ordered as DMO
-import           Data.Ord (comparing)
 import           Data.Text (Text)
-import qualified Data.Text.Lazy.Encoding as DTE
-import           GHC.Generics hiding (from, to)
 import           Neighbour
 import           Vertex
 import           Graph
