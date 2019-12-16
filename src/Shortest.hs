@@ -1,16 +1,14 @@
-{-# LANGUAGE DeriveGeneric     #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 module Shortest (
-    UnusualResult(..)
-    , Distance(..)
+    Distance(..)
     , dijkstra
 ) where
     
 import Data.Aeson (eitherDecode, ToJSON, FromJSON)
 import Data.Either.Unwrap (isLeft, fromLeft, fromRight)
-import Data.Maybe (fromJust, mapMaybe, isNothing)
+import Data.Maybe (mapMaybe, isNothing)
 import Data.Ord (min)
 import Data.String.Conversions (cs)
 import Data.Text (Text, pack, unpack)
@@ -21,14 +19,10 @@ import GraphOperations
 import MapDefinitions ( readMap, mapToGraph )
 import StartEnd
 import Neighbour
+import UnusualResult
 import Vertex
 
--- When updating vertex data
 data OptionalCompare = Compare | NoCompare deriving (Eq, Show)
-
-data UnusualResult = NegativeRoadLength | NotConnected Text Text deriving (Show, Generic, Eq)
-instance ToJSON UnusualResult
-instance FromJSON UnusualResult
 
 readStartEndFromString :: Text -> StartEnd
 readStartEndFromString candidateStartEnd =

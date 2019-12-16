@@ -9,9 +9,10 @@ import qualified Data.Text.IO as TIO
 import           Map
 import           MapDefinitions (readMap)
 import           MapOperations (aPlace, clear, xPlace, initialise, initialiseJSON, aRoad, xRoad)
-import           Shortest (dijkstra, UnusualResult(..))
+import           Shortest (dijkstra)
 import           Distance
 import           StartEnd
+import           UnusualResult
 
 mapInputDataFile :: String
 mapInputDataFile = "./test/testmap2.json"

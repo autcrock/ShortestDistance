@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 989b2e0b9e12bb55478ebc771e58b0cfeee654bfb1682e4784228da874a4ebba
+-- hash: c954d4efca1c79483a815fb324f241a20cc9b3a0c7ee2d5e5a2f9ad4f55e918c
 
 name:           ShortestDistance
 version:        0.1.0.0
@@ -53,6 +53,7 @@ library
       Place
       Shortest
       StartEnd
+      UnusualResult
       Vertex
   other-modules:
       Paths_ShortestDistance
