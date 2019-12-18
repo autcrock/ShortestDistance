@@ -1,18 +1,10 @@
-{-# LANGUAGE DeriveGeneric            #-}
 {-# LANGUAGE DisambiguateRecordFields #-}
 {-# LANGUAGE FlexibleInstances        #-}
 {-# LANGUAGE OverloadedStrings        #-}
 
 module PostgresMapDefinitions (
-      Map(..)
-    , Place
-    , StartEnd(..)
-    , Destination
-    , isConnectedTo
 --    , readMapFromFile
 --    , readMapFromString
-    , place
-    , at
 --    , readMap
 --    , removeMap
 --    , saveMap
@@ -21,7 +13,6 @@ module PostgresMapDefinitions (
 --    , upsertRoad
 --    , deleteRoad
 --    , mapToGraph
-    , test
 ) where
 
 import           Control.Exception
@@ -41,42 +32,7 @@ import           System.Directory
 import           System.IO.Error
 import           Database.PostgreSQL.Simple
 
--- Shortest distance query input
-data StartEnd = StartEnd {
-    start :: !Text,
-    end :: !Text
- } deriving (Generic, Show, Eq)
-instance ToJSON StartEnd
-instance FromJSON StartEnd
-
--- Shortest distance output
-newtype Distance = Distance{distance :: Double}
-                     deriving (Generic, Show, Eq)
-instance ToJSON Distance
-instance FromJSON Distance
-
--- Map data types
-data Destination = Destination {
-    at :: !Text,
-    howFar :: Double
-} deriving (Generic, Show, Eq)
-
-instance ToJSON Destination
-instance FromJSON Destination
-
-data Place = Place {
-    place :: !Text,
-    isConnectedTo :: [Destination]
- } deriving (Generic, Show, Eq)
-instance ToJSON Place
-instance FromJSON Place
-instance FromRow Place
-
-newtype Map = Map{map :: [Place]}
-                deriving (Generic, Show, Eq)
-instance ToJSON Map
-instance FromJSON Map
-instance FromRow Map
+import            Map
 
 systemMapTable :: String
 systemMapTable = "SD_CumulativeSystemMapfile"

@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 1c84e5b920570071828a77d26c237e85884466aadfbb0e68a6035664ecd69eca
+-- hash: 8ec75e8ebc281fc10f99e2e94d8bfe57adece641113d228a0eb868c0e4ecea53
 
 name:           ShortestDistance
 version:        0.1.0.0
@@ -26,6 +26,23 @@ source-repository head
   location: https://github.com/githubuser/ShortestDistance
 
 library
+  exposed-modules:
+      Destination
+      Distance
+      Graph
+      GraphOperations
+      Map
+      MapDefinitions
+      MapOperations
+      Neighbour
+      Place
+      PostgresMapDefinitions
+      Shortest
+      StartEnd
+      UnusualResult
+      Vertex
+  other-modules:
+      Paths_ShortestDistance
   hs-source-dirs:
       src
   build-depends:
@@ -42,18 +59,12 @@ library
     , text
     , text-show
     , unique
-  exposed-modules:
-      Graph
-      MapDefinitions
-      MapOperations
-      PostgresMapDefinitions
-      Shortest
-  other-modules:
-      Paths_ShortestDistance
   default-language: Haskell2010
 
 executable sd
   main-is: Main.hs
+  other-modules:
+      Paths_ShortestDistance
   hs-source-dirs:
       app
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
@@ -72,13 +83,13 @@ executable sd
     , text
     , text-show
     , unique
-  other-modules:
-      Paths_ShortestDistance
   default-language: Haskell2010
 
 test-suite sd-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
+  other-modules:
+      Paths_ShortestDistance
   hs-source-dirs:
       test
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
@@ -97,6 +108,4 @@ test-suite sd-test
     , text
     , text-show
     , unique
-  other-modules:
-      Paths_ShortestDistance
   default-language: Haskell2010

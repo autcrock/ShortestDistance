@@ -1,33 +1,25 @@
-{-# LANGUAGE DeriveGeneric     #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 module Shortest (
-    UnusualResult(..)
-    , Distance(..)
-    , dijkstra
+    dijkstra
 ) where
     
 import Data.Aeson (eitherDecode, ToJSON, FromJSON)
 import Data.Either.Unwrap (isLeft, fromLeft, fromRight)
-import Data.Maybe (fromJust, mapMaybe, isNothing)
-import Data.Ord (min)
+import Data.Maybe (mapMaybe, isNothing)
 import Data.String.Conversions (cs)
-import Data.Text (Text, pack, unpack)
-import GHC.Generics hiding (from, to)
+import Data.Text (Text)
+import Distance
 import Graph
-import MapDefinitions ( readMap, mapToGraph, StartEnd(..) )
+import GraphOperations
+import MapDefinitions ( readMap, mapToGraph )
+import StartEnd
+import Neighbour
+import UnusualResult
+import Vertex
 
-newtype Distance = Distance{distance :: Double} deriving (Show, Generic, Eq)
-instance ToJSON Distance
-instance FromJSON Distance
-
--- When updating vertex data
 data OptionalCompare = Compare | NoCompare deriving (Eq, Show)
-
-data UnusualResult = NegativeRoadLength | NotConnected Text Text deriving (Show, Generic, Eq)
-instance ToJSON UnusualResult
-instance FromJSON UnusualResult
 
 readStartEndFromString :: Text -> StartEnd
 readStartEndFromString candidateStartEnd =
@@ -75,34 +67,26 @@ graphGetAdmissibleVertexNeighbours g currentVertexName greens =
 
 transferVertexUpdatingAccumulatedDistance :: [Neighbour] -> Text -> Double -> OptionalCompare -> (Graph, Graph) -> (Graph, Graph)
 transferVertexUpdatingAccumulatedDistance neighboursIn currentVName currentDistance optCompare (graph1, graph2) =
-    if isNothing txVertex
-    then (graph1, graph2)
-    else (newGraph1, newGraph2) 
-    where
-        txVertex = graphGetVertex graph1 currentVName
-        txV = fromJust txVertex
-        accumulatedD = accumulatedDistance txV
-        neighbourDistance = neighbourHowFarByName neighboursIn currentVName
-        accumulatedD' = pickMinimumAccumulatedDistance accumulatedD neighbourDistance currentDistance optCompare
-        v =  Vertex {
-            vertex = vertex txV
-            , accumulatedDistance = accumulatedD'
-            , neighbours = neighbours txV
-        }
-        graph2' = graphDeleteVertex graph2 txV
-        newGraph1 = graphDeleteVertex graph1 txV
-        newGraph2 = graphInsertVertex graph2' v
+  case graphGetVertex graph1 currentVName of
+    Nothing -> (graph1, graph2)
+    Just txV -> (graphDeleteVertex graph1 txV, graphInsertVertex graph2' v) 
+        where
+            accumulatedD = accumulatedDistance txV
+            neighbourDistance = neighbourHowFarByName neighboursIn currentVName
+            accumulatedD' = pickMinimumAccumulatedDistance accumulatedD neighbourDistance currentDistance optCompare
+            v =  Vertex {
+                vertex = vertex txV
+                , accumulatedDistance = accumulatedD'
+                , neighbours = neighbours txV
+            }
+            graph2' = graphDeleteVertex graph2 txV
 
 transferVertex :: Text -> (Graph, Graph) -> (Graph, Graph)
 transferVertex vName (graph1, graph2) =
-    if isNothing txVertex
-    then (graph1, graph2)
-    else (newGraph1, newGraph2)
-    where
-        txVertex = graphGetVertex graph1 vName
-        txV = fromJust txVertex
-        newGraph1 = graphDeleteVertex graph1 txV
-        newGraph2 = graphInsertVertex graph2 txV
+  case graphGetVertex graph1 vName of
+    Nothing -> (graph1, graph2)
+    Just vertex -> (graphDeleteVertex graph1 vertex
+                    , graphInsertVertex graph2 vertex)
 
 tellTheNeighbours :: [Neighbour] -> Double -> (Graph, Graph) -> (Graph, Graph)
 tellTheNeighbours ns currentDistance (reds, yellows) =
@@ -136,17 +120,21 @@ dijkstra couldBeStartEnd =
 dijkstra' :: Graph -> Graph -> Graph -> Text -> Text -> Text -> Double -> Either UnusualResult Double
 dijkstra' reds yellows greens fromName toName currentVertexName currentDistance
     | currentVertexName == toName =
-        if isNothing vy
-        then 
-            if isNothing vg
-            then error "dijkstra': Error: Destination vertex was not found in either yellows or greens unexpectedly."
-            else Right (min currentDistance (accumulatedDistance $ fromJust vg))
-        else Right (min currentDistance (accumulatedDistance $ fromJust vy))
+      case vy of
+        Nothing ->
+          case vg of
+            Nothing -> error "dijkstra': Error: Destination vertex was not found in either yellows or greens unexpectedly."
+            Just greenVertex -> Right (min currentDistance (accumulatedDistance greenVertex))
+        Just yellowVertex -> Right (min currentDistance (accumulatedDistance yellowVertex))
     | otherwise =
-        if isLeft eitherCurrentVertex
-        then Left (fromLeft eitherCurrentVertex)
-        else
-            dijkstra' rs2 ys2 gs1 fromName toName newCurrentVertexName newCurrentDistance
+        case ns of
+              Nothing -> error "dijkstra': Error: No neighghbours found."
+              Just ns' ->
+                  let (rs2, ys2) = tellTheNeighbours ns' newCurrentDistance (reds, ys1)
+                  in 
+                    if isLeft eitherCurrentVertex
+                    then Left (fromLeft eitherCurrentVertex)
+                    else dijkstra' rs2 ys2 gs1 fromName toName newCurrentVertexName newCurrentDistance
     where
         vy = graphGetVertex yellows toName
         vg = graphGetVertex greens toName
@@ -156,4 +144,3 @@ dijkstra' reds yellows greens fromName toName currentVertexName currentDistance
         newCurrentVertexName = vertex currentVertex
         (ys1, gs1) = transferVertex newCurrentVertexName (yellows, greens)
         ns = graphGetAdmissibleVertexNeighbours gs1 newCurrentVertexName gs1
-        (rs2, ys2) = tellTheNeighbours (fromJust ns) newCurrentDistance (reds, ys1)
