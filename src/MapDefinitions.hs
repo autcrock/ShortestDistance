@@ -44,7 +44,11 @@ readMapFromFile inputFile =
     do inputMapAsJSON <- DBSL.readFile inputFile
        let inputMap = eitherDecode inputMapAsJSON :: (Either String Map)
        return inputMap
+{-| 
 
+>>> readMapFromFile "../test/testmap1.json"
+
+|-}
 getPlacesFromFile :: String -> IO Places
 getPlacesFromFile inputFile = readMapFromFile inputFile >>= getPlacesAST
 

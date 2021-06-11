@@ -38,7 +38,7 @@ clear = putStrLn "sd: Removing the system file." >> removeMap
 maybeSaveMap :: Either String Map -> IO()
 maybeSaveMap (Left e) = putStrLn $ "sd: ERROR: Getting map: " ++ e
 maybeSaveMap (Right m) = saveMap m
-        
+
 initialise :: String -> IO ()
 initialise filename =
   putStrLn ("sd: initialising a map using input from file [" ++ filename ++ "].") >> readMapFromFile filename >>= maybeSaveMap
@@ -48,4 +48,4 @@ initialiseJSON couldBeJSON =
   putStrLn ("sd: initialising a map using putative JSON [" ++ couldBeJSON ++ "].") >> saveMap (readMapFromString couldBeJSON)
 
 shortest :: String -> IO ()
-shortest couldBeJSON = fmap encode (dijkstra (cs couldBeJSON)) >>= print
+shortest couldBeJSON = dijkstra (cs couldBeJSON) >>= print . encode
