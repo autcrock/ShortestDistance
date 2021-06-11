@@ -12,9 +12,9 @@ module GraphOperations (
 
 import           Data.List (sortBy, sortOn, nub, find, deleteBy)
 import           Data.Text (Text)
-import           Neighbour
-import           Vertex
-import           Graph
+import Neighbour ( Neighbours, Neighbour(..) )
+import Vertex ( Vertices, Vertex(..) )
+import Graph ( Graph(..) )
 
 -- Manipulation in Dijkstra
 listInsertIncreasing :: Ord a => a -> [a] -> [a]

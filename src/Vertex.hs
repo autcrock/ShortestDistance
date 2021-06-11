@@ -5,7 +5,7 @@ module Vertex ( Vertex(..), Vertices ) where
 import Data.Aeson (ToJSON, FromJSON)
 import Data.Text (Text)
 import GHC.Generics (Generic)
-import Neighbour
+import Neighbour ( Neighbours )
 
 data Vertex = Vertex {
         accumulatedDistance :: Double, vertex :: Text, neighbours :: Neighbours

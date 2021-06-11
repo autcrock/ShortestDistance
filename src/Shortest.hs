@@ -10,14 +10,20 @@ import Data.Either.Unwrap (isLeft, fromLeft, fromRight)
 import Data.Maybe (mapMaybe, isNothing)
 import Data.String.Conversions (cs)
 import Data.Text (Text)
-import Distance
-import Graph
+import Distance ( Distance(..) )
+import Graph ( Graph(..) )
 import GraphOperations
+    ( graphGetVertexNeighbours,
+      deleteNeighboursByName,
+      neighbourHowFarByName,
+      graphGetVertex,
+      graphDeleteVertex,
+      graphInsertVertex )
 import MapDefinitions ( readMap, mapToGraph )
-import StartEnd
-import Neighbour
-import UnusualResult
-import Vertex
+import StartEnd ( StartEnd(start, end) )
+import Neighbour ( Neighbour(neighbourName) )
+import UnusualResult ( UnusualResult(NotConnected) )
+import Vertex ( Vertex(..) )
 
 data OptionalCompare = Compare | NoCompare deriving (Eq, Show)
 

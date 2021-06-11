@@ -6,7 +6,7 @@ where
 import Data.Aeson (ToJSON, FromJSON)
 import Data.Text (Text)
 import GHC.Generics (Generic)
-import Destination
+import Destination ( Destinations )
 
 data Place = Place {
     place :: !Text,

@@ -16,8 +16,8 @@ module MapDefinitions (
     , mapToGraph
 ) where
 
-import           Control.Exception
-import           Control.Monad.Extra
+import Control.Exception ( catch, throwIO )
+import Control.Monad.Extra ( when )
 import           Data.Aeson (eitherDecode, encode, ToJSON, FromJSON(..))
 import qualified Data.ByteString.Lazy as DBSL
 import qualified Data.ByteString.Lazy.Char8 as DBSLC8
@@ -25,15 +25,20 @@ import           Data.Either.Unwrap (isLeft, isRight, fromLeft, fromRight)
 import           Data.List (intersect, deleteBy, isInfixOf, find)
 import           Data.Maybe (isNothing)
 import           Data.Text (Text)
-import           System.Directory
-import           System.IO.Error
-import           Graph
-import           Map
-import           Destination
-import           Place
-import           Vertex
-import           Neighbour
-import           GraphOperations
+import System.Directory ( removeFile )
+import System.IO.Error ( isDoesNotExistError )
+import Graph ( Graph(..) )
+import Map ( Map(..) )
+import Destination ( Destinations, Destination(..) )
+import Place ( Places, Place(..) )
+import Vertex
+    ( Vertices,
+      Vertex(Vertex, vertex, accumulatedDistance, neighbours) )
+import Neighbour ( Neighbour(Neighbour, neighbourName, howFar) )
+import GraphOperations
+    ( sortVerticesByDistance,
+      getUniqueVertexNames,
+      associateVertexWithNeighbours )
 
 
 systemMapFile :: String
