@@ -54,6 +54,7 @@ readMapFromFile inputFile =
 >>> readMapFromFile "../test/testmap1.json"
 
 |-}
+
 getPlacesFromFile :: String -> IO Places
 getPlacesFromFile inputFile = readMapFromFile inputFile >>= getPlacesAST
 
