@@ -18,13 +18,13 @@ module MapDefinitions (
 
 import Control.Exception ( catch, throwIO )
 import Control.Monad.Extra ( when )
-import           Data.Aeson (eitherDecode, encode, ToJSON, FromJSON(..))
+import Data.Aeson (eitherDecode, encode, ToJSON, FromJSON(..))
 import qualified Data.ByteString.Lazy as DBSL
 import qualified Data.ByteString.Lazy.Char8 as DBSLC8
-import           Data.Either.Unwrap (isLeft, isRight, fromLeft, fromRight)
-import           Data.List (intersect, deleteBy, isInfixOf, find)
-import           Data.Maybe (isNothing)
-import           Data.Text (Text)
+import Data.Either.Unwrap (isLeft, isRight, fromLeft, fromRight)
+import Data.List (intersect, deleteBy, isInfixOf, find)
+import Data.Maybe (isNothing)
+import Data.Text (Text)
 import System.Directory ( removeFile )
 import System.IO.Error ( isDoesNotExistError )
 import Graph ( Graph(..) )

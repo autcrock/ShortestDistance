@@ -12,8 +12,17 @@ module MapOperations (
 import Data.Aeson (encode)
 import Data.String.Conversions (cs)
 
-import Map
+import Map ( Map )
 import MapDefinitions
+    ( deleteRoad,
+      upsertRoad,
+      deletePlaces,
+      insertPlaces,
+      saveMap,
+      removeMap,
+      readMap,
+      readMapFromString,
+      readMapFromFile )
 import Shortest (dijkstra)
 
 mapOperation :: String -> (Map -> Map -> Map) -> String -> IO()

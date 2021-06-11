@@ -10,8 +10,8 @@ module GraphOperations (
     , getUniqueVertexNames
 ) where
 
-import           Data.List (sortBy, sortOn, nub, find, deleteBy)
-import           Data.Text (Text)
+import Data.List (sortBy, sortOn, nub, find, deleteBy)
+import Data.Text (Text)
 import Neighbour ( Neighbours, Neighbour(..) )
 import Vertex ( Vertices, Vertex(..) )
 import Graph ( Graph(..) )

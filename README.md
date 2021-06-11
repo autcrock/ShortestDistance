@@ -8,19 +8,16 @@ To build it on Windows, just pull the git sources, ensure you have the Haskell s
 
          .\test\RunCommandLineTests.ps1
 
-LINUX
+LINUX or WINDOWS MSYS
 
 To build it on Linux, just pull the git sources, ensure you have the Haskell stack utility installed and on your path then, at a Bash prompt, type:
 
          sh ./test/RunCommandLineTests.sh
 
-
 This will build the program sd (or on Windows sd.exe), and run the tests.  It will also run a series of command line examples using sd.exe via stack exec (which adds considerable startup overheads on Windows).
-
 
 MORE INFO
 
 To get more detailed information about the command line options, read the above script, and also run:
 
         stack exec -- sd --help
-
