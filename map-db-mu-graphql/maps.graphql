@@ -1,0 +1,39 @@
+type Map {
+  id: Int!,
+  name: String!
+}
+type Route {
+  id: Int!,
+  end1: String!,
+  end2: String!
+}
+
+input NewMap {
+  name: String!
+}
+
+input NewRoute {
+  id: Int!
+  end1: String!
+  end2: String!
+}
+
+type Query {
+  maps(name: String! = "%"): [Map!]!
+  routes(end1: String! = "%",end1: String! = "%"): [Route!]!
+}
+
+type Mutation {
+  newMap(map: NewMap!): Map!
+  newRoute(route: NewRoute!): Route!
+}
+
+type Subscription {
+  allMaps: Map!
+}
+
+schema {
+  query: Query
+  mutation: Mutation
+  subscription: Subscription
+}

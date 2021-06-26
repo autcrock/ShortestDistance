@@ -47,7 +47,29 @@ executables:
     dependencies:
     - ShortestDistance
     - string-conversions
-
+  backend:
+    main:                Server.hs
+    source-dirs:         map-db-mu-graphql/backend/src
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - base                 >=4.12    && <5
+    - conduit              >=1.3.2   && <2
+    - monad-logger         >=0.3     && <0.4
+    - mtl                  >=0.2
+    - mu-graphql           >=0.11.1.0   && <0.6
+    - mu-persistent        >=0.3.1   && <0.4
+    - mu-prometheus        >=0.4     && <0.6
+    - mu-rpc               >=0.4.0.1 && <0.6
+    - mu-schema            >=0.3.1.1 && <0.4
+    - persistent           >=2.10    && <3
+    - persistent-sqlite    >=2.10    && <3
+    - persistent-template  >=2.8     && <3
+    - text                 >=1.2     && <2
+    - wai-extra            >=3       && <4
+    - warp                 >=3.3     && <4
 tests:
   sd-test:
     main:                Spec.hs

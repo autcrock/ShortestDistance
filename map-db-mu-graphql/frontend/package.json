@@ -1,0 +1,17 @@
+{
+  "name": "mu-graphql-example-elm",
+  "version": "1.0.0",
+  "description": "Elm client example for our mu-haskell GraphQL server!",
+  "scripts": {
+    "codegen": "elm-graphql --schema-file ../library.graphql --base LibraryApi --output src",
+    "start": "elm-app start"
+  },
+  "author": "higherkindness",
+  "license": "MIT",
+  "dependencies": {
+    "@dillonkearns/elm-graphql": "^4.0.3"
+  },
+  "devDependencies": {
+    "create-elm-app": "^5.11.0"
+  }
+}
