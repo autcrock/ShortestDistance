@@ -28,24 +28,28 @@ share
   [persistLowerCase|
 Map json
   name T.Text
-  UniqueName name
+  mapGuid T.Text
   deriving Show Generic
 Route json
+  routeGuid T.Text
+  mapGuid T.Text
   end1 T.Text
   end2 T.Text
   deriving Show Generic
 |]
 
 newtype NewMap = NewMap
-  { name :: T.Text
+  { 
+    name :: T.Text
   }
   deriving stock (Eq, Show, Generic)
   deriving anyclass (FromSchema MapsSchema "NewMap")
 
 data NewRoute = NewRoute
-  { end1 :: T.Text,
-    end2 :: T.Text,
-    mapId :: Integer
+  { 
+    routeGuid :: T.Text,  
+    end1 :: T.Text,
+    end2 :: T.Text
   }
   deriving stock (Eq, Show, Generic)
   deriving anyclass (FromSchema MapsSchema "NewRoute")

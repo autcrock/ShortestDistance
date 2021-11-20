@@ -1,26 +1,32 @@
 type Map {
-  id: Int!,
+  mapGuid: String!,
   name: String!
 }
 type Route {
-  id: Int!,
+  routeGuid: String!,
+  mapGuid: String!
   end1: String!,
   end2: String!
 }
 
 input NewMap {
+  mapGuid: String!,
   name: String!
 }
 
 input NewRoute {
-  id: Int!
+  routeGuid: String!
+  mapGuid: String!
   end1: String!
   end2: String!
 }
 
 type Query {
   maps(name: String! = "%"): [Map!]!
-  routes(end1: String! = "%",end1: String! = "%"): [Route!]!
+  routesByEnd1(end1: String! = "%"): [Route!]!
+  routesByEnd2(end2: String! = "%"): [Route!]!
+  routesByMapGuid(mapGuid: String! = "%"): [Route!]!
+  routesByRouteGuid(routeGuid: String! = "%"): [Route!]!
 }
 
 type Mutation {

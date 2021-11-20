@@ -6,6 +6,7 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE TypeOperators #-}
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
+-- {-# OPTIONS_GHC -Wno-deferred-type-errors #-}
 
 module Main where
 
@@ -78,7 +79,7 @@ insertMapAndRoutes conn map routes =
   runDb conn . fmap sequence_ $ do
     mapResult <- insertUnique map
     case mapResult of
-      Just mapId -> traverse (\kroute -> insertUnique (kroute mapId)) routes
+      Just mapGuid -> traverse (\kroute -> insertUnique (kroute mapGuid)) routes
       Nothing -> pure [Nothing]
 
 type ObjectMapping =
@@ -90,12 +91,12 @@ mapServer :: SqlBackend -> ServerT ObjectMapping i Map ServerErrorIO _
 mapServer conn =
   resolver
     ( object @"Route"
-        ( field @"id" routeId,
+        ( field @"id" routeGuid,
           field @"end1" end1,
           field @"end2" end2
         ),
       object @"Map"
-        ( field @"id" mapId,
+        ( field @"id" mapGuid,
           field @"name" mapName
         ),
       object @"Query"
@@ -110,8 +111,8 @@ mapServer conn =
         (method @"allRoutes" allRoutesConduit)
     )
   where
-    routeId :: Entity Route -> ServerErrorIO Integer
-    routeId (Entity (RouteKey k) _) = pure $ toInteger k
+    routeGuid :: Entity Route -> ServerErrorIO Integer
+    routeGuid (Entity (RouteKey k) _) = pure $ toInteger k
 
     routeEnd1 :: Entity Route -> ServerErrorIO T.Text
     routeEnd1 (Entity _ Route {routeEnd1}) = pure routeEnd1
@@ -123,8 +124,8 @@ mapServer conn =
     --   map <- runDb conn $ get routeMap
     --   pure $ Entity routeMap (fromJust map)
 
-    mapId :: Entity Map -> ServerErrorIO Integer
-    mapId (Entity (MapKey k) _) = pure $ toInteger k
+    mapGuid :: Entity Map -> ServerErrorIO Integer
+    mapGuid (Entity (MapKey k) _) = pure $ toInteger k
 
     mapName :: Entity Map -> ServerErrorIO T.Text
     mapName (Entity _ Map {mapName}) = pure mapName
@@ -178,4 +179,4 @@ mapServer conn =
     newMap (NewMap name) = insertNewEntity ("Map " <> name) (Map name)
 
     newRoute :: NewRoute -> ServerErrorIO (Entity Route)
-    newRoute (NewRoute title mapId img) = insertNewEntity ("Route " <> title) (Route title img . toSqlKey $ fromInteger mapId)
+    newRoute (NewRoute title mapGuid img) = insertNewEntity ("Route " <> title) (Route title img . toSqlKey $ fromInteger mapGuid)
