@@ -1,10 +1,10 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.31.2.
+-- This file has been generated from package.yaml by hpack version 0.37.0.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: c954d4efca1c79483a815fb324f241a20cc9b3a0c7ee2d5e5a2f9ad4f55e918c
+-- hash: b53de6ba48ce6e5d0a776758465b8b5a707a54c13a9b17e56c8cf8c397988a96
 
 name:           ShortestDistance
 version:        0.1.0.0
@@ -30,7 +30,7 @@ library
       src
   build-depends:
       aeson >=1.4.2.0
-    , base >=4.7 && <5
+    , base >=4.7
     , bytestring
     , directory
     , either
@@ -67,7 +67,7 @@ executable sd
   build-depends:
       ShortestDistance
     , aeson >=1.4.2.0
-    , base >=4.7 && <5
+    , base >=4.7
     , bytestring
     , directory
     , either
@@ -91,7 +91,7 @@ test-suite sd-test
   build-depends:
       ShortestDistance
     , aeson >=1.4.2.0
-    , base >=4.7 && <5
+    , base >=4.7
     , bytestring
     , directory
     , either
