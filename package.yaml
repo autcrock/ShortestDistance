@@ -20,18 +20,18 @@ extra-source-files:
 description:         Please see the README on Github at <https://github.com/githubuser/ShortestDistance#readme>
 
 dependencies:
-- base >= 4.7
-- aeson >= 1.4.2.0
+- base
+- aeson >= 2.2.1.0
 - bytestring
 - directory
 - either-unwrap
-- either
+- either >= 5.0.2
 - text
-- unique
-- text-show >= 3.8.2
-- string-conversions
-- ordered-containers
-- extra
+- unique >= 0.0.1
+- text-show >= 3.10.4
+- string-conversions >= 0.4.0.1
+- ordered-containers >= 0.2.3
+- extra >= 1.7.14
 
 library:
   source-dirs: src
