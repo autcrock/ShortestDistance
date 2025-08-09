@@ -1,3 +1,5 @@
+nix:
+  enable: true  # false by default, except on NixOS
 flags: {}
 packages:
 - .
