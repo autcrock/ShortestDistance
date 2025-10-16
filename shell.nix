@@ -5,9 +5,11 @@ let
 in
   stdenv.mkDerivation {
     name = "Shortest-Path";
+    buildInputs = [ zlib-0.7.1.1 ];
+
     nativeBuildInputs = [
       # Haskell tools
-      ghcid ghc
+      ghc cabal ghcid hix haskell-language-server
 
       # Profiling tools
 #       threadscope
@@ -18,6 +20,6 @@ in
 # pkgs.haskell.lib.buildStackProject {
 #   name = "my-haskell-test-project";
 #   src = ./.;
-  # Optional: Add any additional build inputs (e.g., system libraries) here
-  # buildInputs = [ pkgs.zlib ];
+##   Optional: Add any additional build inputs (e.g., system libraries) here
+#   buildInputs = [ pkgs.zlib ];
 # }
