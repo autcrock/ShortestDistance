@@ -13,6 +13,8 @@ import           Shortest (dijkstra)
 import           Distance
 import           StartEnd
 import           UnusualResult
+import           GraphOperations (deleteNeighboursByName, neighbourHowFarByName)
+import           Neighbour (Neighbour(..))
 
 mapInputDataFile :: String
 mapInputDataFile = "./test/testmap2.json"
@@ -245,11 +247,24 @@ main =
         m <- readMap
         let results8 = [m == Map.Map {Map.map=[]}]
 
+        putStrLn $ "Test suite checking that the persistent map is now empty: " ++ mapInputDataFile
+        let testNeighbours = [Neighbour {neighbourName = "A", howFar = 5}
+                             ,Neighbour {neighbourName = "B", howFar = 10}
+                             ,Neighbour {neighbourName = "C", howFar = 15}
+                             ]
+        putStrLn $ "Test suite checking that GraphOperations helpers work."
+        let removedNeighbours = deleteNeighboursByName ["B", "X"] testNeighbours
+        let results9 = [ removedNeighbours == [Neighbour {neighbourName = "A", howFar = 5}, Neighbour {neighbourName = "C", howFar = 15}]
+                       , neighbourHowFarByName testNeighbours "A" == 5
+                       , neighbourHowFarByName testNeighbours "C" == 15
+                       , deleteNeighboursByName [] testNeighbours == testNeighbours
+                       ]
+
         putStrLn $ "Test suite removing persistent map : " ++ mapInputDataFile
         clear
 
         putStrLn "========================================================="
         putStrLn $ "Test suite overall results: " ++ boolToFinalResult (and 
             (results ++ results1 ++ results2 ++ results3 ++ results4
-             ++ results5 ++ results6 ++ results7 ++ results8))
+             ++ results5 ++ results6 ++ results7 ++ results8 ++ results9))
         putStrLn "========================================================="

@@ -33,7 +33,7 @@ getUniqueVertexNames :: Vertices -> [Text]
 getUniqueVertexNames = nub . Prelude.map vertex
 
 -- associateVertexWithNeighbours is only used during conversion of a map to a fully developed
--- Graph vertex.  It pulls all direct references to the paticular vertex in as neighbours for the instant vertex.
+-- Graph vertex.  It pulls all direct references to the particular vertex in as neighbours for the instant vertex.
 -- This expresses the two way relationship between neighbours as places in the Graph  
 associateVertexWithNeighbours :: Text -> Vertices -> Double -> Vertex
 associateVertexWithNeighbours vertexName_in vertices accumulatedDistance_in =
